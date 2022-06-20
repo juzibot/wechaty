@@ -32,7 +32,7 @@ import { WechatyBuilder } from '../wechaty-builder.js'
 test.skip('Post smoke testing', async t => {
   void sinon
 
-  const puppet = new PuppetMock()
+  const puppet = new PuppetMock() as any
   const wechaty = WechatyBuilder.build({ puppet })
   await wechaty.start()
   const bot = puppet.mocker.createContact({ name: 'Bot' })
