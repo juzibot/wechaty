@@ -21,7 +21,7 @@ import { StateSwitch } from 'state-switch'
 import {
   PuppetServer,
   PuppetServerOptions,
-}                       from 'wechaty-puppet-service'
+}                       from '@juzi/wechaty-puppet-service'
 
 import type { MessageInterface }  from './user-modules/mod.js'
 import type { WechatyInterface }  from './wechaty/mod.js'

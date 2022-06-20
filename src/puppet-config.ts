@@ -71,6 +71,8 @@ const OFFICIAL_PUPPET_DEPENDENCIES = {
    */
   '@juzibot/wechaty-puppet-donut'  : '*',   // https://www.npmjs.com/package/wechaty-puppet-donut (to be published)
   '@juzibot/wechaty-puppet-wxwork' : '*',   // https://www.npmjs.com/package/wechaty-puppet-wxwork (to be published)
+
+  '@juzi/wechaty-puppet-service': '*',  // https://www.npmjs.com/package/@juzi/wechaty-puppet-service
 }
 
 type OfficialPuppetNpmName = keyof typeof OFFICIAL_PUPPET_DEPENDENCIES
