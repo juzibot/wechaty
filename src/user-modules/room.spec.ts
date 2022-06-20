@@ -39,7 +39,7 @@ test('findAll()', async t => {
 
   const sandbox = sinon.createSandbox()
 
-  const puppet = new PuppetMock()
+  const puppet = new PuppetMock() as any
   const wechaty = WechatyBuilder.build({ puppet })
 
   await wechaty.start()
@@ -64,7 +64,7 @@ test('room.say() smoke testing', async () => {
   const sandbox = sinon.createSandbox()
   const callback = sinon.spy()
 
-  const puppet = new PuppetMock()
+  const puppet = new PuppetMock() as any
   const wechaty = WechatyBuilder.build({ puppet })
 
   const bot = puppet.mocker.createContact()
