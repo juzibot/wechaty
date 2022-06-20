@@ -18,8 +18,8 @@
  *
  */
 import { EventEmitter }     from 'events'
-import * as PUPPET          from 'wechaty-puppet'
-import { log }              from 'wechaty-puppet'
+import * as PUPPET          from '@juzi/wechaty-puppet'
+import { log }              from '@juzi/wechaty-puppet'
 import type { Constructor } from 'clone-class'
 
 import {

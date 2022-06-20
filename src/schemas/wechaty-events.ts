@@ -2,7 +2,7 @@ import { EventEmitter }         from 'events'
 import type TypedEventEmitter   from 'typed-emitter'
 
 import type { GError }  from 'gerror'
-import * as PUPPET      from 'wechaty-puppet'
+import * as PUPPET      from '@juzi/wechaty-puppet'
 
 import type {
   FriendshipInterface,

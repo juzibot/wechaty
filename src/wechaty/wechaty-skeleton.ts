@@ -18,7 +18,7 @@
  *
  */
 import { MemoryCard }     from 'memory-card'
-import { log }            from 'wechaty-puppet'
+import { log }            from '@juzi/wechaty-puppet'
 import * as UUID          from 'uuid'
 import type { Loggable }  from 'brolog'
 

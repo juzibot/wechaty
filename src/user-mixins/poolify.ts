@@ -3,7 +3,7 @@
  * https://lit.dev/docs/composition/mixins/
  */
 import type { Constructor } from 'clone-class'
-import { log } from 'wechaty-puppet'
+import { log } from '@juzi/wechaty-puppet'
 
 interface PoolifyMixin<T> {
   new (...args: any[]): T

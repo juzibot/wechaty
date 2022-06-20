@@ -17,7 +17,7 @@
  *   limitations under the License.
  *
  */
-import type * as PUPPET          from 'wechaty-puppet'
+import type * as PUPPET          from '@juzi/wechaty-puppet'
 
 import { log } from '../config.js'
 import type { Constructor } from 'clone-class'

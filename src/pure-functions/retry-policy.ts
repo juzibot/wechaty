@@ -4,7 +4,7 @@ import {
 }                 from 'cockatiel'
 import {
   log,
-}                 from 'wechaty-puppet'
+}                 from '@juzi/wechaty-puppet'
 
 /**
  * Create a retry policy that'll try whatever function we execute 3

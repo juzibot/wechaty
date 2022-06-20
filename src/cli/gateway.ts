@@ -9,7 +9,7 @@ import {
 
 import {
   log,
-}                 from 'wechaty-puppet'
+}                 from '@juzi/wechaty-puppet'
 import { WechatyToken } from 'wechaty-token'
 import getPort from 'get-port'
 

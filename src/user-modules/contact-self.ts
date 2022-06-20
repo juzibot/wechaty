@@ -17,10 +17,10 @@
  *   limitations under the License.
  *
  */
-import type * as PUPPET from 'wechaty-puppet'
+import type * as PUPPET from '@juzi/wechaty-puppet'
 import {
   log,
-}                             from 'wechaty-puppet'
+}                             from '@juzi/wechaty-puppet'
 import type {
   FileBoxInterface,
 }                             from 'file-box'

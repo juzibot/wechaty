@@ -4,7 +4,7 @@ import os from 'os'
 
 import {
   log,
-}           from 'wechaty-puppet'
+}           from '@juzi/wechaty-puppet'
 import type { GError } from 'gerror'
 
 import {

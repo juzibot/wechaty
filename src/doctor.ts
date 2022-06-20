@@ -25,7 +25,7 @@ import { spawnSync as spawn } from 'child_process'
 
 import {
   log,
-}                   from 'wechaty-puppet'
+}                   from '@juzi/wechaty-puppet'
 
 export class Doctor {
 

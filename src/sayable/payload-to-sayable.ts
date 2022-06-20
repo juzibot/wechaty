@@ -1,5 +1,5 @@
-import * as PUPPET from 'wechaty-puppet'
-import { log }  from 'wechaty-puppet'
+import * as PUPPET from '@juzi/wechaty-puppet'
+import { log }  from '@juzi/wechaty-puppet'
 
 import type { WechatyInterface } from '../wechaty/wechaty-impl.js'
 

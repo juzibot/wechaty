@@ -1,4 +1,4 @@
-import { log }        from 'wechaty-puppet'
+import { log }        from '@juzi/wechaty-puppet'
 import { Io } from '../io.js'
 import type { WechatyOptions } from '../wechaty-builder.js'
 

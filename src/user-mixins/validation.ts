@@ -4,7 +4,7 @@ import {
 }                           from 'clone-class'
 import type { Constructor } from 'clone-class'
 
-import { log }              from 'wechaty-puppet'
+import { log }              from '@juzi/wechaty-puppet'
 
 const validationMixin = <MixinBase extends Constructor> (mixinBase: MixinBase) => <T>() => {
   log.verbose('ValidationMixin', 'validationMixin(%s)', mixinBase.name)

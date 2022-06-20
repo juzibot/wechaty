@@ -20,7 +20,7 @@
  */
 import spawn from 'cross-spawn'
 
-import { log } from 'wechaty-puppet'
+import { log } from '@juzi/wechaty-puppet'
 
 import {
   OFFICIAL_PUPPET_DEPENDENCIES,

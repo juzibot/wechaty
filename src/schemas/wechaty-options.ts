@@ -1,4 +1,4 @@
-import type * as PUPPET from 'wechaty-puppet'
+import type * as PUPPET from '@juzi/wechaty-puppet'
 import type {
   MemoryCard,
 }                       from 'memory-card'

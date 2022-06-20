@@ -24,8 +24,8 @@
  *
  *  @see https://github.com/wechaty/wechaty/issues/2245#issuecomment-914886835
  */
-import * as PUPPET      from 'wechaty-puppet'
-import { log }          from 'wechaty-puppet'
+import * as PUPPET      from '@juzi/wechaty-puppet'
+import { log }          from '@juzi/wechaty-puppet'
 
 import type {
   Constructor,

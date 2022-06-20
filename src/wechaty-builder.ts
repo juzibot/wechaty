@@ -17,7 +17,7 @@
  *   limitations under the License.
  *
  */
-import { log } from 'wechaty-puppet'
+import { log } from '@juzi/wechaty-puppet'
 
 import {
   WechatyInterface,

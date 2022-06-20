@@ -19,7 +19,7 @@
  */
 import {
   log,
-}                     from 'wechaty-puppet'
+}                     from '@juzi/wechaty-puppet'
 
 import type { Constructor }  from 'clone-class'
 

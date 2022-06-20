@@ -19,7 +19,7 @@
  */
 import Url from 'url'
 
-import type * as PUPPET     from 'wechaty-puppet'
+import type * as PUPPET     from '@juzi/wechaty-puppet'
 import type { Constructor } from 'clone-class'
 
 import { openGraph }          from '../helper-functions/open-graph.js'

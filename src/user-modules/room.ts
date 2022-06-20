@@ -17,7 +17,7 @@
  *   limitations under the License.
  *
  */
-import type * as PUPPET           from 'wechaty-puppet'
+import type * as PUPPET           from '@juzi/wechaty-puppet'
 import type { FileBoxInterface }  from 'file-box'
 import { concurrencyExecuter }    from 'rx-queue'
 import type {

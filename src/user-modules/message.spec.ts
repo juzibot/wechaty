@@ -24,7 +24,7 @@ import {
   sinon,
 }             from 'tstest'
 
-import * as PUPPET        from 'wechaty-puppet'
+import * as PUPPET        from '@juzi/wechaty-puppet'
 import { PuppetMock }     from 'wechaty-puppet-mock'
 import { WechatyBuilder } from '../wechaty-builder.js'
 import type {

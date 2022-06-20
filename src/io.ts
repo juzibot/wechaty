@@ -19,7 +19,7 @@
  */
 import WebSocket        from 'ws'
 
-import type * as PUPPET from 'wechaty-puppet'
+import type * as PUPPET from '@juzi/wechaty-puppet'
 import { StateSwitch } from 'state-switch'
 
 import * as jsonRpcPeer from 'json-rpc-peer'

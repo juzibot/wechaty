@@ -21,7 +21,7 @@ import {
   serviceCtlMixin,
 }                       from 'state-switch'
 import { function as FP } from 'fp-ts'
-import type * as PUPPET from 'wechaty-puppet'
+import type * as PUPPET from '@juzi/wechaty-puppet'
 
 import {
   config,
