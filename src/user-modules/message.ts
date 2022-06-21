@@ -65,9 +65,8 @@ import {
   PostInterface,
   PostImpl,
 }                       from './post.js'
-import {
+import type {
   LocationInterface,
-  LocationImpl,
 }                       from './location.js'
 import type {
   ChannelInterface,
@@ -1062,7 +1061,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
 
     const locationPayload = await this.wechaty.puppet.messageLocation(this.id)
 
-    return new LocationImpl(locationPayload)
+    return new this.wechaty.Location(locationPayload)
   }
 
   public async toPost (): Promise<PostInterface> {
