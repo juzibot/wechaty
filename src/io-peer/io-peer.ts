@@ -1,5 +1,5 @@
 /// <reference path="json-rpc-peer.d.ts"/>
-import jsonRpcPeer from 'json-rpc-peer'
+import jsonRpcPeer, { Peer, MethodNotFound } from 'json-rpc-peer'
 
 // // https://stackoverflow.com/a/50375286/1123955
 // type UnionToIntersection<U> =
@@ -50,7 +50,7 @@ const getPeer = (options: IoPeerOptions) => {
           return serviceImpl[serviceMethodName]()
 
         default:
-          throw new jsonRpcPeer.MethodNotFound(serviceMethodName)
+          throw new MethodNotFound(serviceMethodName)
       }
     } else if (isJsonRpcResponse(message)) {
       // NOOP: we are server
@@ -64,7 +64,7 @@ const getPeer = (options: IoPeerOptions) => {
     console.info(JSON.stringify(message))
   }
 
-  const ioPeer = new jsonRpcPeer.Peer(onMessage)
+  const ioPeer = new Peer(onMessage)
 
   return ioPeer
 }

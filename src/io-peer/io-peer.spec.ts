@@ -20,7 +20,7 @@
  */
 import { test }  from 'tstest'
 
-import jsonRpcPeer from 'json-rpc-peer'
+import jsonRpcPeer, { Peer, format, parse } from 'json-rpc-peer'
 
 import {
   getPeer,
@@ -31,7 +31,7 @@ test('getPeer()', async t => {
   const server = getPeer({
     serviceGrpcPort: EXPECTED_PORT,
   })
-  const client = new jsonRpcPeer.Peer()
+  const client = new Peer()
   /**
    * FIXME: Huan(202108): remove `any` to fix the typing
    */
@@ -55,10 +55,10 @@ test('exec()', async t => {
    * Huan(202101) Need to be fixed by new IO Bus system.
    *  See: https://github.com/wechaty/wechaty-puppet-service/issues/118
    */
-  const request = jsonRpcPeer.format.request(42, 'getHostieGrpcPort')
+  const request = format.request(42, 'getHostieGrpcPort')
   const response = await server.exec(request) as string
   // console.info('response: ', response)
 
-  const obj = jsonRpcPeer.parse(response) as jsonRpcPeer.JsonRpcPayloadResponse
+  const obj = parse(response) as jsonRpcPeer.JsonRpcPayloadResponse
   t.equal(obj.result, EXPECTED_PORT, 'should get the right port from payload')
 })
