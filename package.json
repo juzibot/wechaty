@@ -125,7 +125,7 @@
     "state-switch": "^1.6.3",
     "uuid": "^8.3.2",
     "@juzi/wechaty-puppet": "1.0.1",
-    "@juzi/wechaty-puppet-service": "1.0.1",
+    "@juzi/wechaty-puppet-service": "1.0.2",
     "wechaty-puppet-wechat4u": "^1.11.1",
     "wechaty-token": "^1.1.1",
     "ws": "^8.5.0"
