@@ -65,9 +65,8 @@ import {
   PostInterface,
   PostImpl,
 }                       from './post.js'
-import {
+import type {
   LocationInterface,
-  LocationImpl,
 }                       from './location.js'
 import type {
   ChannelInterface,
