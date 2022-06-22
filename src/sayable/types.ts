@@ -21,7 +21,7 @@ import type {
   FileBoxInterface,
 }                       from 'file-box'
 
-import type {
+import {
   ContactInterface,
   DelayInterface,
   LocationInterface,
@@ -30,6 +30,8 @@ import type {
   PostInterface,
   UrlLinkInterface,
   ChannelInterface,
+  ContactImpl,
+  MessageImpl,
 }                           from '../user-modules/mod.js'
 
 import type {
@@ -61,6 +63,14 @@ interface SayableSayer {
 interface SayOptionsObject {
   mentionList?: ContactInterface[],
   quoteMessage?: MessageInterface,
+}
+
+export const isSayOptionsObject = (target: any) => {
+  return (typeof target === 'object'
+    && ((target.mentionList && target.mentionList.every((c: any) => ContactImpl.valid(c)))
+      || (target.quoteMessage && MessageImpl.valid(target.quoteMessage))
+    )
+  )
 }
 
 type SayOptions = ContactInterface | ContactInterface[] | SayOptionsObject

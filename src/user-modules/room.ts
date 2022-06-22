@@ -61,6 +61,7 @@ import {
 import type {
   MessageInterface,
 }                       from './message.js'
+import { isSayOptionsObject } from '../sayable/types.js'
 
 const MixinBase = wechatifyMixin(
   poolifyMixin(
@@ -469,7 +470,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
       let options: SayOptionsObject
 
       if (varList.length > 0) {
-        if (typeof (varList[0]) === 'object') {
+        if (isSayOptionsObject(varList[0])) {
           options = varList[0] as SayOptionsObject
           mentionList = options.mentionList || []
           quoteMessage = options.quoteMessage
@@ -496,14 +497,23 @@ class RoomMixin extends MixinBase implements SayableSayer {
       //   contactId : (mentionList.length && mentionList[0].id) || undefined,
       //   roomId    : this.id,
       // }
-      msgId = await this.wechaty.puppet.messageSendText(
-        this.id,
-        text,
-        {
-          mentionIdList: mentionList.map(c => c.id),
-          quoteId: quoteMessage?.id,
-        },
-      )
+      if (quoteMessage) {
+        msgId = await this.wechaty.puppet.messageSendText(
+          this.id,
+          text,
+          {
+            mentionIdList: mentionList.map(c => c.id),
+            quoteId: quoteMessage.id,
+          },
+        )
+      } else {
+        msgId = await this.wechaty.puppet.messageSendText(
+          this.id,
+          text,
+          mentionList.map(c => c.id),
+        )
+      }
+
     } else {
       msgId = await deliverSayableConversationPuppet(this.wechaty.puppet)(this.id)(sayable)
     }
