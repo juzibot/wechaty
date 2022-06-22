@@ -567,7 +567,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
    */
   async reply (
     text: string,
-    mentionList: ContactInterface[],
+    mentionList?: ContactInterface[],
   ): Promise<void | MessageInterface> {
     log.verbose('Message', 'say(%s)', text)
 
