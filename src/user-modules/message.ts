@@ -1126,6 +1126,19 @@ class MessageMixin extends MixinBase implements SayableSayer {
     return messageToSayable(this)
   }
 
+  async getQuotedMessage (): Promise<undefined | MessageInterface> {
+    log.verbose('Message', 'getQuotedMessage()')
+    if (!this.payload) {
+      throw new Error('no payload')
+    }
+
+    if (!this.payload.quoteId) {
+      throw new Error('this message did not quote another message')
+    }
+
+    return this.wechaty.Message.find({ id: this.payload.quoteId })
+  }
+
 }
 
 class MessageImplBase extends validationMixin(MessageMixin)<MessageImplInterface>() {}
