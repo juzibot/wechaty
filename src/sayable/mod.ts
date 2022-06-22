@@ -1,6 +1,8 @@
 import type {
   SayableSayer,
   Sayable,
+  SayOptions,
+  SayOptionsObject,
 }                                     from './types.js'
 import {
   messageToSayable,
@@ -18,6 +20,8 @@ import {
 export type {
   Sayable,
   SayableSayer,
+  SayOptions,
+  SayOptionsObject,
 }
 export {
   messageToSayable,

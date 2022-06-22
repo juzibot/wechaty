@@ -46,7 +46,7 @@ import {
   validationMixin,
 }                                       from '../user-mixins/mod.js'
 import {
-  deliverSayableConversationPuppet,
+  deliverSayableConversationPuppet, SayOptions, SayOptionsObject,
 }                                       from '../sayable/mod.js'
 import type {
   SayableSayer,
@@ -355,7 +355,8 @@ class RoomMixin extends MixinBase implements SayableSayer {
   }
 
   say (sayable:  Sayable)                                 : Promise<void | MessageInterface>
-  say (text:     string, ...mentionList: ContactInterface[])       : Promise<void | MessageInterface>
+  say (text: string, options?: SayOptions): Promise<void | MessageInterface>
+  say (text: string, ...options: SayOptions[]): Promise<void | MessageInterface>
   say (textList: TemplateStringsArray, ...varList: any[]) : Promise<void | MessageInterface>
 
   // Huan(202006): allow fall down to the defination to get more flexibility.
@@ -464,14 +465,22 @@ class RoomMixin extends MixinBase implements SayableSayer {
        * 1. string
        */
       let mentionList: ContactInterface[] = []
+      let quoteMessage: MessageInterface | undefined
+      let options: SayOptionsObject
 
       if (varList.length > 0) {
-        const allIsContact = varList.every(c => ContactImpl.valid(c))
+        if (typeof (varList[0]) === 'object') {
+          options = varList[0] as SayOptionsObject
+          mentionList = options.mentionList || []
+          quoteMessage = options.quoteMessage
+        } else {
+          mentionList = varList as ContactInterface[]
+        }
+
+        const allIsContact = mentionList.every(c => ContactImpl.valid(c))
         if (!allIsContact) {
           throw new Error('mentionList must be contact when not using TemplateStringsArray function call.')
         }
-
-        mentionList = [...varList as any]
 
         const AT_SEPARATOR = FOUR_PER_EM_SPACE
         const mentionAlias = await Promise.all(mentionList.map(async contact =>
@@ -490,7 +499,10 @@ class RoomMixin extends MixinBase implements SayableSayer {
       msgId = await this.wechaty.puppet.messageSendText(
         this.id,
         text,
-        mentionList.map(c => c.id),
+        {
+          mentionIdList: mentionList.map(c => c.id),
+          quoteId: quoteMessage?.id,
+        },
       )
     } else {
       msgId = await deliverSayableConversationPuppet(this.wechaty.puppet)(this.id)(sayable)

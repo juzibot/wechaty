@@ -561,6 +561,32 @@ class MessageMixin extends MixinBase implements SayableSayer {
   }
 
   /**
+   * Reply a message while quoting the original one
+   * @param text
+   * @param mentionIdList
+   */
+  async reply (
+    text: string,
+    mentionList: ContactInterface[],
+  ): Promise<void | MessageInterface> {
+    log.verbose('Message', 'say(%s)', text)
+
+    const talker = this.talker()
+    const room = this.room()
+
+    if (room) {
+      return room.say(text, {
+        mentionList,
+        quoteMessage: this,
+      })
+    } else {
+      return talker.say(text, {
+        quoteMessage: this,
+      })
+    }
+  }
+
+  /**
    * Recall a message.
    * > Tips:
    * @returns {Promise<boolean>}
