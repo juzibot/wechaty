@@ -12,12 +12,12 @@ import {
   ChannelImpl,
 }                     from '../user-modules/mod.js'
 
-import type { Sayable } from './types.js'
+import type { Sayable, SayOptionsObject } from './types.js'
 
 /**
  * TODO: add unit test to ensure the interface validation code works
  */
-const deliverSayableConversationPuppet = (puppet: PUPPET.impls.PuppetInterface) => (conversationId: string) => async (sayable: Sayable) => {
+const deliverSayableConversationPuppet = (puppet: PUPPET.impls.PuppetInterface) => (conversationId: string) => async (sayable: Sayable, options?: SayOptionsObject) => {
   let msgId: string | void
 
   if (typeof sayable === 'number') {
@@ -28,6 +28,10 @@ const deliverSayableConversationPuppet = (puppet: PUPPET.impls.PuppetInterface) 
     return puppet.messageSendText(
       conversationId,
       sayable,
+      {
+        mentionIdList: options?.mentionList?.map(c => c.id),
+        quoteId: options?.quoteMessage?.id,
+      },
     )
   }
 

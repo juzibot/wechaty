@@ -561,6 +561,32 @@ class MessageMixin extends MixinBase implements SayableSayer {
   }
 
   /**
+   * Reply a message while quoting the original one
+   * @param text
+   * @param mentionIdList
+   */
+  async reply (
+    text: string,
+    mentionList?: ContactInterface[],
+  ): Promise<void | MessageInterface> {
+    log.verbose('Message', 'say(%s)', text)
+
+    const talker = this.talker()
+    const room = this.room()
+
+    if (room) {
+      return room.say(text, {
+        mentionList,
+        quoteMessage: this,
+      })
+    } else {
+      return talker.say(text, {
+        quoteMessage: this,
+      })
+    }
+  }
+
+  /**
    * Recall a message.
    * > Tips:
    * @returns {Promise<boolean>}
@@ -1098,6 +1124,19 @@ class MessageMixin extends MixinBase implements SayableSayer {
   async toSayable (): Promise<undefined | Sayable> {
     log.verbose('Message', 'toSayable()')
     return messageToSayable(this)
+  }
+
+  async getQuotedMessage (): Promise<undefined | MessageInterface> {
+    log.verbose('Message', 'getQuotedMessage()')
+    if (!this.payload) {
+      throw new Error('no payload')
+    }
+
+    if (!this.payload.quoteId) {
+      throw new Error('this message did not quote another message')
+    }
+
+    return this.wechaty.Message.find({ id: this.payload.quoteId })
   }
 
 }

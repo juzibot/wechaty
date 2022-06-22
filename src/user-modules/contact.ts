@@ -45,6 +45,7 @@ import {
 import type {
   SayableSayer,
   Sayable,
+  SayOptionsObject,
 }                                     from '../sayable/mod.js'
 import { stringifyFilter }            from '../helper-functions/stringify-filter.js'
 
@@ -332,10 +333,16 @@ class ContactMixin extends MixinBase implements SayableSayer {
    */
   async say (
     sayable: Sayable,
+    options?: SayOptionsObject,
   ): Promise<void | MessageInterface> {
     log.verbose('Contact', 'say(%s)', sayable)
 
-    const msgId = await deliverSayableConversationPuppet(this.wechaty.puppet)(this.id)(sayable)
+    if (options?.mentionList) {
+      log.warn('Contact', 'you cannot mention someone in private conversation!')
+      delete options.mentionList
+    }
+
+    const msgId = await deliverSayableConversationPuppet(this.wechaty.puppet)(this.id)(sayable, options)
 
     if (msgId) {
       const msg = await this.wechaty.Message.find({ id: msgId })
