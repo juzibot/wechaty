@@ -416,13 +416,24 @@ class ContactMixin extends MixinBase implements SayableSayer {
     try {
       await this.wechaty.puppet.contactAlias(this.id, newAlias)
       await this.wechaty.puppet.contactPayloadDirty(this.id)
-      this.payload = await this.wechaty.puppet.contactPayload(this.id)
-      if (newAlias && newAlias !== this.payload.alias) {
-        log.warn('Contact', 'alias(%s) sync with server fail: set(%s) is not equal to get(%s)',
-          newAlias,
-          newAlias,
-          this.payload.alias,
-        )
+
+      /**
+       * In normal puppet, the dirty event handler, onDirty, is a sync function, so the contactPayload will get the new payload
+       * However for wechaty-puppet-service, it uses flashstore to cache payloads, and deleting a cache is an async function
+       * So there is a chance contactPayload will still get old contact
+       */
+      let maxCheck = 10
+      let changed = false
+      while (maxCheck-- > 0 && !changed) {
+        await new Promise(resolve => {
+          setTimeout(resolve, 300)
+        })
+        this.payload = await this.wechaty.puppet.contactPayload(this.id)
+        const payloadAlias = this.payload.alias || ''
+        changed = newAlias === payloadAlias
+      }
+      if (!changed) {
+        throw new Error('failed to modify clias, still got old alias after 10 tries')
       }
     } catch (e) {
       this.wechaty.emitError(e)
