@@ -794,7 +794,7 @@ class ContactMixin extends MixinBase implements SayableSayer {
    */
   weixin (): undefined | string {
     log.warn('Contact', 'weixin() is deprecated, use `handle()` instead.')
-    console.error(new Error().stack)
+    // console.error(new Error().stack)
     return this.payload?.weixin
   }
 
