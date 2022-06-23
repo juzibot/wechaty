@@ -1,6 +1,6 @@
 {
   "name": "@juzi/wechaty",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Wechaty is a RPA SDK for Chatbot Makers.",
   "type": "module",
   "exports": {
@@ -109,8 +109,8 @@
   },
   "homepage": "https://github.com/wechaty/",
   "dependencies": {
-    "@juzi/wechaty-puppet": "1.0.2",
-    "@juzi/wechaty-puppet-service": "1.0.6",
+    "@juzi/wechaty-puppet": "1.0.4",
+    "@juzi/wechaty-puppet-service": "1.0.8",
     "clone-class": "^1.1.1",
     "cmd-ts": "^0.10.0",
     "cockatiel": "^2.0.2",
