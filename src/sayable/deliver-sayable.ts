@@ -29,7 +29,7 @@ const deliverSayableConversationPuppet = (puppet: PUPPET.impls.PuppetInterface) 
       conversationId,
       sayable,
       {
-        mentionIdList: options?.mentionList?.map(c => c.id),
+        mentionIdList: options?.mentionList?.map(c => c === '@all' ? '@all' : c.id),
         quoteId: options?.quoteMessage?.id,
       },
     )

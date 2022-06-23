@@ -158,6 +158,30 @@ test('room.say() smoke testing', async () => {
     ], 'Multiple mention should work with new way')
   })
 
+  test('say with @all', async t => {
+    callback.resetHistory()
+    await room.say('hey buddies, let\'s party', '@all', contact1)
+
+    t.same(callback.getCall(0).args, [
+      // { contactId: EXPECTED_CONTACT_1_ID, roomId: EXPECTED_ROOM_ID },
+      EXPECTED_ROOM_ID,
+      '@all @little1 hey buddies, let\'s party',
+      ['@all', EXPECTED_CONTACT_1_ID],
+    ], 'should be alble to call with say')
+  })
+
+  test('say template string array with @all', async t => {
+    callback.resetHistory()
+    await room.say`hey ${'@all'} let's party, especially ${contact1}`
+
+    t.same(callback.getCall(0).args, [
+      // { contactId: EXPECTED_CONTACT_1_ID, roomId: EXPECTED_ROOM_ID },
+      EXPECTED_ROOM_ID,
+      'hey @all let\'s party, especially @little1',
+      ['@all', EXPECTED_CONTACT_1_ID],
+    ], 'should be alble to call with template string array')
+  })
+
   await wechaty.stop()
 })
 

@@ -61,7 +61,7 @@ interface SayableSayer {
 }
 
 interface SayOptionsObject {
-  mentionList?: ContactInterface[],
+  mentionList?: (ContactInterface | '@all')[],
   quoteMessage?: MessageInterface,
 }
 
@@ -73,7 +73,7 @@ export const isSayOptionsObject = (target: any) => {
   )
 }
 
-type SayOptions = ContactInterface | ContactInterface[] | SayOptionsObject
+type SayOptions = (ContactInterface | '@all') | (ContactInterface | '@all')[] | SayOptionsObject
 
 export type {
   SayableSayer,
