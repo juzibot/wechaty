@@ -79,6 +79,15 @@ const MixinBase = wechatifyMixin(
   EventEmitter,
 )
 
+const ALLOW_PREVIEW_TYPES = [
+  PUPPET.types.Message.Image,
+  PUPPET.types.Message.MiniProgram,
+  PUPPET.types.Message.Video,
+  PUPPET.types.Message.Url,
+  PUPPET.types.Message.Channel,
+  PUPPET.types.Message.Post,
+]
+
 /**
  * All wechat messages will be encapsulated as a Message.
  *
@@ -1012,6 +1021,15 @@ class MessageMixin extends MixinBase implements SayableSayer {
       throw new Error(`not a image type message. type: ${this.type()}`)
     }
     return this.wechaty.Image.create(this.id)
+  }
+
+  async toPreview (): Promise<FileBoxInterface | undefined> {
+    log.verbose('Message', 'toPreview() for message id: %s', this.id)
+    if (!ALLOW_PREVIEW_TYPES.some(e => e === this.type())) {
+      throw new Error(`cannot get preview for this type. type: ${this.type}`)
+    }
+
+    return this.wechaty.puppet.messagePreview(this.id)
   }
 
   /**
