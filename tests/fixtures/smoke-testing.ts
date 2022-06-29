@@ -31,7 +31,7 @@ import assert from 'assert'
 
 function getBotList (): Wechaty[] {
   const botList = [
-    WechatyBuilder.build({ puppet: 'wechaty-puppet-mock' }),
+    WechatyBuilder.build({ puppet: '@juzi/wechaty-puppet-mock' }),
     // new Wechaty({ puppet: 'wechaty-puppet-wechat4u' }),
     // new Wechaty({ puppet: 'wechaty-puppet-puppeteer' }),
   ]

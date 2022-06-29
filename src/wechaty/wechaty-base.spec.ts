@@ -24,7 +24,7 @@ import {
 }              from 'tstest'
 
 import { MemoryCard } from 'memory-card'
-import { PuppetMock } from 'wechaty-puppet-mock'
+import { PuppetMock } from '@juzi/wechaty-puppet-mock'
 
 /**
  * Huan(202111): must import `./wechaty-impl.js`
@@ -59,7 +59,7 @@ test('static VERSION', async t => {
 })
 
 test('event:start/stop', async t => {
-  const wechaty = new WechatyBase({ puppet: 'wechaty-puppet-mock' })
+  const wechaty = new WechatyBase({ puppet: '@juzi/wechaty-puppet-mock' })
 
   const startSpy = sinon.spy()
   const stopSpy  = sinon.spy()

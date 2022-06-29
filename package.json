@@ -133,6 +133,7 @@
     "@chatie/eslint-config": "^1.0.4",
     "@chatie/semver": "^0.4.7",
     "@chatie/tsconfig": "^4.6.3",
+    "@juzi/wechaty-puppet-mock": "^1.0.1",
     "@swc/core": "^1.2.155",
     "@swc/helpers": "^0.3.6",
     "@types/cross-spawn": "^6.0.2",
@@ -152,8 +153,7 @@
     "regenerator-runtime": "^0.13.9",
     "sloc": "^0.2.1",
     "typed-emitter": "^1.5.0-from-event",
-    "typedoc": "^1.0.0-dev.4 ",
-    "@juzi/wechaty-puppet-mock": "^1.0.1"
+    "typedoc": "^1.0.0-dev.4 "
   },
   "files": [
     "bin/",

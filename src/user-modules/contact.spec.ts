@@ -22,7 +22,7 @@ import {
   test,
 }           from 'tstest'
 
-import { PuppetMock } from 'wechaty-puppet-mock'
+import { PuppetMock } from '@juzi/wechaty-puppet-mock'
 import { WechatyBuilder } from '../wechaty-builder.js'
 
 import {
