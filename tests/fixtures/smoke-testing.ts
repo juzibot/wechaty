@@ -24,8 +24,8 @@ import {
   VERSION,
 }                   from '@juzi/wechaty'
 
-import * as USERS from 'wechaty/users'
-import * as IMPLS from 'wechaty/impls'
+import * as USERS from '@juzi/wechaty/users'
+import * as IMPLS from '@juzi/wechaty/impls'
 
 import assert from 'assert'
 
@@ -39,14 +39,7 @@ function getBotList (): Wechaty[] {
   if (process.env.WECHATY_PUPPET_SERVICE_TOKEN) {
     botList.push(
       WechatyBuilder.build({
-        puppet: 'wechaty-puppet-service',
-      })
-    )
-  }
-  if (process.env.WECHATY_PUPPET_PADLOCAL_TOKEN) {
-    botList.push(
-      WechatyBuilder.build({
-        puppet: 'wechaty-puppet-padlocal',
+        puppet: '@juzi/wechaty-puppet-service',
       })
     )
   }
