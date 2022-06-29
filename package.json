@@ -109,8 +109,8 @@
   },
   "homepage": "https://github.com/wechaty/",
   "dependencies": {
-    "@juzi/wechaty-puppet": "1.0.4",
-    "@juzi/wechaty-puppet-service": "1.0.8",
+    "@juzi/wechaty-puppet": "1.0.6",
+    "@juzi/wechaty-puppet-service": "1.0.9",
     "clone-class": "^1.1.1",
     "cmd-ts": "^0.10.0",
     "cockatiel": "^2.0.2",
@@ -126,7 +126,6 @@
     "rx-queue": "^1.0.5",
     "state-switch": "^1.6.3",
     "uuid": "^8.3.2",
-    "wechaty-puppet-wechat4u": "^1.11.1",
     "wechaty-token": "^1.1.1",
     "ws": "^8.5.0"
   },
@@ -154,8 +153,7 @@
     "sloc": "^0.2.1",
     "typed-emitter": "^1.5.0-from-event",
     "typedoc": "^1.0.0-dev.4 ",
-    "wechaty-puppet-mock": "^1.18.2",
-    "wechaty-puppet-padlocal": "^1.11.13"
+    "@juzi/wechaty-puppet-mock": "^1.0.1"
   },
   "files": [
     "bin/",

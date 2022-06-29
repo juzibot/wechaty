@@ -1,6 +1,6 @@
 #!/usr/bin/env -S node --no-warnings --loader ts-node/esm
 import { test } from 'tstest'
-import PuppetMock from 'wechaty-puppet-mock'
+import PuppetMock from '@juzi/wechaty-puppet-mock'
 
 import { WechatyEventEmitter } from '../schemas/wechaty-events.js'
 
