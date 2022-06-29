@@ -70,7 +70,7 @@ test('PluginMixin smoke testing', async t => {
     return () => wechaty.counter--
   }
 
-  const pluginMixinTest = new PluginMixinTest({ puppet: 'wechaty-puppet-mock' })
+  const pluginMixinTest = new PluginMixinTest({ puppet: '@juzi/wechaty-puppet-mock' })
   let future
 
   const unuse = pluginMixinTest.use(Plugin)

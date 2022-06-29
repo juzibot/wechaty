@@ -21,7 +21,7 @@
 
 import { test }  from 'tstest'
 
-import { PuppetMock } from 'wechaty-puppet-mock'
+import { PuppetMock } from '@juzi/wechaty-puppet-mock'
 
 import { WechatyBuilder } from './wechaty-builder.js'
 
@@ -34,7 +34,7 @@ test('WechatyBuilder class', async t => {
   const singleton2 = WechatyBuilder.singleton()
   t.equal(singleton1, singleton2, 'should get the same singleton instance')
 
-  const wechaty = WechatyBuilder.build({ puppet: 'wechaty-puppet-mock' })
+  const wechaty = WechatyBuilder.build({ puppet: '@juzi/wechaty-puppet-mock' })
   await wechaty.start()
   t.ok(PuppetMock.validInstance(wechaty.puppet), 'should set options.puppet to mock')
   await wechaty.stop()
@@ -72,7 +72,7 @@ test('WechatyBuilder class static', async t => {
   const singleton2 = WechatyBuilder.singleton()
   t.equal(singleton1, singleton2, 'should get the same singleton instance')
 
-  const wechaty = WechatyBuilder.build({ puppet: 'wechaty-puppet-mock' })
+  const wechaty = WechatyBuilder.build({ puppet: '@juzi/wechaty-puppet-mock' })
   await wechaty.start()
   t.ok(PuppetMock.validInstance(wechaty.puppet), 'should set options.puppet to mock')
   await wechaty.stop()

@@ -23,7 +23,7 @@ import {
   sinon,
 }           from 'tstest'
 
-import { PuppetMock } from 'wechaty-puppet-mock'
+import { PuppetMock } from '@juzi/wechaty-puppet-mock'
 
 import type { Wechaty } from './mods/mod.js'
 import { WechatyBuilder } from './wechaty-builder.js'

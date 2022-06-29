@@ -36,8 +36,8 @@ export {
   type Sayable,
 }                       from '../sayable/mod.js'
 
-export * as types       from 'wechaty-puppet/types'
-export * as payloads    from 'wechaty-puppet/payloads'
+export * as types       from '@juzi/wechaty-puppet/types'
+export * as payloads    from '@juzi/wechaty-puppet/payloads'
 
 export *                from './users.js'
 export * as users       from './users.js'
@@ -45,7 +45,7 @@ export * as impls       from './impls.js'
 export * as helpers     from './helpers.js'
 export {
   ScanStatus,
-}                       from 'wechaty-puppet/types'
+}                       from '@juzi/wechaty-puppet/types'
 
 export {
   log,

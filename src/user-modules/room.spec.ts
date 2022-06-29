@@ -24,7 +24,7 @@ import {
 }             from 'tstest'
 
 import type * as PUPPET from '@juzi/wechaty-puppet'
-import { PuppetMock }   from 'wechaty-puppet-mock'
+import { PuppetMock }   from '@juzi/wechaty-puppet-mock'
 
 import { WechatyBuilder } from '../wechaty-builder.js'
 import type {
@@ -45,6 +45,7 @@ test('findAll()', async t => {
   await wechaty.start()
 
   sandbox.stub(puppet, 'roomSearch').resolves(EXPECTED_ROOM_ID_LIST)
+  sandbox.stub(puppet, 'roomMemberList').resolves([])
   sandbox.stub(puppet, 'roomPayload').callsFake(async () => {
     await new Promise(resolve => setImmediate(resolve))
     return {
@@ -64,7 +65,7 @@ test('room.say() smoke testing', async () => {
   const sandbox = sinon.createSandbox()
   const callback = sinon.spy()
 
-  const puppet = new PuppetMock() as any
+  const puppet = new PuppetMock()
   const wechaty = WechatyBuilder.build({ puppet })
 
   const bot = puppet.mocker.createContact()
@@ -103,6 +104,7 @@ test('room.say() smoke testing', async () => {
   })
   // sandbox.spy(puppet, 'messageSendText')
   sandbox.stub(puppet, 'messageSendText').callsFake(callback)
+  sandbox.stub(puppet, 'roomMemberList').resolves([])
 
   const fakeIdSearcher = async (...args: any[]) => {
     await new Promise(setImmediate)

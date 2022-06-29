@@ -27,9 +27,9 @@ npm install --production ./*-*.*.*.tgz \
   typescript@latest \
   pkg-jq \
   file-box@"$NPM_TAG" \
-  wechaty-puppet-mock@"$NPM_TAG" \
+  @juzi/wechaty-puppet-mock@"$NPM_TAG" \
   wechaty-puppet-padlocal@"$NPM_TAG" \
-  wechaty-puppet-service@"$NPM_TAG" \
+  @juzi/wechaty-puppet-service@"$NPM_TAG" \
 
 #
 # CommonJS

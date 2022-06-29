@@ -25,7 +25,7 @@ import {
 }             from 'tstest'
 
 import * as PUPPET        from '@juzi/wechaty-puppet'
-import { PuppetMock }     from 'wechaty-puppet-mock'
+import { PuppetMock }     from '@juzi/wechaty-puppet-mock'
 import { WechatyBuilder } from '../wechaty-builder.js'
 import type {
   MessageImpl,
