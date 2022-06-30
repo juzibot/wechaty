@@ -75,6 +75,10 @@ test('room.say() smoke testing', async () => {
 
   const EXPECTED_ROOM_ID         = 'roomId'
   const EXPECTED_ROOM_TOPIC      = 'test-topic'
+  const EXPECTED_ROOM_ADDITIONAL_INFO = {
+    subjectA: 'A',
+    subjectB: 'B',
+  }
   const EXPECTED_CONTACT_1_ID    = 'contact1'
   const EXPECTED_CONTACT_1_ALIAS = 'little1'
   const EXPECTED_CONTACT_2_ID    = 'contact2'
@@ -94,6 +98,7 @@ test('room.say() smoke testing', async () => {
     await new Promise(resolve => setImmediate(resolve))
     return {
       topic: EXPECTED_ROOM_TOPIC,
+      additionalInfo: JSON.stringify(EXPECTED_ROOM_ADDITIONAL_INFO),
     } as PUPPET.payloads.Room
   })
   sandbox.stub(puppet, 'contactPayload').callsFake(async (contactId) => {
@@ -123,6 +128,13 @@ test('room.say() smoke testing', async () => {
   // await contact1.sync()
   // await contact2.sync()
   // await room.sync()
+
+  test('room additional info', async t => {
+    callback.resetHistory()
+    const additionalInfo = room.additionalInfo()
+
+    t.same(additionalInfo, EXPECTED_ROOM_ADDITIONAL_INFO, 'additional info should be matched')
+  })
 
   test('say with Tagged Template', async t => {
     callback.resetHistory()

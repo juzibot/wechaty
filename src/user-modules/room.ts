@@ -1156,6 +1156,18 @@ class RoomMixin extends MixinBase implements SayableSayer {
     return this.wechaty.puppet.roomAvatar(this.id)
   }
 
+  additionalInfo (): undefined | any {
+    let additionalInfoObj = {}
+    if (this.payload?.additionalInfo) {
+      try {
+        additionalInfoObj = JSON.parse(this.payload.additionalInfo)
+      } catch (e) {
+        log.warn('Room', 'additionalInfo() parse failed, additionalInfo: %s', this.payload.additionalInfo)
+      }
+    }
+    return additionalInfoObj
+  }
+
 }
 
 class RoomImpl extends validationMixin(RoomMixin)<RoomImplInterface>() {}

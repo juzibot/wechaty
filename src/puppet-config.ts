@@ -86,7 +86,7 @@ const isPuppetModuleName = (name: string): name is OfficialPuppetNpmName => name
  *  - Huan(202009): use puppet service as default
  *  - Huan(202201): use puppet-wechat4u as default
  */
-const OFFICIAL_PUPPET_DEFAULT: OfficialPuppetNpmName = 'wechaty-puppet-wechat4u'
+const OFFICIAL_PUPPET_DEFAULT: OfficialPuppetNpmName = '@juzi/wechaty-puppet-mock'
 
 // i.e. @juzibot/wechaty-puppet-donut
 type PuppetNpmScope = `@${string}/` | ''
