@@ -1151,7 +1151,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
     }
 
     if (!this.payload.quoteId) {
-      throw new Error('this message did not quote another message')
+      return
     }
 
     return this.wechaty.Message.find({ id: this.payload.quoteId })
