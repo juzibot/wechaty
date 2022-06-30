@@ -1162,7 +1162,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
       try {
         additionalInfoObj = JSON.parse(this.payload.additionalInfo)
       } catch (e) {
-        log.warn('Contact', 'additionalInfo() parse failed, additionalInfo: %s', this.payload.additionalInfo)
+        log.warn('Room', 'additionalInfo() parse failed, additionalInfo: %s', this.payload.additionalInfo)
       }
     }
     return additionalInfoObj
