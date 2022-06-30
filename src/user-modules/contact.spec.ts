@@ -32,11 +32,15 @@ import {
 
 test('findAll()', async t => {
   const EXPECTED_NAME = 'TestingBot'
+  const EXPECTED_ADDITIONAL_INFO = {
+    subjectA: 'A',
+    subjectB: 'B',
+  }
 
   const puppet = new PuppetMock() as any
   const wechaty = WechatyBuilder.build({ puppet })
 
-  const mockContact = puppet.mocker.createContact({ name: EXPECTED_NAME })
+  const mockContact = puppet.mocker.createContact({ name: EXPECTED_NAME, additionalInfo: JSON.stringify(EXPECTED_ADDITIONAL_INFO) })
 
   await wechaty.start()
   await puppet.mocker.login(mockContact)
@@ -45,6 +49,8 @@ test('findAll()', async t => {
   t.equal(contactList.length, 1, 'should find 1 contact')
   t.equal(contactList[0]!.name(), EXPECTED_NAME, 'should get name from payload')
   t.same(contactList[0]!.payload, mockContact.payload, 'should get payload from mockContact')
+  const additionalInfo = contactList[0]!.additionalInfo()
+  t.same(additionalInfo, EXPECTED_ADDITIONAL_INFO, 'additional info should be matched')
 
   await wechaty.stop()
 })
