@@ -69,6 +69,8 @@ const MixinBase = wechatifyMixin(
   )<RoomImplInterface>(),
 )
 
+const ROOM_MEMBER_DIRTY_THROTTLE = 30 * 60 * 1000
+
 /**
  * All WeChat rooms(groups) will be encapsulated as a Room.
  *
@@ -305,6 +307,11 @@ class RoomMixin extends MixinBase implements SayableSayer {
   }
 
   /**
+   * record the last time of roomMemberDirty to prevent abundant dirty calls
+   */
+
+  private lastMemberDirtyTimestamp?: number
+  /**
    * Warning: `ready()` is for the framework internally use ONLY!
    *
    * Please not to use `ready()` at the user land.
@@ -328,9 +335,15 @@ class RoomMixin extends MixinBase implements SayableSayer {
      */
     const memberIdList = await this.wechaty.puppet.roomMemberList(this.id)
 
+    const roomMemberJustSynced = !this.lastMemberDirtyTimestamp || Date.now() - this.lastMemberDirtyTimestamp > ROOM_MEMBER_DIRTY_THROTTLE
+    if (!roomMemberJustSynced) {
+      this.lastMemberDirtyTimestamp = Date.now()
+    }
     const doReady = async (id: string): Promise<void> => {
       try {
-        // await this.wechaty.puppet.roomMemberPayloadDirty(id)
+        if (roomMemberJustSynced) {
+          await this.wechaty.puppet.roomMemberPayloadDirty(id)
+        }
         await this.wechaty.Contact.find({ id })
       } catch (e) {
         this.wechaty.emitError(e)
