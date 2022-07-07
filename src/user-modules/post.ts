@@ -184,7 +184,7 @@ class PostMixin extends wechatifyMixinBase() {
     /**
      * we need to use concurrencyExecuter to reduce the parallel number of the requests
      */
-    const CONCURRENCY = 17
+    const CONCURRENCY = 10
     const postIterator = concurrencyExecuter(CONCURRENCY)(idToPost)(postIdList)
 
     const postList: PostInterface[] = []

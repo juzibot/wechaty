@@ -158,7 +158,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
       /**
        * we need to use concurrencyExecuter to reduce the parallel number of the requests
        */
-      const CONCURRENCY = 17
+      const CONCURRENCY = 10
       const roomIterator = concurrencyExecuter(CONCURRENCY)(idToRoom)(roomIdList)
 
       const roomList: RoomInterface[] = []
@@ -353,7 +353,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
     /**
      * we need to use concurrencyExecuter to reduce the parallel number of the requests
      */
-    const CONCURRENCY = 17
+    const CONCURRENCY = 10
     const contactIterator = concurrencyExecuter(CONCURRENCY)(doReady)(memberIdList)
 
     for await (const contact of contactIterator) {
