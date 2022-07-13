@@ -387,7 +387,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                 // issue #254
                 if (payload.removeeIdList.includes(puppet.currentUserId)) {
                   await puppet.roomPayloadDirty(payload.roomId)
-                  // await puppet.roomMemberPayloadDirty(payload.roomId)
+                  await puppet.roomMemberPayloadDirty(payload.roomId)
                 }
               } catch (e) {
                 this.emit('error', GError.from(e))
@@ -436,7 +436,6 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
             puppet.on('dirty', async ({ payloadType, payloadId }) => {
               try {
                 switch (payloadType) {
-                  case PUPPET.types.Payload.RoomMember:
                   case PUPPET.types.Payload.Contact: {
                     const contact = await this.Contact.find({ id: payloadId }) as unknown as undefined | ContactImpl
                     await contact?.ready(true)
@@ -445,6 +444,11 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                   case PUPPET.types.Payload.Room: {
                     const room = await this.Room.find({ id: payloadId })  as unknown as undefined | RoomImpl
                     await room?.ready(true)
+                    break
+                  }
+                  case PUPPET.types.Payload.RoomMember: {
+                    const room = await this.Room.find({ id: payloadId }) as unknown as undefined | RoomImpl
+                    await room?.ready()
                     break
                   }
 
