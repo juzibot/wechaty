@@ -181,7 +181,7 @@ class ContactMixin extends MixinBase implements SayableSayer {
       /**
        * we need to use concurrencyExecuter to reduce the parallel number of the requests
        */
-      const CONCURRENCY = 10
+      const CONCURRENCY = 17
       const contactIterator = concurrencyExecuter(CONCURRENCY)(idToContact)(contactIdList)
 
       const contactList: ContactInterface[] = []
