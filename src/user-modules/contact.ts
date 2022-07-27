@@ -218,15 +218,17 @@ class ContactMixin extends MixinBase implements SayableSayer {
   static async tags (): Promise<TagInterface[]> {
     log.verbose('Contact', 'static tags() for %s', this)
 
-    try {
-      const tagIdList = await this.wechaty.puppet.tagContactList()
-      const tagList = tagIdList.map(id => this.wechaty.Tag.load(id))
-      return tagList
-    } catch (e) {
-      this.wechaty.emitError(e)
-      log.error('Contact', 'static tags() exception: %s', (e as Error).message)
-      return []
-    }
+    // TODO implement new tag methods
+    // try {
+    //   const tagIdList = await this.wechaty.puppet.tagContactList()
+    //   const tagList = tagIdList.map(id => this.wechaty.Tag.load(id))
+    //   return tagList
+    // } catch (e) {
+    //   this.wechaty.emitError(e)
+    //   log.error('Contact', 'static tags() exception: %s', (e as Error).message)
+    //   return []
+    // }
+    return []
   }
 
   /**
@@ -672,15 +674,17 @@ class ContactMixin extends MixinBase implements SayableSayer {
   async tags (): Promise<TagInterface[]> {
     log.verbose('Contact', 'tags() for %s', this)
 
-    try {
-      const tagIdList = await this.wechaty.puppet.tagContactList(this.id)
-      const tagList = tagIdList.map(id => this.wechaty.Tag.load(id))
-      return tagList
-    } catch (e) {
-      this.wechaty.emitError(e)
-      log.error('Contact', 'tags() exception: %s', (e as Error).message)
-      return []
-    }
+    // TODO: implement new tag methods
+    // try {
+    //   const tagIdList = await this.wechaty.puppet.tagContactList(this.id)
+    //   const tagList = tagIdList.map(id => this.wechaty.Tag.load(id))
+    //   return tagList
+    // } catch (e) {
+    //   this.wechaty.emitError(e)
+    //   log.error('Contact', 'tags() exception: %s', (e as Error).message)
+    //   return []
+    // }
+    return []
   }
 
   /**
