@@ -67,6 +67,19 @@ class TagMixin extends wechatifyMixinBase() {
     return this.payload.name
   }
 
+  static async list (): Promise<TagInterface[]> {
+    log.verbose('Tag', 'list()')
+
+    try {
+      const payloads = await this.wechaty.puppet.tagTagList()
+      return payloads.map(payload => new this(payload))
+    } catch (e) {
+      this.wechaty.emitError(e)
+      log.error('Tag', 'list() exception: %s', (e as Error).message)
+      return []
+    }
+  }
+
   async contactList (): Promise<ContactInterface[]> {
     log.verbose('Tag', 'contactList() for tag id: %s', this.id())
 

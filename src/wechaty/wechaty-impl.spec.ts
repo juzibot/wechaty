@@ -17,6 +17,7 @@ import type {
   RoomConstructor,
   DelayConstructor,
   TagConstructor,
+  TagGroupConstructor,
   UrlLinkConstructor,
   MessageInterface,
   ChannelConstructor,
@@ -45,6 +46,7 @@ test('Wechaty interface', async t => {
     Room           : RoomConstructor
     RoomInvitation : RoomInvitationConstructor
     Tag            : TagConstructor
+    TagGroup       : TagGroupConstructor
     UrlLink        : UrlLinkConstructor
     Channel        : ChannelConstructor
 
@@ -63,6 +65,7 @@ test('Wechaty interface', async t => {
         = this.Room
         = this.RoomInvitation
         = this.Tag
+        = this.TagGroup
         = this.UrlLink
         = this.Channel
         = {} as any
