@@ -218,17 +218,15 @@ class ContactMixin extends MixinBase implements SayableSayer {
   static async tags (): Promise<TagInterface[]> {
     log.verbose('Contact', 'static tags() for %s', this)
 
-    // TODO implement new tag methods
-    // try {
-    //   const tagIdList = await this.wechaty.puppet.tagContactList()
-    //   const tagList = tagIdList.map(id => this.wechaty.Tag.load(id))
-    //   return tagList
-    // } catch (e) {
-    //   this.wechaty.emitError(e)
-    //   log.error('Contact', 'static tags() exception: %s', (e as Error).message)
-    //   return []
-    // }
-    return []
+    try {
+      const tagIdList = await this.wechaty.puppet.tagTagList()
+      const tagList = tagIdList.map(id => this.wechaty.Tag.create(id))
+      return tagList
+    } catch (e) {
+      this.wechaty.emitError(e)
+      log.error('Contact', 'static tags() exception: %s', (e as Error).message)
+      return []
+    }
   }
 
   /**
@@ -674,17 +672,37 @@ class ContactMixin extends MixinBase implements SayableSayer {
   async tags (): Promise<TagInterface[]> {
     log.verbose('Contact', 'tags() for %s', this)
 
-    // TODO: implement new tag methods
-    // try {
-    //   const tagIdList = await this.wechaty.puppet.tagContactList(this.id)
-    //   const tagList = tagIdList.map(id => this.wechaty.Tag.load(id))
-    //   return tagList
-    // } catch (e) {
-    //   this.wechaty.emitError(e)
-    //   log.error('Contact', 'tags() exception: %s', (e as Error).message)
-    //   return []
-    // }
-    return []
+    try {
+      const tagPayloadList = await this.wechaty.puppet.tagContactTagList(this.id)
+      const tagList = tagPayloadList.map(tag => this.wechaty.Tag.create(tag))
+      return tagList
+    } catch (e) {
+      this.wechaty.emitError(e)
+      log.error('Contact', 'tags() exception: %s', (e as Error).message)
+      return []
+    }
+  }
+
+  /**
+   * Add a Tag
+   */
+
+  async tag (tag: TagInterface): Promise<void> {
+    log.verbose('Contact', 'tag(%s) for %s', tag, this)
+
+    await this.wechaty.puppet.tagContactTagAdd(tag.groupId(), tag.id(), this.id)
+
+  }
+
+  /**
+   * Remove a Tag
+   */
+
+  async tagRemove (tag: TagInterface): Promise<void> {
+    log.verbose('Contact', 'tagRemove(%s) for %s', tag, this)
+
+    await this.wechaty.puppet.tagContactTagRemove(tag.groupId(), tag.id(), this.id)
+
   }
 
   /**
