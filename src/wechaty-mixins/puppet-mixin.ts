@@ -25,6 +25,8 @@ import type {
 
 import type { GErrorMixin } from './gerror-mixin.js'
 import type { IoMixin }     from './io-mixin.js'
+import type { InfoUpdateInterface } from '../schemas/update.js'
+import { diffPayload } from '../pure-functions/update.js'
 
 const PUPPET_MEMORY_NAME = 'puppet'
 
@@ -438,12 +440,34 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                 switch (payloadType) {
                   case PUPPET.types.Payload.Contact: {
                     const contact = await this.Contact.find({ id: payloadId }) as unknown as undefined | ContactImpl
+                    const oldPayload = JSON.parse(JSON.stringify(contact?.payload || {}))
                     await contact?.ready(true)
+                    const newPayload = JSON.parse(JSON.stringify(contact?.payload || {}))
+                    const updateEvent: InfoUpdateInterface = {
+                      type: payloadType,
+                      id: payloadId,
+                      updates: diffPayload(oldPayload, newPayload),
+                    }
+                    if (updateEvent.updates.length > 0) {
+                      this.emit('update', updateEvent)
+                      contact?.emit('update', updateEvent)
+                    }
                     break
                   }
                   case PUPPET.types.Payload.Room: {
                     const room = await this.Room.find({ id: payloadId })  as unknown as undefined | RoomImpl
+                    const oldPayload = JSON.parse(JSON.stringify(room?.payload || {}))
                     await room?.ready(true)
+                    const newPayload = JSON.parse(JSON.stringify(room?.payload || {}))
+                    const updateEvent: InfoUpdateInterface = {
+                      type: payloadType,
+                      id: payloadId,
+                      updates: diffPayload(oldPayload, newPayload),
+                    }
+                    if (updateEvent.updates.length > 0) {
+                      this.emit('update', updateEvent)
+                      room?.emit('update', updateEvent)
+                    }
                     break
                   }
                   case PUPPET.types.Payload.RoomMember: {
