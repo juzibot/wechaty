@@ -438,7 +438,9 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                 switch (payloadType) {
                   case PUPPET.types.Payload.Contact: {
                     const contact = await this.Contact.find({ id: payloadId }) as unknown as undefined | ContactImpl
+                    const oldPayload = JSON.parse(JSON.stringify(contact?.payload || {}))
                     await contact?.ready(true)
+                    const newPayload = JSON.parse(JSON.stringify(contact?.payload || {}))
                     break
                   }
                   case PUPPET.types.Payload.Room: {
