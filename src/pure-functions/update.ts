@@ -1,13 +1,5 @@
 import type { InfoUpdateValuePair } from '../schemas/update'
 
-const baseDataTypes = [
-  'undefined',
-  'null',
-  'number',
-  'boolean',
-  'string',
-]
-
 /**
  *
  * No need to go recursive on payload diff becasue
@@ -24,11 +16,11 @@ export const diffPayload = (objectOld: any, objectNew: any): InfoUpdateValuePair
     if (typeof subObjectOld !== typeof subObjectNew) {
       result.push({
         key,
-        oldValue: baseDataTypes.some(e => e === typeof subObjectOld) ? subObjectOld : JSON.stringify(subObjectOld),
-        newValue: baseDataTypes.some(e => e === typeof subObjectNew) ? subObjectNew : JSON.stringify(subObjectNew),
+        oldValue: typeof subObjectOld !== 'object' ? subObjectOld : JSON.stringify(subObjectOld),
+        newValue: typeof subObjectNew !== 'object' ? subObjectNew : JSON.stringify(subObjectNew),
       })
     } else {
-      if (baseDataTypes.some(e => e === typeof subObjectOld)) {
+      if (typeof subObjectOld !== 'object') {
         if (subObjectOld === subObjectNew) {
           continue
         } else {
