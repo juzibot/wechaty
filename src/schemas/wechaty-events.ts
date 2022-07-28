@@ -13,6 +13,7 @@ import type {
   MessageInterface,
   PostInterface,
 }                       from '../user-modules/mod.js'
+import type { InfoUpdateInterface } from './update.js'
 
 const WECHATY_EVENT_DICT = {
   ...PUPPET.types.CHAT_EVENT_DICT,
@@ -23,6 +24,7 @@ const WECHATY_EVENT_DICT = {
   ready     : 'All underlined data source are ready for use.',
   start     : 'Will be emitted after the Wechaty had been started.',
   stop      : 'Will be emitted after the Wechaty had been stopped.',
+  update    : 'Will be emitted when some info has been changed.',
 } as const
 
 type WechatyEventName  = keyof typeof WECHATY_EVENT_DICT
@@ -46,7 +48,7 @@ type WechatyEventListenerRoomLeave  = (room: RoomInterface, leaverList: ContactI
 type WechatyEventListenerRoomTopic  = (room: RoomInterface, newTopic: string, oldTopic: string, changer: ContactInterface, date?: Date) => void | Promise<void>
 type WechatyEventListenerScan       = (qrcode: string, status: PUPPET.types.ScanStatus, data?: string)                                   => void | Promise<void>
 type WechatyEventListenerStartStop  = ()                                                                                                => void | Promise<void>
-
+type WechatyEventListenerUpdate     = (info: InfoUpdateInterface) => void | Promise<void>
 /**
  * @desc       Wechaty Class Event Type
  * @typedef    WechatyEventName
@@ -219,6 +221,7 @@ interface WechatyEventListeners {
   scan          : WechatyEventListenerScan
   start         : WechatyEventListenerStartStop
   stop          : WechatyEventListenerStartStop
+  update        : WechatyEventListenerUpdate
 }
 
 const WechatyEventEmitter = EventEmitter as any as new () => TypedEventEmitter<
@@ -245,6 +248,7 @@ export type {
   WechatyEventListenerRoomTopic,
   WechatyEventListenerScan,
   WechatyEventListenerStartStop,
+  WechatyEventListenerUpdate,
 }
 export {
   WechatyEventEmitter,
