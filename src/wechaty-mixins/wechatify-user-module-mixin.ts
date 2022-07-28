@@ -13,6 +13,7 @@ import {
   RoomImpl,
   RoomInvitationImpl,
   TagImpl,
+  TagGroupImpl,
   UrlLinkImpl,
   ChannelImpl,
 
@@ -28,6 +29,7 @@ import {
   RoomConstructor,
   RoomInvitationConstructor,
   TagConstructor,
+  TagGroupConstructor,
   UrlLinkConstructor,
   ChannelConstructor,
 
@@ -60,6 +62,7 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
     __wechatifiedRoom?           : RoomConstructor
     __wechatifiedRoomInvitation? : RoomInvitationConstructor
     __wechatifiedTag?            : TagConstructor
+    __wechatifiedTagGroup?       : TagGroupConstructor
     __wechatifiedUrlLink?        : UrlLinkConstructor
     __wechatifiedChannel?        : ChannelConstructor
 
@@ -75,6 +78,7 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
     get Room ()           : RoomConstructor           { return guardWechatify(this.__wechatifiedRoom)           }
     get RoomInvitation () : RoomInvitationConstructor { return guardWechatify(this.__wechatifiedRoomInvitation) }
     get Tag ()            : TagConstructor            { return guardWechatify(this.__wechatifiedTag)            }
+    get TagGroup ()       : TagGroupConstructor       { return guardWechatify(this.__wechatifiedTagGroup)       }
     get UrlLink ()        : UrlLinkConstructor        { return guardWechatify(this.__wechatifiedUrlLink)        }
     get Channel ()        : ChannelConstructor        { return guardWechatify(this.__wechatifiedChannel)        }
 
@@ -110,6 +114,7 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
       this.__wechatifiedRoom           = wechatifyUserModule(RoomImpl)(this as any)
       this.__wechatifiedRoomInvitation = wechatifyUserModule(RoomInvitationImpl)(this as any)
       this.__wechatifiedTag            = wechatifyUserModule(TagImpl)(this as any)
+      this.__wechatifiedTagGroup       = wechatifyUserModule(TagGroupImpl)(this as any)
       this.__wechatifiedUrlLink        = wechatifyUserModule(UrlLinkImpl)(this as any)
       this.__wechatifiedChannel        = wechatifyUserModule(ChannelImpl)(this as any)
 
@@ -145,6 +150,7 @@ type ProtectedPropertyWechatifyUserModuleMixin =
   | '__wechatifiedRoom'
   | '__wechatifiedRoomInvitation'
   | '__wechatifiedTag'
+  | '__wechatifiedTagGroup'
   | '__wechatifiedUrlLink'
   | '__wechatifiedChannel'
 
