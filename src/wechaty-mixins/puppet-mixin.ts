@@ -25,6 +25,7 @@ import type {
 
 import type { GErrorMixin } from './gerror-mixin.js'
 import type { IoMixin }     from './io-mixin.js'
+import { diffPayload, InfoUpdateInterface } from '../schemas/update.js'
 
 const PUPPET_MEMORY_NAME = 'puppet'
 
@@ -441,11 +442,33 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                     const oldPayload = JSON.parse(JSON.stringify(contact?.payload || {}))
                     await contact?.ready(true)
                     const newPayload = JSON.parse(JSON.stringify(contact?.payload || {}))
+                    const difference = diffPayload(oldPayload, newPayload)
+                    const updateEvent: InfoUpdateInterface = {
+                      type: payloadType,
+                      id: payloadId,
+                      fresh: difference.fresh,
+                      updates: difference.updates,
+                    }
+                    if (updateEvent.fresh || updateEvent.updates.length > 0) {
+                      this.emit('update', updateEvent)
+                    }
                     break
                   }
                   case PUPPET.types.Payload.Room: {
                     const room = await this.Room.find({ id: payloadId })  as unknown as undefined | RoomImpl
+                    const oldPayload = JSON.parse(JSON.stringify(room?.payload || {}))
                     await room?.ready(true)
+                    const newPayload = JSON.parse(JSON.stringify(room?.payload || {}))
+                    const difference = diffPayload(oldPayload, newPayload)
+                    const updateEvent: InfoUpdateInterface = {
+                      type: payloadType,
+                      id: payloadId,
+                      fresh: difference.fresh,
+                      updates: difference.updates,
+                    }
+                    if (updateEvent.fresh || updateEvent.updates.length > 0) {
+                      this.emit('update', updateEvent)
+                    }
                     break
                   }
                   case PUPPET.types.Payload.RoomMember: {
