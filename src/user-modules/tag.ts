@@ -67,17 +67,39 @@ class TagMixin extends wechatifyMixinBase() {
     return this.payload.name
   }
 
-  static async list (): Promise<TagInterface[]> {
-    log.verbose('Tag', 'list()')
+  private static pool: TagInterface[] = []
+
+  static async list (forceSync = false): Promise<TagInterface[]> {
+    log.verbose('Tag', 'list(%s)', forceSync)
+
+    if (this.pool.length > 0 && !forceSync) {
+      return this.pool
+    }
 
     try {
       const payloads = await this.wechaty.puppet.tagTagList()
-      return payloads.map(payload => new this(payload))
+      this.pool = payloads.map(payload => new this(payload))
+      return this.pool
     } catch (e) {
       this.wechaty.emitError(e)
       log.error('Tag', 'list() exception: %s', (e as Error).message)
       return []
     }
+  }
+
+  static async sync (): Promise<void> {
+    log.verbose('Tag', 'sync()')
+
+    await this.list(true)
+  }
+
+  static load (tagGroupId: string | undefined, tagId: string): TagInterface | undefined {
+    for (const item of this.pool) {
+      if (item.id() === tagId && (item.groupId() === tagGroupId || (!item.groupId() && !tagGroupId))) {
+        return item
+      }
+    }
+    return undefined
   }
 
   async contactList (): Promise<ContactInterface[]> {
@@ -101,7 +123,9 @@ class TagMixin extends wechatifyMixinBase() {
     try {
       const payload = await this.wechaty.puppet.tagTagAdd(tagGroupId, name)
       if (payload) {
-        return new this(payload)
+        const newTag = new this(payload)
+        this.pool.push(newTag)
+        return newTag
       }
     } catch (e) {
       this.wechaty.emitError(e)
@@ -114,6 +138,7 @@ class TagMixin extends wechatifyMixinBase() {
 
     try {
       await this.wechaty.puppet.tagTagDelete(tag.groupId(), tag.id())
+      this.pool.splice(this.pool.indexOf(tag))
     } catch (e) {
       this.wechaty.emitError(e)
       log.error('Contact', 'deleteTag() exception: %s', (e as Error).message)
