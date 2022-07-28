@@ -451,6 +451,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                     }
                     if (updateEvent.fresh || updateEvent.updates.length > 0) {
                       this.emit('update', updateEvent)
+                      contact?.emit('update', updateEvent)
                     }
                     break
                   }
@@ -468,6 +469,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                     }
                     if (updateEvent.fresh || updateEvent.updates.length > 0) {
                       this.emit('update', updateEvent)
+                      room?.emit('update', updateEvent)
                     }
                     break
                   }

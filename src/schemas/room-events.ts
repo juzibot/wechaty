@@ -7,12 +7,14 @@ import type {
   RoomInterface,
   RoomInvitationInterface,
 }                   from '../user-modules/mod.js'
+import type { InfoUpdateInterface } from './update.js'
 
 export const ROOM_EVENT_DICT = {
   invite  : 'tbw',
   join    : 'tbw',
   leave   : 'tbw',
   message : 'message that received in this room',
+  update  : 'room info update',
   topic   : 'tbw',
 }
 export type RoomEventName = keyof typeof ROOM_EVENT_DICT
@@ -102,6 +104,7 @@ type RoomEventListenerJoin    = (this: RoomInterface, inviteeList: ContactInterf
 type RoomEventListenerLeave   = (this: RoomInterface, leaverList: ContactInterface[], remover?: ContactInterface, date?: Date)  => void | Promise<void>
 type RoomEventListenerMessage = (this: RoomInterface, message: MessageInterface, date?: Date)                                   => void | Promise<void>
 type RoomEventListenerTopic   = (this: RoomInterface, topic: string, oldTopic: string, changer: ContactInterface, date?: Date)  => void | Promise<void>
+type RoomEventListenerUpdate  = (info: InfoUpdateInterface) => void | Promise<void>
 
 interface RoomEventListeners {
   invite  : RoomEventListenerInvite
@@ -109,6 +112,7 @@ interface RoomEventListeners {
   leave   : RoomEventListenerLeave
   message : RoomEventListenerMessage
   topic   : RoomEventListenerTopic
+  update  : RoomEventListenerUpdate
 }
 
 const RoomEventEmitter = EventEmitter as any as new () => TypedEventEmitter<
@@ -122,6 +126,7 @@ export type {
   RoomEventListenerLeave,
   RoomEventListenerMessage,
   RoomEventListenerTopic,
+  RoomEventListenerUpdate,
 }
 export {
   RoomEventEmitter,
