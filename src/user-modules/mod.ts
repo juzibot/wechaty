@@ -88,6 +88,11 @@ import {
   TagConstructor,
 }                           from './tag.js'
 import {
+  TagGroupImpl,
+  TagGroupInterface,
+  TagGroupConstructor,
+}                           from './tag-group.js'
+import {
   UrlLinkImpl,
   UrlLinkInterface,
   UrlLinkConstructor,
@@ -120,6 +125,7 @@ export type {
   RoomInterface,
   RoomInvitationInterface,
   TagInterface,
+  TagGroupInterface,
   DelayInterface,
   UrlLinkInterface,
   ChannelInterface,
@@ -141,6 +147,7 @@ export type {
   RoomInvitationConstructor,
   DelayConstructor,
   TagConstructor,
+  TagGroupConstructor,
   UrlLinkConstructor,
   ChannelConstructor,
 }
@@ -163,6 +170,7 @@ export {
   RoomInvitationImpl,
   DelayImpl,
   TagImpl,
+  TagGroupImpl,
   UrlLinkImpl,
   ChannelImpl,
 }

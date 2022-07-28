@@ -17,37 +17,108 @@
  *   limitations under the License.
  *
  */
-import {
-  log,
-}                     from '@juzi/wechaty-puppet'
+import type * as PUPPET from '@juzi/wechaty-puppet'
 
-import type { Constructor }  from 'clone-class'
+import type { Constructor } from 'clone-class'
+import { log } from '../config.js'
 
-import {
-  poolifyMixin,
-}                     from '../user-mixins/poolify.js'
 import { validationMixin } from '../user-mixins/validation.js'
 import {
   wechatifyMixinBase,
 }                     from '../user-mixins/wechatify.js'
+import type { ContactInterface } from './contact.js'
 
-const MixinBase = poolifyMixin(
-  wechatifyMixinBase(),
-)<TagInterface>()
+class TagMixin extends wechatifyMixinBase() {
 
-class TagMixin extends MixinBase {
+  /**
+   *
+   * Create
+   *
+   */
+  static create (payload: PUPPET.payloads.Tag): TagInterface {
+    log.verbose('Tag', 'create()')
+
+    return new this(payload)
+  }
 
   /**
    * @hideconstructor
    */
   constructor (
-    public readonly id: string,
+    public readonly payload: PUPPET.payloads.Tag,
   ) {
     super()
-    log.silly('Tag', `constructor(${id})`)
+    log.silly('Tag', 'constructor()')
   }
 
-  // TODO: implement new tag methods
+  id (): string {
+    return this.payload.id
+  }
+
+  type (): PUPPET.types.Tag {
+    return this.payload.type
+  }
+
+  groupId (): string {
+    return this.payload.groupId || ''
+  }
+
+  name (): string {
+    return this.payload.name
+  }
+
+  static async list (): Promise<TagInterface[]> {
+    log.verbose('Tag', 'list()')
+
+    try {
+      const payloads = await this.wechaty.puppet.tagTagList()
+      return payloads.map(payload => new this(payload))
+    } catch (e) {
+      this.wechaty.emitError(e)
+      log.error('Tag', 'list() exception: %s', (e as Error).message)
+      return []
+    }
+  }
+
+  async contactList (): Promise<ContactInterface[]> {
+    log.verbose('Tag', 'contactList() for tag id: %s', this.id())
+
+    const contactIds = await this.wechaty.puppet.tagTagContactList(this.groupId(), this.id())
+    const contactPromises = contactIds.map(id => this.wechaty.Contact.find({ id })) as Promise<ContactInterface>[]
+    return Promise.all(contactPromises)
+  }
+
+  async tag (contact: ContactInterface): Promise<void> {
+    log.verbose('Tag', 'tag(%s) for tag id: %s', contact, this.id())
+
+    const contactId = contact.id
+    await this.wechaty.puppet.tagContactTagAdd(this.groupId(), this.id(), contactId)
+  }
+
+  static async createTag (tagGroupId: string | undefined, name: string): Promise<TagInterface | void> {
+    log.verbose('Tag', 'createTag(%s, %s)', tagGroupId, name)
+
+    try {
+      const payload = await this.wechaty.puppet.tagTagAdd(tagGroupId, name)
+      if (payload) {
+        return new this(payload)
+      }
+    } catch (e) {
+      this.wechaty.emitError(e)
+      log.error('Contact', 'createTag() exception: %s', (e as Error).message)
+    }
+  }
+
+  static async deleteTag (tag: TagInterface): Promise<void> {
+    log.verbose('Tag', 'deleteTag(%s, %s)', tag)
+
+    try {
+      await this.wechaty.puppet.tagTagDelete(tag.groupId(), tag.id())
+    } catch (e) {
+      this.wechaty.emitError(e)
+      log.error('Contact', 'deleteTag() exception: %s', (e as Error).message)
+    }
+  }
 
 }
 

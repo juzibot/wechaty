@@ -46,6 +46,7 @@ export {
   RoomInvitationImpl,
   DelayImpl,
   TagImpl,
+  TagGroupImpl,
   UrlLinkImpl,
   ChannelImpl,
 }                             from '../user-modules/mod.js'
@@ -85,6 +86,7 @@ export type {
   RoomInterface,
   RoomInvitationInterface,
   TagInterface,
+  TagGroupInterface,
   UrlLinkInterface,
   ChannelInterface,
 }                               from '../user-modules/mod.js'
@@ -105,6 +107,7 @@ export type {
   RoomConstructor,
   RoomInvitationConstructor,
   TagConstructor,
+  TagGroupConstructor,
   UrlLinkConstructor,
   ChannelConstructor,
 }                               from '../user-modules/mod.js'
