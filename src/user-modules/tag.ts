@@ -94,6 +94,8 @@ class TagMixin extends wechatifyMixinBase() {
   }
 
   static load (tagGroupId: string | undefined, tagId: string): TagInterface | undefined {
+    log.verbose('TagGroup', 'load(%s, %s)', tagGroupId, tagId)
+
     for (const item of this.pool) {
       if (item.id() === tagId && (item.groupId() === tagGroupId || (!item.groupId() && !tagGroupId))) {
         return item
@@ -141,7 +143,7 @@ class TagMixin extends wechatifyMixinBase() {
       this.pool.splice(this.pool.indexOf(tag))
     } catch (e) {
       this.wechaty.emitError(e)
-      log.error('Contact', 'deleteTag() exception: %s', (e as Error).message)
+      log.error('Tag', 'deleteTag() exception: %s', (e as Error).message)
     }
   }
 
