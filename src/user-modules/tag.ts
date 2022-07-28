@@ -112,11 +112,16 @@ class TagMixin extends wechatifyMixinBase() {
     return Promise.all(contactPromises)
   }
 
-  async tag (contact: ContactInterface): Promise<void> {
-    log.verbose('Tag', 'tag(%s) for tag id: %s', contact, this.id())
+  async tag (contacts: ContactInterface | ContactInterface[]): Promise<void> {
+    log.verbose('Tag', 'tag(%s) for tag id: %s', contacts, this.id())
 
-    const contactId = contact.id
-    await this.wechaty.puppet.tagContactTagAdd(this.groupId(), this.id(), contactId)
+    let contactIds: string[]
+    if (Array.isArray(contacts)) {
+      contactIds = contacts.map(c => c.id)
+    } else {
+      contactIds = [contacts.id]
+    }
+    await this.wechaty.puppet.tagContactTagAdd(this.groupId(), this.id(), contactIds)
   }
 
   static async createTag (tagGroupId: string | undefined, name: string): Promise<TagInterface | void> {
