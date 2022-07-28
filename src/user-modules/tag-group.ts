@@ -76,7 +76,7 @@ class TagGroupMixin extends wechatifyMixinBase() {
     log.verbose('TagGroup', 'deleteTagGroup(%s)', tagGroup)
 
     try {
-      await this.wechaty.puppet.tagGroupAdd(tagGroup.id())
+      await this.wechaty.puppet.tagGroupDelete(tagGroup.id())
     } catch (e) {
       this.wechaty.emitError(e)
       log.error('Contact', 'createTag() exception: %s', (e as Error).message)
