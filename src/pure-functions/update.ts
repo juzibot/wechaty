@@ -54,7 +54,7 @@ const objectDeepDiff = (objectA: any, objectB: any) => {
     if (typeof objectA[key] !== typeof objectB[key]) {
       return false
     }
-    if (baseDataTypes.some(e => e === objectA[key])) {
+    if (typeof objectA[key] !== 'object') {
       if (objectA[key] !== objectB[key]) {
         return false
       }
