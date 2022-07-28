@@ -27,6 +27,7 @@ import {
   wechatifyMixinBase,
 }                     from '../user-mixins/wechatify.js'
 import type { ContactInterface } from './contact.js'
+import type { TagGroupInterface } from './tag-group.js'
 
 class TagMixin extends wechatifyMixinBase() {
 
@@ -65,6 +66,10 @@ class TagMixin extends wechatifyMixinBase() {
 
   name (): string {
     return this.payload.name
+  }
+
+  group (): TagGroupInterface | undefined {
+    return this.wechaty.TagGroup.load(this.groupId())
   }
 
   private static pool: TagInterface[] = []
@@ -145,7 +150,7 @@ class TagMixin extends wechatifyMixinBase() {
 
     try {
       await this.wechaty.puppet.tagTagDelete(tag.groupId(), tag.id())
-      this.pool.splice(this.pool.indexOf(tag))
+      this.pool.splice(this.pool.indexOf(tag), 1)
     } catch (e) {
       this.wechaty.emitError(e)
       log.error('Tag', 'deleteTag() exception: %s', (e as Error).message)

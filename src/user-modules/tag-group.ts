@@ -26,6 +26,7 @@ import { validationMixin } from '../user-mixins/validation.js'
 import {
   wechatifyMixinBase,
 } from '../user-mixins/wechatify.js'
+import type { TagInterface } from './tag.js'
 
 class TagGroupMixin extends wechatifyMixinBase() {
 
@@ -116,11 +117,15 @@ class TagGroupMixin extends wechatifyMixinBase() {
 
     try {
       await this.wechaty.puppet.tagGroupDelete(tagGroup.id())
-      this.pool.splice(this.pool.indexOf(tagGroup))
+      this.pool.splice(this.pool.indexOf(tagGroup), 1)
     } catch (e) {
       this.wechaty.emitError(e)
       log.error('TagGroup', 'deleteTagGroup() exception: %s', (e as Error).message)
     }
+  }
+
+  async tags (): Promise<TagInterface[]> {
+    return (await this.wechaty.Tag.list()).filter(tag => tag.groupId() === this.id())
   }
 
 }
