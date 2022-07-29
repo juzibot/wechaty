@@ -128,6 +128,10 @@ class TagGroupMixin extends wechatifyMixinBase() {
     return (await this.wechaty.Tag.list()).filter(tag => tag.groupId() === this.id())
   }
 
+  override toString () {
+    return `<TagGroup#${this.name() || this.id()}>`
+  }
+
 }
 
 class TagGroupImpl extends validationMixin(TagGroupMixin)<TagGroupInterface>() { }

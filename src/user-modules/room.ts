@@ -745,7 +745,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
    * Huan(202106): will be removed after Dec 31, 2023
    * @deprecated use remove(contact) instead.
    */
-  async del (contact: ContactImpl): Promise<void> {
+  async del (contact: ContactImpl | ContactImpl[]): Promise<void> {
     log.warn('Room', 'del() is DEPRECATED, use remove() instead.\n%s', new Error().stack)
     return this.remove(contact)
   }
