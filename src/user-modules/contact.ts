@@ -687,10 +687,19 @@ class ContactMixin extends MixinBase implements SayableSayer {
    * Add a Tag
    */
 
-  async tag (tag: TagInterface): Promise<void> {
-    log.verbose('Contact', 'tag(%s) for %s', tag, this)
+  async tag (tags: TagInterface | TagInterface[]): Promise<void> {
+    log.verbose('Contact', 'tag(%s) for %s', tags, this)
 
-    await this.wechaty.puppet.tagContactTagAdd(tag.groupId(), tag.id(), this.id)
+    let tagIds: string[]
+    let tagGroupIds: (string | undefined)[]
+    if (Array.isArray(tags)) {
+      tagIds = tags.map(c => c.id())
+      tagGroupIds = tags.map(c => c.groupId())
+    } else {
+      tagIds = [tags.id()]
+      tagGroupIds = [tags.groupId()]
+    }
+    await this.wechaty.puppet.tagContactTagAdd(tagGroupIds, tagIds, this.id)
 
   }
 
