@@ -18,6 +18,7 @@
  *
  */
 import type * as PUPPET from '@juzi/wechaty-puppet'
+import type { TagIdentifier } from '@juzi/wechaty-puppet/filters'
 
 import type { Constructor } from 'clone-class'
 import { log } from '../config.js'
@@ -98,11 +99,11 @@ class TagMixin extends wechatifyMixinBase() {
     await this.list(true)
   }
 
-  static load (tagGroupId: string | undefined, tagId: string): TagInterface | undefined {
-    log.verbose('TagGroup', 'load(%s, %s)', tagGroupId, tagId)
+  static load (tag: TagIdentifier): TagInterface | undefined {
+    log.verbose('TagGroup', 'load(%s)', tag)
 
     for (const item of this.pool) {
-      if (item.id() === tagId && (item.groupId() === tagGroupId || (!item.groupId() && !tagGroupId))) {
+      if (item.id() === tag.id && (item.groupId() === tag.groupId || (!item.groupId() && !tag.groupId))) {
         return item
       }
     }
@@ -110,30 +111,32 @@ class TagMixin extends wechatifyMixinBase() {
   }
 
   async contactList (): Promise<ContactInterface[]> {
-    log.verbose('Tag', 'contactList() for tag id: %s', this.id())
+    log.verbose('Tag', 'contactList() for tag : %s', this)
 
-    const contactIds = await this.wechaty.puppet.tagTagContactList(this.groupId(), this.id())
+    const tag = { id: this.id(), groupId: this.groupId() } as TagIdentifier
+    const contactIds = await this.wechaty.puppet.tagTagContactList(tag)
     const contactPromises = contactIds.map(id => this.wechaty.Contact.find({ id })) as Promise<ContactInterface>[]
     return Promise.all(contactPromises)
   }
 
   async tag (contacts: ContactInterface | ContactInterface[]): Promise<void> {
-    log.verbose('Tag', 'tag(%s) for tag id: %s', contacts, this.id())
+    log.verbose('Tag', 'tag(%s) for tag : %s', contacts, this)
 
+    const tag = { id: this.id(), groupId: this.groupId() } as TagIdentifier
     let contactIds: string[]
     if (Array.isArray(contacts)) {
       contactIds = contacts.map(c => c.id)
     } else {
       contactIds = [contacts.id]
     }
-    await this.wechaty.puppet.tagContactTagAdd(this.groupId(), this.id(), contactIds)
+    await this.wechaty.puppet.tagContactTagAdd([tag], contactIds)
   }
 
-  static async createTag (tagGroupId: string | undefined, name: string): Promise<TagInterface | void> {
-    log.verbose('Tag', 'createTag(%s, %s)', tagGroupId, name)
+  static async createTag (name: string, tagGroup?: TagGroupInterface): Promise<TagInterface | void> {
+    log.verbose('Tag', 'createTag(%s, %s)', tagGroup, name)
 
     try {
-      const payload = await this.wechaty.puppet.tagTagAdd(tagGroupId, name)
+      const payload = await this.wechaty.puppet.tagTagAdd(name, tagGroup?.name())
       if (payload) {
         const newTag = new this(payload)
         this.pool.push(newTag)
@@ -145,16 +148,22 @@ class TagMixin extends wechatifyMixinBase() {
     }
   }
 
-  static async deleteTag (tag: TagInterface): Promise<void> {
-    log.verbose('Tag', 'deleteTag(%s, %s)', tag)
+  static async deleteTag (tagInstance: TagInterface): Promise<void> {
+    log.verbose('Tag', 'deleteTag(%s, %s)', tagInstance)
+
+    const tag = { id: tagInstance.id(), groupId: tagInstance.groupId() } as TagIdentifier
 
     try {
-      await this.wechaty.puppet.tagTagDelete(tag.groupId(), tag.id())
-      this.pool.splice(this.pool.indexOf(tag), 1)
+      await this.wechaty.puppet.tagTagDelete(tag)
+      this.pool.splice(this.pool.indexOf(tagInstance), 1)
     } catch (e) {
       this.wechaty.emitError(e)
       log.error('Tag', 'deleteTag() exception: %s', (e as Error).message)
     }
+  }
+
+  override toString () {
+    return `<Tag#${this.name() || this.id()}>`
   }
 
 }
