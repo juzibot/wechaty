@@ -12,6 +12,7 @@ import type {
   ContactInterface,
   MessageInterface,
   PostInterface,
+  TagInterface,
 }                       from '../user-modules/mod.js'
 import type { InfoUpdateInterface } from './update.js'
 
@@ -25,6 +26,11 @@ const WECHATY_EVENT_DICT = {
   start     : 'Will be emitted after the Wechaty had been started.',
   stop      : 'Will be emitted after the Wechaty had been stopped.',
   update    : 'Will be emitted when some info has been changed.',
+  'contact-tag-add': 'Will be emitted when contact has new tags.',
+  'contact-tag-remove': 'Will be emitted when contact has some tags removed.',
+  'contact-alias': 'Will be emitted when contact alias has been changed.',
+  'contact-phone': 'Will be emitted when contact phone has been changed.',
+  'contact-description': 'Will be emitted when contact description has been changed.',
 } as const
 
 type WechatyEventName  = keyof typeof WECHATY_EVENT_DICT
@@ -32,23 +38,29 @@ type WechatyEventName  = keyof typeof WECHATY_EVENT_DICT
 /**
  * Wechaty Event Listener Interfaces
  */
-type WechatyEventListenerDong       = (data?: string)                                                                                   => void | Promise<void>
-type WechatyEventListenerError      = (error: GError)                                                                     => void | Promise<void>
-type WechatyEventListenerFriendship = (friendship: FriendshipInterface)                                                                 => void | Promise<void>
-type WechatyEventListenerHeartbeat  = (data: any)                                                                                       => void | Promise<void>
-type WechatyEventListenerLogin      = (user: ContactSelfInterface)                                                                      => void | Promise<void>
-type WechatyEventListenerLogout     = (user: ContactSelfInterface, reason?: string)                                                     => void | Promise<void>
-type WechatyEventListenerMessage    = (message: MessageInterface)                                                                       => void | Promise<void>
-type WechatyEventListenerPost       = (post: PostInterface)                                                                       => void | Promise<void>
-type WechatyEventListenerPuppet     = (puppet: PUPPET.impls.PuppetInterface)                                                             => void | Promise<void>
-type WechatyEventListenerReady      = ()                                                                                                => void | Promise<void>
-type WechatyEventListenerRoomInvite = (roomInvitation: RoomInvitationInterface)                                                         => void | Promise<void>
-type WechatyEventListenerRoomJoin   = (room: RoomInterface, inviteeList: ContactInterface[], inviter: ContactInterface,  date?: Date)   => void | Promise<void>
-type WechatyEventListenerRoomLeave  = (room: RoomInterface, leaverList: ContactInterface[],  remover?: ContactInterface, date?: Date)   => void | Promise<void>
-type WechatyEventListenerRoomTopic  = (room: RoomInterface, newTopic: string, oldTopic: string, changer: ContactInterface, date?: Date) => void | Promise<void>
-type WechatyEventListenerScan       = (qrcode: string, status: PUPPET.types.ScanStatus, data?: string)                                   => void | Promise<void>
-type WechatyEventListenerStartStop  = ()                                                                                                => void | Promise<void>
-type WechatyEventListenerUpdate     = (info: InfoUpdateInterface) => void | Promise<void>
+type WechatyEventListenerDong               = (data?: string)                                                                                   => void | Promise<void>
+type WechatyEventListenerError              = (error: GError)                                                                     => void | Promise<void>
+type WechatyEventListenerFriendship         = (friendship: FriendshipInterface)                                                                 => void | Promise<void>
+type WechatyEventListenerHeartbeat          = (data: any)                                                                                       => void | Promise<void>
+type WechatyEventListenerLogin              = (user: ContactSelfInterface)                                                                      => void | Promise<void>
+type WechatyEventListenerLogout             = (user: ContactSelfInterface, reason?: string)                                                     => void | Promise<void>
+type WechatyEventListenerMessage            = (message: MessageInterface)                                                                       => void | Promise<void>
+type WechatyEventListenerPost               = (post: PostInterface)                                                                       => void | Promise<void>
+type WechatyEventListenerPuppet             = (puppet: PUPPET.impls.PuppetInterface)                                                             => void | Promise<void>
+type WechatyEventListenerReady              = ()                                                                                                => void | Promise<void>
+type WechatyEventListenerRoomInvite         = (roomInvitation: RoomInvitationInterface)                                                         => void | Promise<void>
+type WechatyEventListenerRoomJoin           = (room: RoomInterface, inviteeList: ContactInterface[], inviter: ContactInterface,  date?: Date)   => void | Promise<void>
+type WechatyEventListenerRoomLeave          = (room: RoomInterface, leaverList: ContactInterface[],  remover?: ContactInterface, date?: Date)   => void | Promise<void>
+type WechatyEventListenerRoomTopic          = (room: RoomInterface, newTopic: string, oldTopic: string, changer: ContactInterface, date?: Date) => void | Promise<void>
+type WechatyEventListenerScan               = (qrcode: string, status: PUPPET.types.ScanStatus, data?: string)                                   => void | Promise<void>
+type WechatyEventListenerStartStop          = ()                                                                                                => void | Promise<void>
+type WechatyEventListenerUpdate             = (info: InfoUpdateInterface) => void | Promise<void>
+type WechatyEventListenerContactTagAdd      = (contact: ContactInterface, TagList: TagInterface[]) => void | Promise<void>
+type WechatyEventListenerContactTagRemove   = (contact: ContactInterface, TagList: TagInterface[]) => void | Promise<void>
+type WechatyEventListenerContactPhone       = (contact: ContactInterface, newPhoneList: string[], oldPhoneList: []) => void | Promise<void>
+type WechatyEventListenerContactAlias       = (contact: ContactInterface, newAlias: string, oldAlias: string) => void | Promise<void>
+type WechatyEventListenerContactDescription = (contact: ContactInterface, newDescription: string, oldDescription: string) => void | Promise<void>
+
 /**
  * @desc       Wechaty Class Event Type
  * @typedef    WechatyEventName
@@ -204,24 +216,29 @@ type WechatyEventListenerUpdate     = (info: InfoUpdateInterface) => void | Prom
  * })
  */
 interface WechatyEventListeners {
-  'room-invite' : WechatyEventListenerRoomInvite
-  'room-join'   : WechatyEventListenerRoomJoin
-  'room-leave'  : WechatyEventListenerRoomLeave
-  'room-topic'  : WechatyEventListenerRoomTopic
-  dong          : WechatyEventListenerDong
-  error         : WechatyEventListenerError
-  friendship    : WechatyEventListenerFriendship
-  heartbeat     : WechatyEventListenerHeartbeat
-  login         : WechatyEventListenerLogin
-  logout        : WechatyEventListenerLogout
-  message       : WechatyEventListenerMessage
-  post          : WechatyEventListenerPost
-  puppet        : WechatyEventListenerPuppet
-  ready         : WechatyEventListenerReady
-  scan          : WechatyEventListenerScan
-  start         : WechatyEventListenerStartStop
-  stop          : WechatyEventListenerStartStop
-  update        : WechatyEventListenerUpdate
+  'room-invite'        : WechatyEventListenerRoomInvite
+  'room-join'          : WechatyEventListenerRoomJoin
+  'room-leave'         : WechatyEventListenerRoomLeave
+  'room-topic'         : WechatyEventListenerRoomTopic
+  dong                 : WechatyEventListenerDong
+  error                : WechatyEventListenerError
+  friendship           : WechatyEventListenerFriendship
+  heartbeat            : WechatyEventListenerHeartbeat
+  login                : WechatyEventListenerLogin
+  logout               : WechatyEventListenerLogout
+  message              : WechatyEventListenerMessage
+  post                 : WechatyEventListenerPost
+  puppet               : WechatyEventListenerPuppet
+  ready                : WechatyEventListenerReady
+  scan                 : WechatyEventListenerScan
+  start                : WechatyEventListenerStartStop
+  stop                 : WechatyEventListenerStartStop
+  update               : WechatyEventListenerUpdate
+  'contact-tag-add'    : WechatyEventListenerContactTagAdd
+  'contact-tag-remove' : WechatyEventListenerContactTagRemove
+  'contact-alias'      : WechatyEventListenerContactAlias
+  'contact-phone'      : WechatyEventListenerContactPhone
+  'contact-description': WechatyEventListenerContactDescription
 }
 
 const WechatyEventEmitter = EventEmitter as any as new () => TypedEventEmitter<
@@ -249,6 +266,11 @@ export type {
   WechatyEventListenerScan,
   WechatyEventListenerStartStop,
   WechatyEventListenerUpdate,
+  WechatyEventListenerContactTagAdd,
+  WechatyEventListenerContactTagRemove,
+  WechatyEventListenerContactAlias,
+  WechatyEventListenerContactPhone,
+  WechatyEventListenerContactDescription,
 }
 export {
   WechatyEventEmitter,
