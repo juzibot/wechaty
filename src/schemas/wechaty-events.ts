@@ -18,20 +18,21 @@ import type { InfoUpdateInterface } from './update.js'
 
 const WECHATY_EVENT_DICT = {
   ...PUPPET.types.CHAT_EVENT_DICT,
-  dong      : 'Should be emitted after we call `Wechaty.ding()`',
-  error     : "Will be emitted when there's an Error occurred.",
-  heartbeat : 'Will be emitted periodically after the Wechaty started. If not, means that the Wechaty had died.',
-  puppet    : 'Will be emitted when the puppet has been set.',
-  ready     : 'All underlined data source are ready for use.',
-  start     : 'Will be emitted after the Wechaty had been started.',
-  stop      : 'Will be emitted after the Wechaty had been stopped.',
-  update    : 'Will be emitted when some info has been changed.',
-  'contact-tag-add': 'Will be emitted when contact has new tags.',
-  'contact-tag-remove': 'Will be emitted when contact has some tags removed.',
-  'contact-name': 'Will be emitted when contact name has been changed.',
-  'contact-alias': 'Will be emitted when contact alias has been changed.',
-  'contact-phone': 'Will be emitted when contact phone has been changed.',
+  dong                 : 'Should be emitted after we call `Wechaty.ding()`',
+  error                : "Will be emitted when there's an Error occurred.",
+  heartbeat            : 'Will be emitted periodically after the Wechaty started. If not, means that the Wechaty had died.',
+  puppet               : 'Will be emitted when the puppet has been set.',
+  ready                : 'All underlined data source are ready for use.',
+  start                : 'Will be emitted after the Wechaty had been started.',
+  stop                 : 'Will be emitted after the Wechaty had been stopped.',
+  update               : 'Will be emitted when some info has been changed.',
+  'contact-tag-add'    : 'Will be emitted when contact has new tags.',
+  'contact-tag-remove' : 'Will be emitted when contact has some tags removed.',
+  'contact-name'       : 'Will be emitted when contact name has been changed.',
+  'contact-alias'      : 'Will be emitted when contact alias has been changed.',
+  'contact-phone'      : 'Will be emitted when contact phone has been changed.',
   'contact-description': 'Will be emitted when contact description has been changed.',
+  'room-owner'         : 'Will be emitted when room owner has been changed.',
 } as const
 
 type WechatyEventName  = keyof typeof WECHATY_EVENT_DICT
@@ -53,6 +54,7 @@ type WechatyEventListenerRoomInvite         = (roomInvitation: RoomInvitationInt
 type WechatyEventListenerRoomJoin           = (room: RoomInterface, inviteeList: ContactInterface[], inviter: ContactInterface, date?: Date) => void | Promise<void>
 type WechatyEventListenerRoomLeave          = (room: RoomInterface, leaverList: ContactInterface[], remover?: ContactInterface, date?: Date) => void | Promise<void>
 type WechatyEventListenerRoomTopic          = (room: RoomInterface, newTopic: string, oldTopic: string, changer: ContactInterface, date?: Date) => void | Promise<void>
+type WechatyEventListenerRoomOwner          = (room: RoomInterface, newOwner: ContactInterface, oldOwner: ContactInterface) => void | Promise<void>
 type WechatyEventListenerScan               = (qrcode: string, status: PUPPET.types.ScanStatus, data?: string) => void | Promise<void>
 type WechatyEventListenerStartStop          = () => void | Promise<void>
 type WechatyEventListenerUpdate             = (info: InfoUpdateInterface) => void | Promise<void>
@@ -242,6 +244,7 @@ interface WechatyEventListeners {
   'contact-alias'      : WechatyEventListenerContactAlias
   'contact-phone'      : WechatyEventListenerContactPhone
   'contact-description': WechatyEventListenerContactDescription
+  'room-owner'         : WechatyEventListenerRoomOwner
 }
 
 const WechatyEventEmitter = EventEmitter as any as new () => TypedEventEmitter<
@@ -266,6 +269,7 @@ export type {
   WechatyEventListenerRoomJoin,
   WechatyEventListenerRoomLeave,
   WechatyEventListenerRoomTopic,
+  WechatyEventListenerRoomOwner,
   WechatyEventListenerScan,
   WechatyEventListenerStartStop,
   WechatyEventListenerUpdate,
