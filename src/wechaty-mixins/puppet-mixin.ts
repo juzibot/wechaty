@@ -25,7 +25,7 @@ import type {
 
 import type { GErrorMixin } from './gerror-mixin.js'
 import type { IoMixin }     from './io-mixin.js'
-import { ContactImportantFields, ContactUpdatableValuePair, InfoUpdateInterface, InfoUpdateValuePair, RoomImportantFields, RoomUpdatableValuePair } from '../schemas/update.js'
+import { ContactImportantFields, ContactUpdatableValuePair, InfoUpdateInterface, RoomImportantFields, RoomUpdatableValuePair } from '../schemas/update.js'
 import { diffPayload } from '../pure-functions/update.js'
 
 const PUPPET_MEMORY_NAME = 'puppet'
