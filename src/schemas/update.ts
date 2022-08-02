@@ -23,7 +23,7 @@ type PayloadTypeToUpdateInterface<U> = {
   }
 }[keyof U]
 
-type InfoUpdateValuePair<U> = {
+export type InfoUpdateValuePair<U> = {
   [SubType in keyof U]: {
     key: SubType,
     oldValue?: U[SubType],
@@ -35,3 +35,9 @@ export type InfoUpdateInterface = PayloadTypeToUpdateInterface<{
   [PUPPET.types.Payload.Contact]: ContactUpdatableKeys,
   [PUPPET.types.Payload.Room]: RoomUpdateableKeys,
 }>
+
+export type ContactUpdatableValuePair = InfoUpdateValuePair<ContactUpdatableKeys>
+export type RoomUpdatableValuePair = InfoUpdateValuePair<RoomUpdateableKeys>
+
+export type ContactValuePair = InfoUpdateValuePair<PUPPET.payloads.Contact>
+export type RoomValuePair = InfoUpdateValuePair<PUPPET.payloads.Room>
