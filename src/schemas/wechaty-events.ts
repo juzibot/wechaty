@@ -58,8 +58,8 @@ type WechatyEventListenerRoomOwner          = (room: RoomInterface, newOwner: Co
 type WechatyEventListenerScan               = (qrcode: string, status: PUPPET.types.ScanStatus, data?: string) => void | Promise<void>
 type WechatyEventListenerStartStop          = () => void | Promise<void>
 type WechatyEventListenerUpdate             = (info: InfoUpdateInterface) => void | Promise<void>
-type WechatyEventListenerContactTagAdd      = (contact: ContactInterface, TagList: TagInterface[]) => void | Promise<void>
-type WechatyEventListenerContactTagRemove   = (contact: ContactInterface, TagList: TagInterface[]) => void | Promise<void>
+type WechatyEventListenerContactTagAdd      = (contact: ContactInterface, tagList: TagInterface[]) => void | Promise<void>
+type WechatyEventListenerContactTagRemove   = (contact: ContactInterface, tagList: TagInterface[]) => void | Promise<void>
 type WechatyEventListenerContactName        = (contact: ContactInterface, newName: string, oldName: string) => void | Promise<void>
 type WechatyEventListenerContactPhone       = (contact: ContactInterface, newPhoneList: string[], oldPhoneList: []) => void | Promise<void>
 type WechatyEventListenerContactAlias       = (contact: ContactInterface, newAlias: string, oldAlias: string) => void | Promise<void>
