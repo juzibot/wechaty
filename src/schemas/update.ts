@@ -1,8 +1,16 @@
 /* eslint-disable valid-typeof */
 import * as PUPPET from '@juzi/wechaty-puppet'
 
-type ContactImportantKeys = 'name' | 'tags' | 'alias' | 'phone' | 'description'
-type RoomImportantKeys = 'topic' | 'memberIdList' | 'ownerId'
+export const ContactImportantFields = [
+  'name', 'tags', 'alias', 'phone', 'description',
+] as const
+
+export const RoomImportantFields = [
+  'topic', 'memberIdList', 'ownerId',
+] as const
+
+type ContactImportantKeys = typeof ContactImportantFields[number]
+type RoomImportantKeys = typeof RoomImportantFields[number]
 
 type ContactUpdatableKeys = Omit<PUPPET.payloads.Contact, ContactImportantKeys>
 type RoomUpdateableKeys = Omit<PUPPET.payloads.Room, RoomImportantKeys>
