@@ -109,7 +109,6 @@
   },
   "homepage": "https://github.com/wechaty/",
   "dependencies": {
-    "@juzi/wechaty-puppet": "^1.0.15",
     "@juzi/wechaty-puppet-service": "^1.0.18",
     "clone-class": "^1.1.1",
     "cmd-ts": "^0.10.0",
@@ -133,6 +132,7 @@
     "@chatie/eslint-config": "^1.0.4",
     "@chatie/semver": "^0.4.7",
     "@chatie/tsconfig": "^4.6.3",
+    "@juzi/wechaty-puppet": "^1.0.16",
     "@juzi/wechaty-puppet-mock": "^1.0.1",
     "@swc/core": "^1.2.155",
     "@swc/helpers": "^0.3.6",
