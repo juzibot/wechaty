@@ -280,7 +280,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                   return
                 }
 
-                this.emit('message', 'msg')
+                this.emit('message', msg)
 
                 const room     = msg.room()
                 const listener = msg.listener()
