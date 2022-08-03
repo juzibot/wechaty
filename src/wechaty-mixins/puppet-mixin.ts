@@ -280,7 +280,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                   return
                 }
 
-                this.emit('message', 'msg')
+                this.emit('message', msg)
 
                 const room     = msg.room()
                 const listener = msg.listener()
@@ -467,7 +467,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                             this.emit('contact-tag-add', contact, addedTags)
                           }
                           if (removedTags.length > 0) {
-                            this.emit('contact-tag-removed', contact, removedTags)
+                            this.emit('contact-tag-remove', contact, removedTags)
                           }
                           break
                         }
