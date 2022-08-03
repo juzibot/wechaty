@@ -6,18 +6,19 @@ import type { InfoUpdateValuePair } from '../schemas/update'
  *   1. most fields of payloads are primitive values
  *   2. users does not want to compare array items, they just need to know this field has changed. And we don't offer methods to get a subObject value
  */
-export const diffPayload = (objectOld: any, objectNew: any): InfoUpdateValuePair[] => {
+export const diffPayload = <T>(objectOld: any, objectNew: any): InfoUpdateValuePair<T>[] => {
   const keys = new Set([...Object.keys(objectOld || {}), ...Object.keys(objectNew || {})])
   const result = []
-  for (const key of keys) {
-    const subObjectOld = objectOld[key]
-    const subObjectNew = objectNew[key]
+  for (const item of keys) {
+    const key = item as keyof T
+    const subObjectOld = objectOld[key] as T[typeof key]
+    const subObjectNew = objectNew[key] as T[typeof key]
 
     if (typeof subObjectOld !== typeof subObjectNew) {
       result.push({
         key,
-        oldValue: typeof subObjectOld !== 'object' ? subObjectOld : JSON.stringify(subObjectOld),
-        newValue: typeof subObjectNew !== 'object' ? subObjectNew : JSON.stringify(subObjectNew),
+        oldValue: subObjectOld,
+        newValue: subObjectNew,
       })
     } else {
       if (typeof subObjectOld !== 'object') {
@@ -37,8 +38,8 @@ export const diffPayload = (objectOld: any, objectNew: any): InfoUpdateValuePair
         } else {
           result.push({
             key,
-            oldValue: JSON.stringify(subObjectOld),
-            newValue: JSON.stringify(subObjectNew),
+            oldValue: subObjectOld,
+            newValue: subObjectNew,
           })
         }
       }

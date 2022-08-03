@@ -16,6 +16,7 @@ export const ROOM_EVENT_DICT = {
   message : 'message that received in this room',
   update  : 'room info update',
   topic   : 'tbw',
+  owner   : 'room ownership transfer',
 }
 export type RoomEventName = keyof typeof ROOM_EVENT_DICT
 
@@ -105,6 +106,7 @@ type RoomEventListenerLeave   = (this: RoomInterface, leaverList: ContactInterfa
 type RoomEventListenerMessage = (this: RoomInterface, message: MessageInterface, date?: Date)                                   => void | Promise<void>
 type RoomEventListenerTopic   = (this: RoomInterface, topic: string, oldTopic: string, changer: ContactInterface, date?: Date)  => void | Promise<void>
 type RoomEventListenerUpdate  = (info: InfoUpdateInterface) => void | Promise<void>
+type RoomEventListenerOwner = (this: RoomInterface, newOwner: ContactInterface, oldOwner: ContactInterface) => void | Promise<void>
 
 interface RoomEventListeners {
   invite  : RoomEventListenerInvite
@@ -113,6 +115,7 @@ interface RoomEventListeners {
   message : RoomEventListenerMessage
   topic   : RoomEventListenerTopic
   update  : RoomEventListenerUpdate
+  owner   : RoomEventListenerOwner
 }
 
 const RoomEventEmitter = EventEmitter as any as new () => TypedEventEmitter<
@@ -127,6 +130,7 @@ export type {
   RoomEventListenerMessage,
   RoomEventListenerTopic,
   RoomEventListenerUpdate,
+  RoomEventListenerOwner,
 }
 export {
   RoomEventEmitter,

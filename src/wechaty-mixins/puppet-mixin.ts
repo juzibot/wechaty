@@ -11,7 +11,7 @@ import type {
   StateSwitchInterface,
 }                       from 'state-switch'
 
-import { config }               from '../config.js'
+import { config, FOUR_PER_EM_SPACE }               from '../config.js'
 import { timestampToDate }      from '../pure-functions/timestamp-to-date.js'
 import type {
   ContactImpl,
@@ -25,7 +25,7 @@ import type {
 
 import type { GErrorMixin } from './gerror-mixin.js'
 import type { IoMixin }     from './io-mixin.js'
-import type { InfoUpdateInterface } from '../schemas/update.js'
+import { ContactImportantFields, ContactUpdatableValuePair, InfoUpdateInterface, RoomImportantFields, RoomUpdatableValuePair } from '../schemas/update.js'
 import { diffPayload } from '../pure-functions/update.js'
 
 const PUPPET_MEMORY_NAME = 'puppet'
@@ -280,7 +280,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                   return
                 }
 
-                this.emit('message', msg)
+                this.emit('message', 'msg')
 
                 const room     = msg.room()
                 const listener = msg.listener()
@@ -443,14 +443,57 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                     const oldPayload = JSON.parse(JSON.stringify(contact?.payload || {}))
                     await contact?.ready(true)
                     const newPayload = JSON.parse(JSON.stringify(contact?.payload || {}))
-                    const updateEvent: InfoUpdateInterface = {
-                      type: payloadType,
-                      id: payloadId,
-                      updates: diffPayload(oldPayload, newPayload),
-                    }
-                    if (updateEvent.updates.length > 0) {
+
+                    const differences = diffPayload<PUPPET.payloads.Contact>(oldPayload, newPayload)
+                    const importangDifferences = differences.filter(ele => ele && ContactImportantFields.some(key => key === ele.key))
+                    const regularDifferences = differences.filter(ele => ele && !ContactImportantFields.some(key => key === ele.key)) as ContactUpdatableValuePair[]
+                    if (regularDifferences.length > 0) {
+                      const updateEvent: InfoUpdateInterface = {
+                        type: payloadType,
+                        id: payloadId,
+                        updates: regularDifferences,
+                      }
                       this.emit('update', updateEvent)
                       contact?.emit('update', updateEvent)
+                    }
+                    for (const difference of importangDifferences) {
+                      switch (difference?.key) {
+                        case 'tags': {
+                          const oldTagsSet = new Set(difference.oldValue?.map(ele => ele.groupId + FOUR_PER_EM_SPACE + ele.id))
+                          const newTagsSet = new Set(difference.newValue?.map(ele => ele.groupId + FOUR_PER_EM_SPACE + ele.id))
+                          const addedTags = difference.newValue?.filter(ele => !oldTagsSet.has(ele.groupId + FOUR_PER_EM_SPACE + ele.id)).map(ele => this.Tag.load(ele)) || []
+                          const removedTags = difference.oldValue?.filter(ele => !newTagsSet.has(ele.groupId + FOUR_PER_EM_SPACE + ele.id)).map(ele => this.Tag.load(ele)) || []
+                          if (addedTags.length > 0) {
+                            this.emit('contact-tag-add', contact, addedTags)
+                          }
+                          if (removedTags.length > 0) {
+                            this.emit('contact-tag-removed', contact, removedTags)
+                          }
+                          break
+                        }
+                        case 'name': {
+                          this.emit('contact-name', contact, difference.newValue || '', difference.oldValue || '')
+                          contact?.emit('name', difference.newValue || '', difference.oldValue || '')
+                          break
+                        }
+                        case 'alias': {
+                          this.emit('contact-alias', contact, difference.newValue || '', difference.oldValue || '')
+                          contact?.emit('alias', difference.newValue || '', difference.oldValue || '')
+                          break
+                        }
+                        case 'phone': {
+                          this.emit('contact-phone', contact, difference.newValue || [], difference.oldValue || [])
+                          contact?.emit('phone', difference.newValue || [], difference.oldValue || [])
+                          break
+                        }
+                        case 'description': {
+                          this.emit('contact-description', contact, difference.newValue || '', difference.oldValue || '')
+                          contact?.emit('description', difference.newValue || '', difference.oldValue || '')
+                          break
+                        }
+                        default:
+                          log.warn('WechatyPuppetMixin', 'puppet dirty unsupported difference type: %s', JSON.stringify(difference))
+                      }
                     }
                     break
                   }
@@ -459,14 +502,31 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                     const oldPayload = JSON.parse(JSON.stringify(room?.payload || {}))
                     await room?.ready(true)
                     const newPayload = JSON.parse(JSON.stringify(room?.payload || {}))
-                    const updateEvent: InfoUpdateInterface = {
-                      type: payloadType,
-                      id: payloadId,
-                      updates: diffPayload(oldPayload, newPayload),
-                    }
-                    if (updateEvent.updates.length > 0) {
+
+                    const differences = diffPayload<PUPPET.payloads.Room>(oldPayload, newPayload)
+                    const importangDifferences = differences.filter(ele => ele && RoomImportantFields.some(key => key === ele.key))
+                    const regularDifferences = differences.filter(ele => ele && !RoomImportantFields.some(key => key === ele.key)) as RoomUpdatableValuePair[]
+                    if (regularDifferences.length > 0) {
+                      const updateEvent: InfoUpdateInterface = {
+                        type: payloadType,
+                        id: payloadId,
+                        updates: regularDifferences,
+                      }
                       this.emit('update', updateEvent)
                       room?.emit('update', updateEvent)
+                    }
+                    for (const difference of importangDifferences) {
+                      switch (difference?.key) {
+                        case 'ownerId': {
+                          const oldOwner = (await this.Contact.find({ id: difference.oldValue }))!
+                          const newOwner = (await this.Contact.find({ id: difference.newValue }))!
+                          this.emit('room-owner', room, newOwner, oldOwner)
+                          room?.emit('owner', newOwner, oldOwner)
+                          break
+                        }
+                        default:
+                          log.warn('WechatyPuppetMixin', 'puppet dirty unsupported difference type: %s', JSON.stringify(difference))
+                      }
                     }
                     break
                   }
