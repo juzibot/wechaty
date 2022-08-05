@@ -18,74 +18,83 @@
  *
  */
 import type * as PUPPET from '@juzi/wechaty-puppet'
+import { TagType } from '@juzi/wechaty-puppet/dist/esm/src/schemas/tag.js'
 import type { TagIdentifier } from '@juzi/wechaty-puppet/filters'
 
 import type { Constructor } from 'clone-class'
-import { log } from '../config.js'
+import { concurrencyExecuter } from 'rx-queue'
+import { FOUR_PER_EM_SPACE, log } from '../config.js'
+import { poolifyMixin } from '../user-mixins/poolify.js'
 
 import { validationMixin } from '../user-mixins/validation.js'
 import {
-  wechatifyMixinBase,
+  wechatifyMixin,
 }                     from '../user-mixins/wechatify.js'
 import type { ContactInterface } from './contact.js'
 import type { TagGroupInterface } from './tag-group.js'
 
-class TagMixin extends wechatifyMixinBase() {
+const MixinBase = wechatifyMixin(
+  poolifyMixin(
+    Object,
+  )<TagImplInterface>(),
+)
+
+class TagMixin extends MixinBase {
 
   /**
    *
-   * Create
+   * Instance properties
+   * @ignore
    *
    */
-  static create (payload: PUPPET.payloads.Tag): TagInterface {
-    log.verbose('Tag', 'create()')
-
-    return new this(payload)
-  }
+  payload?: PUPPET.payloads.Tag
+  public readonly id: string
+  public readonly groupId?: string
 
   /**
    * @hideconstructor
    */
   constructor (
-    public readonly payload: PUPPET.payloads.Tag,
+    private readonly key: string,
   ) {
     super()
+    this.groupId = this.key.split(FOUR_PER_EM_SPACE)[0]
+    this.id = this.key.split(FOUR_PER_EM_SPACE)[1]!
     log.silly('Tag', 'constructor()')
   }
 
-  id (): string {
-    return this.payload.id
-  }
-
   type (): PUPPET.types.Tag {
-    return this.payload.type
-  }
-
-  groupId (): string {
-    return this.payload.groupId || ''
+    return (this.payload && this.payload.type) || TagType.Personal
   }
 
   name (): string {
-    return this.payload.name
+    return (this.payload && this.payload.name) || ''
   }
 
-  group (): TagGroupInterface | undefined {
-    return this.wechaty.TagGroup.load(this.groupId())
+  async group (): Promise<TagGroupInterface | undefined> {
+    return this.groupId ? this.wechaty.TagGroup.find(this.groupId) : undefined
   }
-
-  private static pool: TagInterface[] = []
 
   static async list (forceSync = false): Promise<TagInterface[]> {
     log.verbose('Tag', 'list(%s)', forceSync)
 
-    if (this.pool.length > 0 && !forceSync) {
-      return this.pool
-    }
-
     try {
-      const payloads = await this.wechaty.puppet.tagTagList()
-      this.pool = payloads.map(payload => new this(payload))
-      return this.pool
+      const tagIdentifierList = await this.wechaty.puppet.tagTagList()
+
+      const identifierToTag = async (identifier: TagIdentifier) => this.find(identifier).catch(e => this.wechaty.emitError(e))
+
+      const CONCURRENCY = 17
+      const tagIterator = concurrencyExecuter(CONCURRENCY)(identifierToTag)(tagIdentifierList)
+
+      const tagList: TagInterface[] = []
+      for await (const tag of tagIterator) {
+        if (tag) {
+          tagList.push(tag)
+        }
+      }
+
+      return tagList
+
     } catch (e) {
       this.wechaty.emitError(e)
       log.error('Tag', 'list() exception: %s', (e as Error).message)
@@ -93,27 +102,65 @@ class TagMixin extends wechatifyMixinBase() {
     }
   }
 
-  static async sync (): Promise<void> {
-    log.verbose('Tag', 'sync()')
+  static async find (identifier: TagIdentifier): Promise<TagInterface | undefined> {
+    log.silly('Tag', 'find(%s)', JSON.stringify(identifier))
 
-    await this.list(true)
+    const tag = (this.wechaty.Tag as any as typeof TagImpl).load(getTagKey(identifier))
+
+    try {
+      await tag.ready()
+    } catch (e) {
+      this.wechaty.emitError(e)
+      return undefined
+    }
+    return tag
   }
 
-  static load (tag: TagIdentifier): TagInterface | undefined {
-    log.verbose('TagGroup', 'load(%s)', tag)
+  /**
+   * @ignore
+   */
+  isReady (): boolean {
+    return !!(this.payload && this.payload.name)
+  }
 
-    for (const item of this.pool) {
-      if (item.id() === tag.id && (item.groupId() === tag.groupId || (!item.groupId() && !tag.groupId))) {
-        return item
-      }
+  /**
+   * `ready()` is For FrameWork ONLY!
+   *
+   * Please not to use `ready()` at the user land.
+   * If you want to sync data, use `sync()` instead.
+   *
+   * @ignore
+   */
+  async ready (
+    forceSync = false,
+  ): Promise<void> {
+    log.silly('Tag', 'ready() @ %s with Tag key="%s"', this.wechaty.puppet, this.key)
+
+    if (!forceSync && this.isReady()) { // already ready
+      log.silly('Tag', 'ready() isReady() true')
+      return
     }
-    return undefined
+
+    try {
+      this.payload = await this.wechaty.puppet.tagPayload({
+        id: this.id,
+        groupId: this.groupId,
+      })
+
+    } catch (e) {
+      this.wechaty.emitError(e)
+      log.verbose('Tag', 'ready() this.wechaty.puppet.tagPayload(%s) exception: %s',
+        this.id,
+        (e as Error).message,
+      )
+      throw e
+    }
   }
 
   async contactList (): Promise<ContactInterface[]> {
     log.verbose('Tag', 'contactList() for tag : %s', this)
 
-    const tag = { id: this.id(), groupId: this.groupId() } as TagIdentifier
+    const tag = { id: this.id, groupId: this.groupId } as TagIdentifier
     const contactIds = await this.wechaty.puppet.tagTagContactList(tag)
     const contactPromises = contactIds.map(id => this.wechaty.Contact.find({ id })) as Promise<ContactInterface>[]
     return Promise.all(contactPromises)
@@ -122,7 +169,7 @@ class TagMixin extends wechatifyMixinBase() {
   async tag (contacts: ContactInterface | ContactInterface[]): Promise<void> {
     log.verbose('Tag', 'tag(%s) for tag : %s', contacts, this)
 
-    const tag = { id: this.id(), groupId: this.groupId() } as TagIdentifier
+    const tag = { id: this.id, groupId: this.groupId } as TagIdentifier
     let contactIds: string[]
     if (Array.isArray(contacts)) {
       contactIds = contacts.map(c => c.id)
@@ -136,26 +183,24 @@ class TagMixin extends wechatifyMixinBase() {
     log.verbose('Tag', 'createTag(%s, %s)', tagGroup, name)
 
     try {
-      const payload = await this.wechaty.puppet.tagTagAdd(name, tagGroup?.name())
-      if (payload) {
-        const newTag = new this(payload)
-        this.pool.push(newTag)
+      const tagIdentifier = await this.wechaty.puppet.tagTagAdd(name, tagGroup?.name())
+      if (tagIdentifier) {
+        const newTag = await this.find(tagIdentifier)
         return newTag
       }
     } catch (e) {
       this.wechaty.emitError(e)
-      log.error('Contact', 'createTag() exception: %s', (e as Error).message)
+      log.error('Tag', 'createTag() exception: %s', (e as Error).message)
     }
   }
 
   static async deleteTag (tagInstance: TagInterface): Promise<void> {
     log.verbose('Tag', 'deleteTag(%s, %s)', tagInstance)
 
-    const tag = { id: tagInstance.id(), groupId: tagInstance.groupId() } as TagIdentifier
+    const tagIdentifier = { id: tagInstance.id, groupId: tagInstance.groupId } as TagIdentifier
 
     try {
-      await this.wechaty.puppet.tagTagDelete(tag)
-      this.pool.splice(this.pool.indexOf(tagInstance), 1)
+      await this.wechaty.puppet.tagTagDelete(tagIdentifier)
     } catch (e) {
       this.wechaty.emitError(e)
       log.error('Tag', 'deleteTag() exception: %s', (e as Error).message)
@@ -163,21 +208,32 @@ class TagMixin extends wechatifyMixinBase() {
   }
 
   override toString () {
-    return `<Tag#${this.name() || this.id()}>`
+    return `<Tag#${this.name() || this.id}>`
   }
 
 }
 
-class TagImpl extends validationMixin(TagMixin)<TagInterface>() {}
-interface TagInterface extends TagImpl {}
+const getTagKey = (tag: TagIdentifier): string => {
+  return tag.groupId || '' + FOUR_PER_EM_SPACE + tag.id
+}
+
+class TagImplBase extends validationMixin(TagMixin)<TagImplInterface>() {}
+interface TagImplInterface extends TagImplBase {}
+
+type TagProtectedProperty =
+  | 'ready'
+
+type TagInterface = Omit<TagImplInterface, TagProtectedProperty>
+class TagImpl extends validationMixin(TagImplBase)<TagInterface>() {}
 
 type TagConstructor = Constructor<
-  TagInterface,
-  typeof TagImpl
+  TagImplInterface,
+  Omit<typeof TagImpl, 'load'>
 >
 
 export type {
   TagConstructor,
+  TagProtectedProperty,
   TagInterface,
 }
 export {
