@@ -18,6 +18,7 @@
  *
  */
 import type * as PUPPET from '@juzi/wechaty-puppet'
+import type { TagIdentifier } from '@juzi/wechaty-puppet/filters'
 
 import type { Constructor } from 'clone-class'
 import { concurrencyExecuter } from 'rx-queue'
@@ -60,8 +61,8 @@ class TagGroupMixin extends MixinBase {
     return (this.payload && this.payload.name) || ''
   }
 
-  static async list (forceSync = false): Promise<TagGroupInterface[]> {
-    log.verbose('TagGroup', 'list(%s)', forceSync)
+  static async list (): Promise<TagGroupInterface[]> {
+    log.verbose('TagGroup', 'list()')
 
     try {
       const tagGroupIds = await this.wechaty.puppet.tagGroupList()
@@ -114,8 +115,29 @@ class TagGroupMixin extends MixinBase {
   }
 
   async tags (): Promise<TagInterface[]> {
-    const tagList = await this.wechaty.Tag.list()
-    return tagList.filter(tag => tag.groupId === this.id)
+    log.verbose('TagGroup', 'tags(%s)', this)
+    try {
+      const tagIdentifierList = await this.wechaty.puppet.tagGroupTagList(this.id)
+
+      const identifierToTag = async (tag: TagIdentifier) => this.wechaty.Tag.find(tag).catch(e => this.wechaty.emitError(e))
+
+      const CONCURRENCY = 17
+      const tagIterator = concurrencyExecuter(CONCURRENCY)(identifierToTag)(tagIdentifierList)
+
+      const tagList: TagInterface[] = []
+      for await (const tag of tagIterator) {
+        if (tag) {
+          tagList.push(tag)
+        }
+      }
+      return tagList
+
+    } catch (e) {
+      this.wechaty.emitError(e)
+      log.error('TagGroup', 'list() exception: %s', (e as Error).message)
+      return []
+    }
+
   }
 
   static async find (id: string): Promise<TagGroupInterface | undefined> {
