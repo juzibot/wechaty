@@ -17,8 +17,7 @@
  *   limitations under the License.
  *
  */
-import type * as PUPPET from '@juzi/wechaty-puppet'
-import { TagType } from '@juzi/wechaty-puppet/dist/esm/src/schemas/tag.js'
+import * as PUPPET from '@juzi/wechaty-puppet'
 import type { TagIdentifier } from '@juzi/wechaty-puppet/filters'
 import { getTagKey } from '@juzi/wechaty-puppet/helpers'
 
@@ -65,7 +64,7 @@ class TagMixin extends MixinBase {
   }
 
   type (): PUPPET.types.Tag {
-    return (this.payload && this.payload.type) || TagType.Personal
+    return (this.payload && this.payload.type) || PUPPET.types.Tag.Personal
   }
 
   name (): string {
