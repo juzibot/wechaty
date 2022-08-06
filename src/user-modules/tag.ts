@@ -56,7 +56,7 @@ class TagMixin extends MixinBase {
    * @hideconstructor
    */
   constructor (
-    private readonly key: string,
+    public readonly key: string,
   ) {
     super()
     this.groupId = this.key.split(FOUR_PER_EM_SPACE)[0]

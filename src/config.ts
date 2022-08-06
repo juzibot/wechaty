@@ -140,6 +140,9 @@ export const FOUR_PER_EM_SPACE = String.fromCharCode(0x2005)
 // mobile: \u2005, PC、mac: \u0020
 export const AT_SEPARATOR_REGEX = /[\u2005\u0020]/
 
+export const PUPPET_PAYLOAD_SYNC_GAP = 3 * 1000
+export const PUPPET_PAYLOAD_SYNC_MAX_RETRY = 4
+
 export function qrcodeValueToImageUrl (qrcodeValue: string): string {
   return [
     'https://wechaty.js.org/qrcode/',

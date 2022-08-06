@@ -13,6 +13,7 @@ import type {
   MessageInterface,
   PostInterface,
   TagInterface,
+  TagGroupInterface,
 }                       from '../user-modules/mod.js'
 import type { InfoUpdateInterface } from './update.js'
 
@@ -33,6 +34,12 @@ const WECHATY_EVENT_DICT = {
   'contact-phone'      : 'Will be emitted when contact phone has been changed.',
   'contact-description': 'Will be emitted when contact description has been changed.',
   'room-owner'         : 'Will be emitted when room owner has been changed.',
+  'tag-create'         : 'Will be emitted when new tags have been created',
+  'tag-delete'         : 'Will be emitted when tags have been deleted',
+  'tag-rename'         : 'Will be emitted when tags have been renamed',
+  'tag-group-create'   : 'Will be emitted when new tag groups have been created',
+  'tag-group-delete'   : 'Will be emitted when tag groups have been deleted',
+  'tag-group-rename'   : 'Will be emitted when tag groups have been renamed',
 } as const
 
 type WechatyEventName  = keyof typeof WECHATY_EVENT_DICT
@@ -64,6 +71,12 @@ type WechatyEventListenerContactName        = (contact: ContactInterface, newNam
 type WechatyEventListenerContactPhone       = (contact: ContactInterface, newPhoneList: string[], oldPhoneList: []) => void | Promise<void>
 type WechatyEventListenerContactAlias       = (contact: ContactInterface, newAlias: string, oldAlias: string) => void | Promise<void>
 type WechatyEventListenerContactDescription = (contact: ContactInterface, newDescription: string, oldDescription: string) => void | Promise<void>
+type WechatyEventListenerTagCreate          = (newTagList: TagInterface[]) => void | Promise<void>
+type WechatyEventListenerTagDelete          = (deletedTagList: TagInterface[]) => void | Promise<void>
+type WechatyEventListenerTagRename          = (renamedTagList: TagInterface[]) => void | Promise<void>
+type WechatyEventListenerTagGroupCreate     = (newTagGroupList: TagGroupInterface[]) => void | Promise<void>
+type WechatyEventListenerTagGroupDelete     = (deletedTagGroupList: TagGroupInterface[]) => void | Promise<void>
+type WechatyEventListenerTagGroupRename     = (renamedTagGroupList: TagGroupInterface[]) => void | Promise<void>
 
 /**
  * @desc       Wechaty Class Event Type
@@ -245,6 +258,12 @@ interface WechatyEventListeners {
   'contact-phone'      : WechatyEventListenerContactPhone
   'contact-description': WechatyEventListenerContactDescription
   'room-owner'         : WechatyEventListenerRoomOwner
+  'tag-create'         : WechatyEventListenerTagCreate
+  'tag-delete'         : WechatyEventListenerTagDelete
+  'tag-rename'         : WechatyEventListenerTagRename
+  'tag-group-create'   : WechatyEventListenerTagGroupCreate
+  'tag-group-delete'   : WechatyEventListenerTagGroupDelete
+  'tag-group-rename'   : WechatyEventListenerTagGroupRename
 }
 
 const WechatyEventEmitter = EventEmitter as any as new () => TypedEventEmitter<
@@ -279,6 +298,12 @@ export type {
   WechatyEventListenerContactAlias,
   WechatyEventListenerContactPhone,
   WechatyEventListenerContactDescription,
+  WechatyEventListenerTagCreate,
+  WechatyEventListenerTagDelete,
+  WechatyEventListenerTagRename,
+  WechatyEventListenerTagGroupCreate,
+  WechatyEventListenerTagGroupDelete,
+  WechatyEventListenerTagGroupRename,
 }
 export {
   WechatyEventEmitter,
