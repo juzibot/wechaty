@@ -427,6 +427,49 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
             })
             break
 
+          case 'tag':
+            puppet.on('tag', async payload => {
+              switch (payload.tagEventType) {
+                case PUPPET.types.TagEvent.TagCreate: {
+                  const newTagPromises = payload.tagEventPayload.map(tag =>
+                    this.Tag.find({
+                      id: tag.tagId,
+                      groupId: tag.tagGroupId,
+                    }),
+                  )
+                  const newTags = await Promise.all(newTagPromises)
+                  this.emit('tag-create', newTags)
+                  break
+                }
+                case PUPPET.types.TagEvent.TagDelete: {
+                  const deletedTagPromises = payload.tagEventPayload.map(tag =>
+                    this.Tag.find({
+                      id: tag.tagId,
+                      groupId: tag.tagGroupId,
+                    }),
+                  )
+                  const deletedTags = await Promise.all(deletedTagPromises)
+                  this.emit('tag-delete', deletedTags)
+                  // TODO: bind tag-delete to tag instance
+                  break
+                }
+                case PUPPET.types.TagEvent.TagRename: {
+                  const renamedTagPromises = payload.tagEventPayload.map(tag =>
+                    this.Tag.find({
+                      id: tag.tagId,
+                      groupId: tag.tagGroupId,
+                    }),
+                  )
+                  const renamedTags = await Promise.all(renamedTagPromises)
+                  await Promise.all(renamedTags.map(tag => tag?.isReady(true)))
+                  this.emit('tag-rename', renamedTags)
+                  // TODO: bind tag-rename to tag instance
+                  break
+                }
+              }
+              // TODO bind tag events to tag interface
+            })
+
           case 'reset':
             // Do not propagation `reset` event from puppet
             break

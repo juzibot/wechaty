@@ -133,6 +133,18 @@ class TagGroupMixin extends MixinBase {
   }
 
   /**
+   * Force reload data for TagGroup, Sync data from low-level API again.
+   *
+   * @returns {Promise<this>}
+   * @example
+   * await tagGroup.sync()
+   */
+  async sync (): Promise<void> {
+    await this.wechaty.puppet.tagGroupPayloadDirty(this.id)
+    await this.ready(true)
+  }
+
+  /**
    * @ignore
    */
   isReady (): boolean {

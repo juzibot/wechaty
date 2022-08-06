@@ -20,6 +20,7 @@
 import type * as PUPPET from '@juzi/wechaty-puppet'
 import { TagType } from '@juzi/wechaty-puppet/dist/esm/src/schemas/tag.js'
 import type { TagIdentifier } from '@juzi/wechaty-puppet/filters'
+import { getTagKey } from '@juzi/wechaty-puppet/helpers'
 
 import type { Constructor } from 'clone-class'
 import { concurrencyExecuter } from 'rx-queue'
@@ -117,6 +118,21 @@ class TagMixin extends MixinBase {
   }
 
   /**
+   * Force reload data for Tag, Sync data from low-level API again.
+   *
+   * @returns {Promise<this>}
+   * @example
+   * await tag.sync()
+   */
+  async sync (): Promise<void> {
+    await this.wechaty.puppet.tagPayloadDirty(getTagKey({
+      id: this.id,
+      groupId: this.groupId,
+    }))
+    await this.ready(true)
+  }
+
+  /**
    * @ignore
    */
   isReady (): boolean {
@@ -211,10 +227,6 @@ class TagMixin extends MixinBase {
     return `<Tag#${this.name() || this.id}>`
   }
 
-}
-
-const getTagKey = (tag: TagIdentifier): string => {
-  return tag.groupId || '' + FOUR_PER_EM_SPACE + tag.id
 }
 
 class TagImplBase extends validationMixin(TagMixin)<TagImplInterface>() {}
