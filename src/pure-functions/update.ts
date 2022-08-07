@@ -67,3 +67,14 @@ const objectDeepDiff = (objectA: any, objectB: any) => {
   }
   return true
 }
+
+export const checkUntilChanged = async (gapMilliseconds: number, maxRetry: number, judgement: () => Promise<boolean> | boolean): Promise<boolean> => {
+  let changed = await judgement()
+  let currentTry = 1
+  while (!changed && (currentTry < maxRetry)) {
+    await new Promise(resolve => setTimeout(resolve, gapMilliseconds))
+    changed = await judgement()
+    currentTry++
+  }
+  return changed
+}

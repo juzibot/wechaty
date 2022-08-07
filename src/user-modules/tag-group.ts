@@ -18,60 +18,69 @@
  *
  */
 import type * as PUPPET from '@juzi/wechaty-puppet'
+import type { TagIdentifier } from '@juzi/wechaty-puppet/filters'
 
 import type { Constructor } from 'clone-class'
+import { concurrencyExecuter } from 'rx-queue'
 import { log } from '../config.js'
+import { poolifyMixin } from '../user-mixins/poolify.js'
 
 import { validationMixin } from '../user-mixins/validation.js'
 import {
-  wechatifyMixinBase,
+  wechatifyMixin,
 } from '../user-mixins/wechatify.js'
 import type { TagInterface } from './tag.js'
 
-class TagGroupMixin extends wechatifyMixinBase() {
+const MixinBase = wechatifyMixin(
+  poolifyMixin(
+    Object,
+  )<TagGroupImplInterface>(),
+)
+
+class TagGroupMixin extends MixinBase {
 
   /**
    *
-   * Create
+   * Instance properties
+   * @ignore
    *
    */
-  static create (payload: PUPPET.payloads.TagGroup): TagGroupInterface {
-    log.verbose('TagGroup', 'create()')
-
-    return new this(payload)
-  }
+  payload?: PUPPET.payloads.TagGroup
 
   /**
    * @hideconstructor
    */
   constructor (
-    public readonly payload: PUPPET.payloads.TagGroup,
+    public readonly id: string,
   ) {
     super()
     log.silly('TagGroup', 'constructor()')
   }
 
-  id (): string {
-    return this.payload.id
-  }
-
   name (): string {
-    return this.payload.name
+    return (this.payload && this.payload.name) || ''
   }
 
-  private static pool: TagGroupInterface[] = []
-
-  static async list (forceSync = false): Promise<TagGroupInterface[]> {
-    log.verbose('TagGroup', 'list(%s)', forceSync)
-
-    if (this.pool.length > 0 && !forceSync) {
-      return this.pool
-    }
+  static async list (): Promise<TagGroupInterface[]> {
+    log.verbose('TagGroup', 'list()')
 
     try {
-      const payloads = await this.wechaty.puppet.tagGroupList()
-      this.pool = payloads.map(payload => new this(payload))
-      return this.pool
+      const tagGroupIds = await this.wechaty.puppet.tagGroupList()
+
+      const idToTagGroup = async (id: string) => this.find(id).catch(e => this.wechaty.emitError(e))
+
+      const CONCURRENCY = 17
+      const tagGroupIterator = concurrencyExecuter(CONCURRENCY)(idToTagGroup)(tagGroupIds)
+
+      const tagGroupList: TagGroupInterface[] = []
+      for await (const tagGroup of tagGroupIterator) {
+        if (tagGroup) {
+          tagGroupList.push(tagGroup)
+        }
+      }
+
+      return tagGroupList
+
     } catch (e) {
       this.wechaty.emitError(e)
       log.error('TagGroup', 'list() exception: %s', (e as Error).message)
@@ -79,31 +88,13 @@ class TagGroupMixin extends wechatifyMixinBase() {
     }
   }
 
-  static async sync (): Promise<void> {
-    log.verbose('TagGroup', 'sync()')
-
-    await this.list(true)
-  }
-
-  static load (tagGroupId: string): TagGroupInterface | undefined {
-    log.verbose('TagGroup', 'load(%s)', tagGroupId)
-
-    for (const item of this.pool) {
-      if (item.id() === tagGroupId) {
-        return item
-      }
-    }
-    return undefined
-  }
-
   static async createTagGroup (name: string): Promise<TagGroupInterface | void> {
     log.verbose('TagGroup', 'createTagGroup(%s, %s)', name)
 
     try {
-      const payload = await this.wechaty.puppet.tagGroupAdd(name)
-      if (payload) {
-        const newTagGroup = new this(payload)
-        this.pool.push(newTagGroup)
+      const groupId = await this.wechaty.puppet.tagGroupAdd(name)
+      if (groupId) {
+        const newTagGroup = await this.find(groupId)
         return newTagGroup
       }
     } catch (e) {
@@ -116,8 +107,7 @@ class TagGroupMixin extends wechatifyMixinBase() {
     log.verbose('TagGroup', 'deleteTagGroup(%s)', tagGroup)
 
     try {
-      await this.wechaty.puppet.tagGroupDelete(tagGroup.id())
-      this.pool.splice(this.pool.indexOf(tagGroup), 1)
+      await this.wechaty.puppet.tagGroupDelete(tagGroup.id)
     } catch (e) {
       this.wechaty.emitError(e)
       log.error('TagGroup', 'deleteTagGroup() exception: %s', (e as Error).message)
@@ -125,25 +115,117 @@ class TagGroupMixin extends wechatifyMixinBase() {
   }
 
   async tags (): Promise<TagInterface[]> {
-    return (await this.wechaty.Tag.list()).filter(tag => tag.groupId() === this.id())
+    log.verbose('TagGroup', 'tags(%s)', this)
+    try {
+      const tagIdentifierList = await this.wechaty.puppet.tagGroupTagList(this.id)
+
+      const identifierToTag = async (tag: TagIdentifier) => this.wechaty.Tag.find(tag).catch(e => this.wechaty.emitError(e))
+
+      const CONCURRENCY = 17
+      const tagIterator = concurrencyExecuter(CONCURRENCY)(identifierToTag)(tagIdentifierList)
+
+      const tagList: TagInterface[] = []
+      for await (const tag of tagIterator) {
+        if (tag) {
+          tagList.push(tag)
+        }
+      }
+      return tagList
+
+    } catch (e) {
+      this.wechaty.emitError(e)
+      log.error('TagGroup', 'list() exception: %s', (e as Error).message)
+      return []
+    }
+
+  }
+
+  static async find (id: string): Promise<TagGroupInterface | undefined> {
+    log.silly('TagGroup', 'find(%s)', id)
+
+    const tagGroup = (this.wechaty.TagGroup as any as typeof TagGroupImpl).load(id)
+
+    try {
+      await tagGroup.ready()
+    } catch (e) {
+      this.wechaty.emitError(e)
+      return undefined
+    }
+    return tagGroup
+  }
+
+  /**
+   * Force reload data for TagGroup, Sync data from low-level API again.
+   *
+   * @returns {Promise<this>}
+   * @example
+   * await tagGroup.sync()
+   */
+  async sync (): Promise<void> {
+    await this.wechaty.puppet.tagGroupPayloadDirty(this.id)
+    await this.ready(true)
+  }
+
+  /**
+   * @ignore
+   */
+  isReady (): boolean {
+    return !!(this.payload)
+  }
+
+  /**
+   * `ready()` is For FrameWork ONLY!
+   *
+   * Please not to use `ready()` at the user land.
+   * If you want to sync data, use `sync()` instead.
+   *
+   * @ignore
+   */
+  async ready (
+    forceSync = false,
+  ): Promise<void> {
+    log.silly('TagGroup', 'ready() @ %s with TagGroup="%s"', this.wechaty.puppet, this.id)
+
+    if (!forceSync && this.isReady()) { // already ready
+      log.silly('TagGroup', 'ready() isReady() true')
+      return
+    }
+
+    try {
+      this.payload = await this.wechaty.puppet.tagGroupPayload(this.id)
+    } catch (e) {
+      this.wechaty.emitError(e)
+      log.verbose('TagGroup', 'ready() this.wechaty.puppet.tagGroupPayload(%s) exception: %s',
+        this.id,
+        (e as Error).message,
+      )
+      throw e
+    }
   }
 
   override toString () {
-    return `<TagGroup#${this.name() || this.id()}>`
+    return `<TagGroup#${this.name() || this.id}>`
   }
 
 }
 
-class TagGroupImpl extends validationMixin(TagGroupMixin)<TagGroupInterface>() { }
-interface TagGroupInterface extends TagGroupImpl { }
+class TagGroupImplBase extends validationMixin(TagGroupMixin)<TagGroupImplInterface>() { }
+interface TagGroupImplInterface extends TagGroupImplBase { }
+
+type TagGroupProtectedProperty =
+  | 'ready'
+
+type TagGroupInterface = Omit<TagGroupImplInterface, TagGroupProtectedProperty>
+class TagGroupImpl extends validationMixin(TagGroupImplBase)<TagGroupInterface>() { }
 
 type TagGroupConstructor = Constructor<
-  TagGroupInterface,
-  typeof TagGroupImpl
+  TagGroupImplInterface,
+  Omit<typeof TagGroupImpl, 'load'>
 >
 
 export type {
   TagGroupConstructor,
+  TagGroupProtectedProperty,
   TagGroupInterface,
 }
 export {

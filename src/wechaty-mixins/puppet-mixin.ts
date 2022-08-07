@@ -11,12 +11,14 @@ import type {
   StateSwitchInterface,
 }                       from 'state-switch'
 
-import { config, FOUR_PER_EM_SPACE }               from '../config.js'
+import { config, PUPPET_PAYLOAD_SYNC_GAP, PUPPET_PAYLOAD_SYNC_MAX_RETRY }               from '../config.js'
 import { timestampToDate }      from '../pure-functions/timestamp-to-date.js'
 import type {
   ContactImpl,
   ContactInterface,
   RoomImpl,
+  TagGroupInterface,
+  TagInterface,
 }                               from '../user-modules/mod.js'
 
 import type {
@@ -26,7 +28,8 @@ import type {
 import type { GErrorMixin } from './gerror-mixin.js'
 import type { IoMixin }     from './io-mixin.js'
 import { ContactImportantFields, ContactUpdatableValuePair, InfoUpdateInterface, RoomImportantFields, RoomUpdatableValuePair } from '../schemas/update.js'
-import { diffPayload } from '../pure-functions/update.js'
+import { checkUntilChanged, diffPayload } from '../pure-functions/update.js'
+import { getTagKey } from '@juzi/wechaty-puppet/helpers'
 
 const PUPPET_MEMORY_NAME = 'puppet'
 
@@ -427,6 +430,95 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
             })
             break
 
+          case 'tag':
+            puppet.on('tag', async payload => {
+              switch (payload.tagEventType) {
+                case PUPPET.types.TagEvent.TagCreate: {
+                  const newTagPromises = payload.tagEventPayload.map(tag =>
+                    this.Tag.find({
+                      id: tag.tagId,
+                      groupId: tag.tagGroupId,
+                    }),
+                  )
+                  const newTags = await Promise.all(newTagPromises)
+                  this.emit('tag', payload.tagEventType, newTags)
+                  break
+                }
+                case PUPPET.types.TagEvent.TagDelete: {
+                  const deletedTagPromises = payload.tagEventPayload.map(tag =>
+                    this.Tag.find({
+                      id: tag.tagId,
+                      groupId: tag.tagGroupId,
+                    }),
+                  )
+                  const deletedTags = await Promise.all(deletedTagPromises)
+                  this.emit('tag', payload.tagEventType, deletedTags)
+                  // TODO: bind tag-delete to tag instance
+                  break
+                }
+                case PUPPET.types.TagEvent.TagRename: {
+                  const renamedTagPromises = payload.tagEventPayload.map(tag =>
+                    this.Tag.find({
+                      id: tag.tagId,
+                      groupId: tag.tagGroupId,
+                    }),
+                  )
+                  const renamedTags = (await Promise.all(renamedTagPromises)) as TagInterface[]
+                  await Promise.all(renamedTags.map(async tag => {
+                    const oldName = tag.name()
+                    const result = await checkUntilChanged(PUPPET_PAYLOAD_SYNC_GAP, PUPPET_PAYLOAD_SYNC_MAX_RETRY, async () => {
+                      await tag.sync()
+                      return tag.name() === oldName
+                    })
+                    if (!result) {
+                      log.warn('WechatyPuppetMixin', 'tagRenameEvent still get old name after %s retries for tag %s', PUPPET_PAYLOAD_SYNC_MAX_RETRY, tag.key)
+                    }
+                  }))
+                  this.emit('tag', payload.tagEventType, renamedTags)
+                  // TODO: bind tag-rename to tag instance
+                  break
+                }
+                case PUPPET.types.TagEvent.TagGroupCreate: {
+                  const newTagGroupPromises = payload.tagEventPayload.map(tagGroup =>
+                    this.TagGroup.find(tagGroup.tagGroupId),
+                  )
+                  const newTagGroups = await Promise.all(newTagGroupPromises)
+                  this.emit('tag', payload.tagEventType, newTagGroups)
+                  break
+                }
+                case PUPPET.types.TagEvent.TagGroupDelete: {
+                  const deletedTagGroupPromises = payload.tagEventPayload.map(tagGroup =>
+                    this.TagGroup.find(tagGroup.tagGroupId),
+                  )
+                  const deletedTagGroups = await Promise.all(deletedTagGroupPromises)
+                  this.emit('tag', payload.tagEventType, deletedTagGroups)
+                  break
+                  // TODO: bind tagGroup-delete to tagGroup instance
+                }
+                case PUPPET.types.TagEvent.TagGroupRename: {
+                  const renamedTagGroupPromises = payload.tagEventPayload.map(tagGroup =>
+                    this.TagGroup.find(tagGroup.tagGroupId),
+                  )
+                  const renamedTagGroups = (await Promise.all(renamedTagGroupPromises)) as TagGroupInterface[]
+                  await Promise.all(renamedTagGroups.map(async tagGroup => {
+                    const oldName = tagGroup.name()
+                    const result = await checkUntilChanged(PUPPET_PAYLOAD_SYNC_GAP, PUPPET_PAYLOAD_SYNC_MAX_RETRY, async () => {
+                      await tagGroup.sync()
+                      return tagGroup.name() === oldName
+                    })
+                    if (!result) {
+                      log.warn('WechatyPuppetMixin', 'tagGroupRenameEvent still get old name after %s retries for tagGroup %s', PUPPET_PAYLOAD_SYNC_MAX_RETRY, tagGroup.id)
+                    }
+                  }))
+                  this.emit('tag', payload.tagEventType, renamedTagGroups)
+                  // TODO: bind tagGroup-rename to tagGroup instance
+                  break
+                }
+              }
+
+            })
+            break
+
           case 'reset':
             // Do not propagation `reset` event from puppet
             break
@@ -445,7 +537,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                     const newPayload = JSON.parse(JSON.stringify(contact?.payload || {}))
 
                     const differences = diffPayload<PUPPET.payloads.Contact>(oldPayload, newPayload)
-                    const importangDifferences = differences.filter(ele => ele && ContactImportantFields.some(key => key === ele.key))
+                    const importantDifferences = differences.filter(ele => ele && ContactImportantFields.some(key => key === ele.key))
                     const regularDifferences = differences.filter(ele => ele && !ContactImportantFields.some(key => key === ele.key)) as ContactUpdatableValuePair[]
                     if (regularDifferences.length > 0) {
                       const updateEvent: InfoUpdateInterface = {
@@ -456,13 +548,13 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                       this.emit('update', updateEvent)
                       contact?.emit('update', updateEvent)
                     }
-                    for (const difference of importangDifferences) {
+                    for (const difference of importantDifferences) {
                       switch (difference?.key) {
                         case 'tags': {
-                          const oldTagsSet = new Set(difference.oldValue?.map(ele => ele.groupId + FOUR_PER_EM_SPACE + ele.id))
-                          const newTagsSet = new Set(difference.newValue?.map(ele => ele.groupId + FOUR_PER_EM_SPACE + ele.id))
-                          const addedTags = difference.newValue?.filter(ele => !oldTagsSet.has(ele.groupId + FOUR_PER_EM_SPACE + ele.id)).map(ele => this.Tag.load(ele)) || []
-                          const removedTags = difference.oldValue?.filter(ele => !newTagsSet.has(ele.groupId + FOUR_PER_EM_SPACE + ele.id)).map(ele => this.Tag.load(ele)) || []
+                          const oldTagsSet = new Set(difference.oldValue?.map(ele => getTagKey(ele)))
+                          const newTagsSet = new Set(difference.newValue?.map(ele => getTagKey(ele)))
+                          const addedTags = difference.newValue?.filter(ele => !oldTagsSet.has(getTagKey(ele))).map(ele => this.Tag.find(ele)) || []
+                          const removedTags = difference.oldValue?.filter(ele => !newTagsSet.has(getTagKey(ele))).map(ele => this.Tag.find(ele)) || []
                           if (addedTags.length > 0) {
                             this.emit('contact-tag-add', contact, addedTags)
                           }
@@ -504,7 +596,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                     const newPayload = JSON.parse(JSON.stringify(room?.payload || {}))
 
                     const differences = diffPayload<PUPPET.payloads.Room>(oldPayload, newPayload)
-                    const importangDifferences = differences.filter(ele => ele && RoomImportantFields.some(key => key === ele.key))
+                    const importantDifferences = differences.filter(ele => ele && RoomImportantFields.some(key => key === ele.key))
                     const regularDifferences = differences.filter(ele => ele && !RoomImportantFields.some(key => key === ele.key)) as RoomUpdatableValuePair[]
                     if (regularDifferences.length > 0) {
                       const updateEvent: InfoUpdateInterface = {
@@ -515,7 +607,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                       this.emit('update', updateEvent)
                       room?.emit('update', updateEvent)
                     }
-                    for (const difference of importangDifferences) {
+                    for (const difference of importantDifferences) {
                       switch (difference?.key) {
                         case 'ownerId': {
                           const oldOwner = (await this.Contact.find({ id: difference.oldValue }))!
@@ -544,6 +636,10 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                     break
                   case PUPPET.types.Payload.Message:
                     // Message does not need to dirty (?)
+                    break
+                  case PUPPET.types.Payload.Tag:
+                    break
+                  case PUPPET.types.Payload.TagGroup:
                     break
 
                   case PUPPET.types.Payload.Unspecified:
