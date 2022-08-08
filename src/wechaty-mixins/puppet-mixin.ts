@@ -431,34 +431,22 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
 
           case 'tag':
             puppet.on('tag', async payload => {
-              switch (payload.tagEventType) {
+              switch (payload.type) {
                 case PUPPET.types.TagEvent.TagCreate: {
-                  const newTagPromises = payload.tagEventPayload.map(tag =>
-                    this.Tag.find({
-                      id: tag.tagId,
-                    }),
-                  )
+                  const newTagPromises = payload.idList.map(id => this.Tag.find({ id }))
                   const newTags = await Promise.all(newTagPromises)
-                  this.emit('tag', payload.tagEventType, newTags)
+                  this.emit('tag', payload.type, newTags)
                   break
                 }
                 case PUPPET.types.TagEvent.TagDelete: {
-                  const deletedTagPromises = payload.tagEventPayload.map(tag =>
-                    this.Tag.find({
-                      id: tag.tagId,
-                    }),
-                  )
+                  const deletedTagPromises = payload.idList.map(id => this.Tag.find({ id }))
                   const deletedTags = await Promise.all(deletedTagPromises)
-                  this.emit('tag', payload.tagEventType, deletedTags)
+                  this.emit('tag', payload.type, deletedTags)
                   // TODO: bind tag-delete to tag instance
                   break
                 }
                 case PUPPET.types.TagEvent.TagRename: {
-                  const renamedTagPromises = payload.tagEventPayload.map(tag =>
-                    this.Tag.find({
-                      id: tag.tagId,
-                    }),
-                  )
+                  const renamedTagPromises = payload.idList.map(id => this.Tag.find({ id }))
                   const renamedTags = (await Promise.all(renamedTagPromises)) as TagInterface[]
                   await Promise.all(renamedTags.map(async tag => {
                     const oldName = tag.name()
@@ -470,40 +458,40 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                       log.warn('WechatyPuppetMixin', 'tagRenameEvent still get old name after %s retries for tag %s', PUPPET_PAYLOAD_SYNC_MAX_RETRY, tag.id)
                     }
                   }))
-                  this.emit('tag', payload.tagEventType, renamedTags)
+                  this.emit('tag', payload.type, renamedTags)
                   // TODO: bind tag-rename to tag instance
                   break
                 }
                 default:
-                  throw new Error('tagEventType ' + payload.tagEventType + ' unsupported!')
+                  throw new Error('tagEventType ' + payload.type + ' unsupported!')
               }
             })
             break
 
           case 'tag-group':
             puppet.on('tag-group', async payload => {
-              switch (payload.tagEventType) {
+              switch (payload.type) {
 
                 case PUPPET.types.TagGroupEvent.TagGroupCreate: {
-                  const newTagGroupPromises = payload.tagEventPayload.map(tagGroup =>
-                    this.TagGroup.find({ id: tagGroup.tagGroupId }),
+                  const newTagGroupPromises = payload.idList.map(id =>
+                    this.TagGroup.find({ id }),
                   )
                   const newTagGroups = await Promise.all(newTagGroupPromises)
-                  this.emit('tag-group', payload.tagEventType, newTagGroups)
+                  this.emit('tag-group', payload.type, newTagGroups)
                   break
                 }
                 case PUPPET.types.TagGroupEvent.TagGroupDelete: {
-                  const deletedTagGroupPromises = payload.tagEventPayload.map(tagGroup =>
-                    this.TagGroup.find({ id: tagGroup.tagGroupId }),
+                  const deletedTagGroupPromises = payload.idList.map(id =>
+                    this.TagGroup.find({ id }),
                   )
                   const deletedTagGroups = await Promise.all(deletedTagGroupPromises)
-                  this.emit('tag-group', payload.tagEventType, deletedTagGroups)
+                  this.emit('tag-group', payload.type, deletedTagGroups)
                   break
                   // TODO: bind tagGroup-delete to tagGroup instance
                 }
                 case PUPPET.types.TagGroupEvent.TagGroupRename: {
-                  const renamedTagGroupPromises = payload.tagEventPayload.map(tagGroup =>
-                    this.TagGroup.find({ id: tagGroup.tagGroupId }),
+                  const renamedTagGroupPromises = payload.idList.map(id =>
+                    this.TagGroup.find({ id }),
                   )
                   const renamedTagGroups = (await Promise.all(renamedTagGroupPromises)) as TagGroupInterface[]
                   await Promise.all(renamedTagGroups.map(async tagGroup => {
@@ -516,12 +504,12 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                       log.warn('WechatyPuppetMixin', 'tagGroupRenameEvent still get old name after %s retries for tagGroup %s', PUPPET_PAYLOAD_SYNC_MAX_RETRY, tagGroup.id)
                     }
                   }))
-                  this.emit('tag-group', payload.tagEventType, renamedTagGroups)
+                  this.emit('tag-group', payload.type, renamedTagGroups)
                   // TODO: bind tagGroup-rename to tagGroup instance
                   break
                 }
                 default:
-                  throw new Error('tagGroupEventType ' + payload.tagEventType + ' unsupported!')
+                  throw new Error('tagGroupEventType ' + payload.type + ' unsupported!')
               }
 
             })

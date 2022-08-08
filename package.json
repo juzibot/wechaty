@@ -132,7 +132,7 @@
     "@chatie/eslint-config": "^1.0.4",
     "@chatie/semver": "^0.4.7",
     "@chatie/tsconfig": "^4.6.3",
-    "@juzi/wechaty-puppet": "^1.0.29",
+    "@juzi/wechaty-puppet": "^1.0.30",
     "@juzi/wechaty-puppet-mock": "^1.0.1",
     "@swc/core": "^1.2.155",
     "@swc/helpers": "^0.3.6",
