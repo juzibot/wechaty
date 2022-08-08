@@ -29,7 +29,6 @@ import type { GErrorMixin } from './gerror-mixin.js'
 import type { IoMixin }     from './io-mixin.js'
 import { ContactImportantFields, ContactUpdatableValuePair, InfoUpdateInterface, RoomImportantFields, RoomUpdatableValuePair } from '../schemas/update.js'
 import { checkUntilChanged, diffPayload } from '../pure-functions/update.js'
-import { getTagKey } from '@juzi/wechaty-puppet/helpers'
 
 const PUPPET_MEMORY_NAME = 'puppet'
 
@@ -437,7 +436,6 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                   const newTagPromises = payload.tagEventPayload.map(tag =>
                     this.Tag.find({
                       id: tag.tagId,
-                      groupId: tag.tagGroupId,
                     }),
                   )
                   const newTags = await Promise.all(newTagPromises)
@@ -448,7 +446,6 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                   const deletedTagPromises = payload.tagEventPayload.map(tag =>
                     this.Tag.find({
                       id: tag.tagId,
-                      groupId: tag.tagGroupId,
                     }),
                   )
                   const deletedTags = await Promise.all(deletedTagPromises)
@@ -460,7 +457,6 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                   const renamedTagPromises = payload.tagEventPayload.map(tag =>
                     this.Tag.find({
                       id: tag.tagId,
-                      groupId: tag.tagGroupId,
                     }),
                   )
                   const renamedTags = (await Promise.all(renamedTagPromises)) as TagInterface[]
@@ -471,33 +467,43 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                       return tag.name() === oldName
                     })
                     if (!result) {
-                      log.warn('WechatyPuppetMixin', 'tagRenameEvent still get old name after %s retries for tag %s', PUPPET_PAYLOAD_SYNC_MAX_RETRY, tag.key)
+                      log.warn('WechatyPuppetMixin', 'tagRenameEvent still get old name after %s retries for tag %s', PUPPET_PAYLOAD_SYNC_MAX_RETRY, tag.id)
                     }
                   }))
                   this.emit('tag', payload.tagEventType, renamedTags)
                   // TODO: bind tag-rename to tag instance
                   break
                 }
-                case PUPPET.types.TagEvent.TagGroupCreate: {
+                default:
+                  throw new Error('tagEventType ' + payload.tagEventType + ' unsupported!')
+              }
+            })
+            break
+
+          case 'tag-group':
+            puppet.on('tag-group', async payload => {
+              switch (payload.tagEventType) {
+
+                case PUPPET.types.TagGroupEvent.TagGroupCreate: {
                   const newTagGroupPromises = payload.tagEventPayload.map(tagGroup =>
-                    this.TagGroup.find(tagGroup.tagGroupId),
+                    this.TagGroup.find({ id: tagGroup.tagGroupId }),
                   )
                   const newTagGroups = await Promise.all(newTagGroupPromises)
-                  this.emit('tag', payload.tagEventType, newTagGroups)
+                  this.emit('tag-group', payload.tagEventType, newTagGroups)
                   break
                 }
-                case PUPPET.types.TagEvent.TagGroupDelete: {
+                case PUPPET.types.TagGroupEvent.TagGroupDelete: {
                   const deletedTagGroupPromises = payload.tagEventPayload.map(tagGroup =>
-                    this.TagGroup.find(tagGroup.tagGroupId),
+                    this.TagGroup.find({ id: tagGroup.tagGroupId }),
                   )
                   const deletedTagGroups = await Promise.all(deletedTagGroupPromises)
-                  this.emit('tag', payload.tagEventType, deletedTagGroups)
+                  this.emit('tag-group', payload.tagEventType, deletedTagGroups)
                   break
                   // TODO: bind tagGroup-delete to tagGroup instance
                 }
-                case PUPPET.types.TagEvent.TagGroupRename: {
+                case PUPPET.types.TagGroupEvent.TagGroupRename: {
                   const renamedTagGroupPromises = payload.tagEventPayload.map(tagGroup =>
-                    this.TagGroup.find(tagGroup.tagGroupId),
+                    this.TagGroup.find({ id: tagGroup.tagGroupId }),
                   )
                   const renamedTagGroups = (await Promise.all(renamedTagGroupPromises)) as TagGroupInterface[]
                   await Promise.all(renamedTagGroups.map(async tagGroup => {
@@ -510,10 +516,12 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                       log.warn('WechatyPuppetMixin', 'tagGroupRenameEvent still get old name after %s retries for tagGroup %s', PUPPET_PAYLOAD_SYNC_MAX_RETRY, tagGroup.id)
                     }
                   }))
-                  this.emit('tag', payload.tagEventType, renamedTagGroups)
+                  this.emit('tag-group', payload.tagEventType, renamedTagGroups)
                   // TODO: bind tagGroup-rename to tagGroup instance
                   break
                 }
+                default:
+                  throw new Error('tagGroupEventType ' + payload.tagEventType + ' unsupported!')
               }
 
             })
@@ -551,10 +559,10 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                     for (const difference of importantDifferences) {
                       switch (difference?.key) {
                         case 'tags': {
-                          const oldTagsSet = new Set(difference.oldValue?.map(ele => getTagKey(ele)))
-                          const newTagsSet = new Set(difference.newValue?.map(ele => getTagKey(ele)))
-                          const addedTags = difference.newValue?.filter(ele => !oldTagsSet.has(getTagKey(ele))).map(ele => this.Tag.find(ele)) || []
-                          const removedTags = difference.oldValue?.filter(ele => !newTagsSet.has(getTagKey(ele))).map(ele => this.Tag.find(ele)) || []
+                          const oldTagsSet = new Set(difference.oldValue)
+                          const newTagsSet = new Set(difference.newValue)
+                          const addedTags = difference.newValue?.filter(ele => !oldTagsSet.has(ele)).map(ele => this.Tag.find({ id: ele })) || []
+                          const removedTags = difference.oldValue?.filter(ele => !newTagsSet.has(ele)).map(ele => this.Tag.find({ id: ele })) || []
                           if (addedTags.length > 0) {
                             this.emit('contact-tag-add', contact, addedTags)
                           }

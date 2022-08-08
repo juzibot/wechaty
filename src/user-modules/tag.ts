@@ -22,7 +22,7 @@ import type { TagQueryFilter } from '@juzi/wechaty-puppet/dist/esm/src/schemas/t
 
 import type { Constructor } from 'clone-class'
 import { concurrencyExecuter } from 'rx-queue'
-import { FOUR_PER_EM_SPACE, log } from '../config.js'
+import { log } from '../config.js'
 import { poolifyMixin } from '../user-mixins/poolify.js'
 
 import { validationMixin } from '../user-mixins/validation.js'
