@@ -65,7 +65,8 @@ type WechatyEventListenerContactName        = (contact: ContactInterface, newNam
 type WechatyEventListenerContactPhone       = (contact: ContactInterface, newPhoneList: string[], oldPhoneList: []) => void | Promise<void>
 type WechatyEventListenerContactAlias       = (contact: ContactInterface, newAlias: string, oldAlias: string) => void | Promise<void>
 type WechatyEventListenerContactDescription = (contact: ContactInterface, newDescription: string, oldDescription: string) => void | Promise<void>
-type WechatyEventListenerTag                = (type: PUPPET.types.TagEvent, list: TagInterface[] | TagGroupInterface[]) => void | Promise<void>
+type WechatyEventListenerTag                = (type: PUPPET.types.TagEvent, list: TagInterface[]) => void | Promise<void>
+type WechatyEventListenerTagGroup           = (type: PUPPET.types.TagGroupEvent, list: TagGroupInterface[]) => void | Promise<void>
 
 /**
  * @desc       Wechaty Class Event Type
@@ -248,6 +249,7 @@ interface WechatyEventListeners {
   'contact-description': WechatyEventListenerContactDescription
   'room-owner'         : WechatyEventListenerRoomOwner
   'tag'                : WechatyEventListenerTag
+  'tag-group'          : WechatyEventListenerTagGroup
 }
 
 const WechatyEventEmitter = EventEmitter as any as new () => TypedEventEmitter<
@@ -283,6 +285,7 @@ export type {
   WechatyEventListenerContactPhone,
   WechatyEventListenerContactDescription,
   WechatyEventListenerTag,
+  WechatyEventListenerTagGroup,
 }
 export {
   WechatyEventEmitter,

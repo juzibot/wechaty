@@ -18,12 +18,11 @@
  *
  */
 import * as PUPPET from '@juzi/wechaty-puppet'
-import type { TagIdentifier } from '@juzi/wechaty-puppet/filters'
-import { getTagKey } from '@juzi/wechaty-puppet/helpers'
+import type { TagQueryFilter } from '@juzi/wechaty-puppet/dist/esm/src/schemas/tag.js'
 
 import type { Constructor } from 'clone-class'
 import { concurrencyExecuter } from 'rx-queue'
-import { FOUR_PER_EM_SPACE, log } from '../config.js'
+import { log } from '../config.js'
 import { poolifyMixin } from '../user-mixins/poolify.js'
 
 import { validationMixin } from '../user-mixins/validation.js'
@@ -48,43 +47,43 @@ class TagMixin extends MixinBase {
    *
    */
   payload?: PUPPET.payloads.Tag
-  public readonly id: string
-  public readonly groupId?: string
 
   /**
    * @hideconstructor
    */
   constructor (
-    public readonly key: string,
+    public readonly id: string,
   ) {
     super()
-    this.groupId = this.key.split(FOUR_PER_EM_SPACE)[0]
-    this.id = this.key.split(FOUR_PER_EM_SPACE)[1]!
     log.silly('Tag', 'constructor()')
   }
 
   type (): PUPPET.types.Tag {
-    return (this.payload && this.payload.type) || PUPPET.types.Tag.Personal
+    return (this.payload && this.payload.type) || PUPPET.types.Tag.Unspecific
   }
 
   name (): string {
     return (this.payload && this.payload.name) || ''
   }
 
-  async group (): Promise<TagGroupInterface | undefined> {
-    return this.groupId ? this.wechaty.TagGroup.find(this.groupId) : undefined
+  groupId (): string {
+    return (this.payload && this.payload.groupId) || ''
   }
 
-  static async list (forceSync = false): Promise<TagInterface[]> {
-    log.verbose('Tag', 'list(%s)', forceSync)
+  async group (): Promise<TagGroupInterface | undefined> {
+    return this.payload?.groupId ? this.wechaty.TagGroup.find({ id: this.payload.groupId }) : undefined
+  }
+
+  static async list (): Promise<TagInterface[]> {
+    log.verbose('Tag', 'list()')
 
     try {
-      const tagIdentifierList = await this.wechaty.puppet.tagTagList()
+      const tagIdList = await this.wechaty.puppet.tagTagList()
 
-      const identifierToTag = async (identifier: TagIdentifier) => this.find(identifier).catch(e => this.wechaty.emitError(e))
+      const idToTag = async (id: string) => this.find({ id }).catch(e => this.wechaty.emitError(e))
 
       const CONCURRENCY = 17
-      const tagIterator = concurrencyExecuter(CONCURRENCY)(identifierToTag)(tagIdentifierList)
+      const tagIterator = concurrencyExecuter(CONCURRENCY)(idToTag)(tagIdList)
 
       const tagList: TagInterface[] = []
       for await (const tag of tagIterator) {
@@ -102,18 +101,30 @@ class TagMixin extends MixinBase {
     }
   }
 
-  static async find (identifier: TagIdentifier): Promise<TagInterface | undefined> {
-    log.silly('Tag', 'find(%s)', JSON.stringify(identifier))
+  static async find (filter: TagQueryFilter): Promise<TagInterface | undefined> {
+    log.silly('Tag', 'find(%s)', JSON.stringify(filter))
 
-    const tag = (this.wechaty.Tag as any as typeof TagImpl).load(getTagKey(identifier))
+    if (filter.id) {
+      const tag = (this.wechaty.Tag as any as typeof TagImpl).load(filter.id)
 
-    try {
-      await tag.ready()
-    } catch (e) {
-      this.wechaty.emitError(e)
-      return undefined
+      try {
+        await tag.ready()
+      } catch (e) {
+        this.wechaty.emitError(e)
+        return undefined
+      }
+      return tag
     }
-    return tag
+
+    if (filter.name) {
+      const tags = (await this.wechaty.Tag.list()).filter(t => t.name() === filter.name)
+      if (tags.length > 0) {
+        return tags[0]
+      }
+    }
+
+    return undefined
+    // TODO: use a puppet method to find tag, like how contact and room do it
   }
 
   /**
@@ -124,10 +135,7 @@ class TagMixin extends MixinBase {
    * await tag.sync()
    */
   async sync (): Promise<void> {
-    await this.wechaty.puppet.tagPayloadDirty(getTagKey({
-      id: this.id,
-      groupId: this.groupId,
-    }))
+    await this.wechaty.puppet.tagPayloadDirty(this.id)
     await this.ready(true)
   }
 
@@ -149,7 +157,7 @@ class TagMixin extends MixinBase {
   async ready (
     forceSync = false,
   ): Promise<void> {
-    log.silly('Tag', 'ready() @ %s with Tag key="%s"', this.wechaty.puppet, this.key)
+    log.silly('Tag', 'ready() @ %s with Tag key="%s"', this.wechaty.puppet, this.id)
 
     if (!forceSync && this.isReady()) { // already ready
       log.silly('Tag', 'ready() isReady() true')
@@ -157,10 +165,7 @@ class TagMixin extends MixinBase {
     }
 
     try {
-      this.payload = await this.wechaty.puppet.tagPayload({
-        id: this.id,
-        groupId: this.groupId,
-      })
+      this.payload = await this.wechaty.puppet.tagPayload(this.id)
 
     } catch (e) {
       this.wechaty.emitError(e)
@@ -175,8 +180,7 @@ class TagMixin extends MixinBase {
   async contactList (): Promise<ContactInterface[]> {
     log.verbose('Tag', 'contactList() for tag : %s', this)
 
-    const tag = { id: this.id, groupId: this.groupId } as TagIdentifier
-    const contactIds = await this.wechaty.puppet.tagTagContactList(tag)
+    const contactIds = await this.wechaty.puppet.tagTagContactList(this.id)
     const contactPromises = contactIds.map(id => this.wechaty.Contact.find({ id })) as Promise<ContactInterface>[]
     return Promise.all(contactPromises)
   }
@@ -184,23 +188,22 @@ class TagMixin extends MixinBase {
   async tag (contacts: ContactInterface | ContactInterface[]): Promise<void> {
     log.verbose('Tag', 'tag(%s) for tag : %s', contacts, this)
 
-    const tag = { id: this.id, groupId: this.groupId } as TagIdentifier
     let contactIds: string[]
     if (Array.isArray(contacts)) {
       contactIds = contacts.map(c => c.id)
     } else {
       contactIds = [contacts.id]
     }
-    await this.wechaty.puppet.tagContactTagAdd([tag], contactIds)
+    await this.wechaty.puppet.tagContactTagAdd([this.id], contactIds)
   }
 
   static async createTag (name: string, tagGroup?: TagGroupInterface): Promise<TagInterface | void> {
     log.verbose('Tag', 'createTag(%s, %s)', tagGroup, name)
 
     try {
-      const tagIdentifier = await this.wechaty.puppet.tagTagAdd(name, tagGroup?.name())
-      if (tagIdentifier) {
-        const newTag = await this.find(tagIdentifier)
+      const tagId = await this.wechaty.puppet.tagTagAdd(name, tagGroup?.name())
+      if (tagId) {
+        const newTag = await this.find({ id: tagId })
         return newTag
       }
     } catch (e) {
@@ -212,10 +215,8 @@ class TagMixin extends MixinBase {
   static async deleteTag (tagInstance: TagInterface): Promise<void> {
     log.verbose('Tag', 'deleteTag(%s, %s)', tagInstance)
 
-    const tagIdentifier = { id: tagInstance.id, groupId: tagInstance.groupId } as TagIdentifier
-
     try {
-      await this.wechaty.puppet.tagTagDelete(tagIdentifier)
+      await this.wechaty.puppet.tagTagDelete(tagInstance.id)
     } catch (e) {
       this.wechaty.emitError(e)
       log.error('Tag', 'deleteTag() exception: %s', (e as Error).message)

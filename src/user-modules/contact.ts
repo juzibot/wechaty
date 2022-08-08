@@ -653,7 +653,7 @@ class ContactMixin extends MixinBase implements SayableSayer {
     try {
       const tagPayloadList = await this.wechaty.puppet.tagContactTagList(this.id)
 
-      const tagListPromises = tagPayloadList.map(tag => this.wechaty.Tag.find(tag))
+      const tagListPromises = tagPayloadList.map(tagId => this.wechaty.Tag.find({ id: tagId }))
       const tagList = await Promise.all(tagListPromises)
       return tagList as TagInterface[]
     } catch (e) {
@@ -674,13 +674,8 @@ class ContactMixin extends MixinBase implements SayableSayer {
       tags = [tags]
     }
 
-    const tagIdentifiers = tags.map(tag => {
-      return {
-        id: tag.id,
-        groupId: tag.groupId,
-      }
-    })
-    await this.wechaty.puppet.tagContactTagAdd(tagIdentifiers, [this.id])
+    const tagIds = tags.map(tag => tag.id)
+    await this.wechaty.puppet.tagContactTagAdd(tagIds, [this.id])
 
   }
 
@@ -695,14 +690,9 @@ class ContactMixin extends MixinBase implements SayableSayer {
       tags = [tags]
     }
 
-    const tagIdentifiers = tags.map(tag => {
-      return {
-        id: tag.id,
-        groupId: tag.groupId,
-      }
-    })
+    const tagIds = tags.map(tag => tag.id)
 
-    await this.wechaty.puppet.tagContactTagRemove(tagIdentifiers, [this.id])
+    await this.wechaty.puppet.tagContactTagRemove(tagIds, [this.id])
 
   }
 
