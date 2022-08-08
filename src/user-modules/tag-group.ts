@@ -18,7 +18,7 @@
  *
  */
 import type * as PUPPET from '@juzi/wechaty-puppet'
-import type { TagIdentifier } from '@juzi/wechaty-puppet/filters'
+import type { TagGroupQueryFilter } from '@juzi/wechaty-puppet/dist/esm/src/schemas/tag.js'
 
 import type { Constructor } from 'clone-class'
 import { concurrencyExecuter } from 'rx-queue'
@@ -67,7 +67,7 @@ class TagGroupMixin extends MixinBase {
     try {
       const tagGroupIds = await this.wechaty.puppet.tagGroupList()
 
-      const idToTagGroup = async (id: string) => this.find(id).catch(e => this.wechaty.emitError(e))
+      const idToTagGroup = async (id: string) => this.find({ id }).catch(e => this.wechaty.emitError(e))
 
       const CONCURRENCY = 17
       const tagGroupIterator = concurrencyExecuter(CONCURRENCY)(idToTagGroup)(tagGroupIds)
@@ -94,7 +94,7 @@ class TagGroupMixin extends MixinBase {
     try {
       const groupId = await this.wechaty.puppet.tagGroupAdd(name)
       if (groupId) {
-        const newTagGroup = await this.find(groupId)
+        const newTagGroup = await this.find({ id: groupId })
         return newTagGroup
       }
     } catch (e) {
@@ -117,12 +117,12 @@ class TagGroupMixin extends MixinBase {
   async tags (): Promise<TagInterface[]> {
     log.verbose('TagGroup', 'tags(%s)', this)
     try {
-      const tagIdentifierList = await this.wechaty.puppet.tagGroupTagList(this.id)
+      const tagIdList = await this.wechaty.puppet.tagGroupTagList(this.id)
 
-      const identifierToTag = async (tag: TagIdentifier) => this.wechaty.Tag.find(tag).catch(e => this.wechaty.emitError(e))
+      const idToTag = async (tagId: string) => this.wechaty.Tag.find({ id: tagId }).catch(e => this.wechaty.emitError(e))
 
       const CONCURRENCY = 17
-      const tagIterator = concurrencyExecuter(CONCURRENCY)(identifierToTag)(tagIdentifierList)
+      const tagIterator = concurrencyExecuter(CONCURRENCY)(idToTag)(tagIdList)
 
       const tagList: TagInterface[] = []
       for await (const tag of tagIterator) {
@@ -140,18 +140,30 @@ class TagGroupMixin extends MixinBase {
 
   }
 
-  static async find (id: string): Promise<TagGroupInterface | undefined> {
-    log.silly('TagGroup', 'find(%s)', id)
+  static async find (filter: TagGroupQueryFilter): Promise<TagGroupInterface | undefined> {
+    log.silly('TagGroup', 'find(%s)', JSON.stringify(filter))
 
-    const tagGroup = (this.wechaty.TagGroup as any as typeof TagGroupImpl).load(id)
+    if (filter.id) {
+      const tagGroup = (this.wechaty.TagGroup as any as typeof TagGroupImpl).load(filter.id)
 
-    try {
-      await tagGroup.ready()
-    } catch (e) {
-      this.wechaty.emitError(e)
-      return undefined
+      try {
+        await tagGroup.ready()
+      } catch (e) {
+        this.wechaty.emitError(e)
+        return undefined
+      }
+      return tagGroup
     }
-    return tagGroup
+
+    if (filter.name) {
+      const tagGroups = (await this.wechaty.TagGroup.list()).filter(tagGroup => tagGroup.name() === filter.name)
+      if (tagGroups.length > 0) {
+        return tagGroups[0]
+      }
+    }
+
+    return undefined
+    // TODO: use a puppet method to find tag, like how contact and room do it
   }
 
   /**
