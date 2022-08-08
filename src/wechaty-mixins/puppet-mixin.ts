@@ -549,12 +549,14 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                         case 'tags': {
                           const oldTagsSet = new Set(difference.oldValue)
                           const newTagsSet = new Set(difference.newValue)
-                          const addedTags = difference.newValue?.filter(ele => !oldTagsSet.has(ele)).map(ele => this.Tag.find({ id: ele })) || []
-                          const removedTags = difference.oldValue?.filter(ele => !newTagsSet.has(ele)).map(ele => this.Tag.find({ id: ele })) || []
-                          if (addedTags.length > 0) {
+                          const addedTagPromises = difference.newValue?.filter(ele => !oldTagsSet.has(ele)).map(ele => this.Tag.find({ id: ele })) || []
+                          const removedTagPromises = difference.oldValue?.filter(ele => !newTagsSet.has(ele)).map(ele => this.Tag.find({ id: ele })) || []
+                          if (addedTagPromises.length > 0) {
+                            const addedTags = await Promise.all(addedTagPromises)
                             this.emit('contact-tag-add', contact, addedTags)
                           }
-                          if (removedTags.length > 0) {
+                          if (removedTagPromises.length > 0) {
+                            const removedTags = await Promise.all(removedTagPromises)
                             this.emit('contact-tag-remove', contact, removedTags)
                           }
                           break
