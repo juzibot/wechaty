@@ -651,7 +651,7 @@ class ContactMixin extends MixinBase implements SayableSayer {
     log.verbose('Contact', 'tags() for %s', this)
 
     try {
-      const tagPayloadList = await this.wechaty.puppet.tagContactTagList(this.id)
+      const tagPayloadList = this.payload?.tags || []
 
       const tagListPromises = tagPayloadList.map(tagId => this.wechaty.Tag.find({ id: tagId }))
       const tagList = await Promise.all(tagListPromises)
