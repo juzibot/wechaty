@@ -655,7 +655,7 @@ class ContactMixin extends MixinBase implements SayableSayer {
 
       const tagListPromises = tagPayloadList.map(tagId => this.wechaty.Tag.find({ id: tagId }))
       const tagList = await Promise.all(tagListPromises)
-      return tagList as TagInterface[]
+      return tagList.filter(tag => !!tag) as TagInterface[]
     } catch (e) {
       this.wechaty.emitError(e)
       log.error('Contact', 'tags() exception: %s', (e as Error).message)

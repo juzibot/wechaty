@@ -447,7 +447,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                 }
                 case PUPPET.types.TagEvent.TagRename: {
                   const renamedTagPromises = payload.idList.map(id => this.Tag.find({ id }))
-                  const renamedTags = (await Promise.all(renamedTagPromises)) as TagInterface[]
+                  const renamedTags = (await Promise.all(renamedTagPromises)).filter(tag => !!tag) as TagInterface[]
                   await Promise.all(renamedTags.map(async tag => {
                     const oldName = tag.name()
                     const result = await checkUntilChanged(PUPPET_PAYLOAD_SYNC_GAP, PUPPET_PAYLOAD_SYNC_MAX_RETRY, async () => {

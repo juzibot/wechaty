@@ -181,8 +181,8 @@ class TagMixin extends MixinBase {
     log.verbose('Tag', 'contactList() for tag : %s', this)
 
     const contactIds = await this.wechaty.puppet.tagTagContactList(this.id)
-    const contactPromises = contactIds.map(id => this.wechaty.Contact.find({ id })) as Promise<ContactInterface>[]
-    return Promise.all(contactPromises)
+    const contactPromises = contactIds.map(id => this.wechaty.Contact.find({ id }))
+    return (await Promise.all(contactPromises)).filter(contact => !!contact) as ContactInterface[]
   }
 
   async tag (contacts: ContactInterface | ContactInterface[]): Promise<void> {
