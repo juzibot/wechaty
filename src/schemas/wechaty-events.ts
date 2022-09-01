@@ -65,8 +65,8 @@ type WechatyEventListenerContactName        = (contact: ContactInterface, newNam
 type WechatyEventListenerContactPhone       = (contact: ContactInterface, newPhoneList: string[], oldPhoneList: []) => void | Promise<void>
 type WechatyEventListenerContactAlias       = (contact: ContactInterface, newAlias: string, oldAlias: string) => void | Promise<void>
 type WechatyEventListenerContactDescription = (contact: ContactInterface, newDescription: string, oldDescription: string) => void | Promise<void>
-type WechatyEventListenerTag                = (type: PUPPET.types.TagEvent, list: TagInterface[]) => void | Promise<void>
-type WechatyEventListenerTagGroup           = (type: PUPPET.types.TagGroupEvent, list: TagGroupInterface[]) => void | Promise<void>
+type WechatyEventListenerTag                = (type: PUPPET.types.TagEvent, list: TagInterface[], date?: Date) => void | Promise<void>
+type WechatyEventListenerTagGroup           = (type: PUPPET.types.TagGroupEvent, list: TagGroupInterface[], date?: Date) => void | Promise<void>
 
 /**
  * @desc       Wechaty Class Event Type
