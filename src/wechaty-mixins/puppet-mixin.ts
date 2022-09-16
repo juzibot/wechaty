@@ -615,6 +615,10 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                           room?.emit('owner', newOwner, oldOwner)
                           break
                         }
+                        case 'memberIdList':
+                          break // this diff has been handled by room-join and room-leave events
+                        case 'topic':
+                          break // this diff has been handled by room-topic event
                         default:
                           log.warn('WechatyPuppetMixin', 'puppet dirty unsupported difference type: %s', JSON.stringify(difference))
                       }
