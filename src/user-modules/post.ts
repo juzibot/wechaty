@@ -324,6 +324,32 @@ class PostMixin extends wechatifyMixinBase() {
     }
   }
 
+  async getSayableWithIndex (sayableIndex: number) {
+    log.verbose('Post', 'getSayableWithIndex(%s)', sayableIndex)
+
+    if (PUPPET.payloads.isPostServer(this.payload)) {
+      const payloadToSayable = payloadToSayableWechaty(this.wechaty)
+      const sayablePayload = await this.wechaty.puppet.postPayloadSayable(this.id!, this.payload.sayableList[sayableIndex]!)
+      const sayable = await payloadToSayable(sayablePayload)
+      return sayable
+    } else {
+      return this.payload.sayableList[sayableIndex]
+    }
+  }
+
+  async getSayableWithId (id: string) {
+    log.verbose('Post', 'getSayableWithId(%s)', id)
+
+    if (PUPPET.payloads.isPostServer(this.payload)) {
+      const payloadToSayable = payloadToSayableWechaty(this.wechaty)
+      const sayablePayload = await this.wechaty.puppet.postPayloadSayable(this.id!, id)
+      const sayable = await payloadToSayable(sayablePayload)
+      return sayable
+    } else {
+      throw new Error('client post sayable has no Id')
+    }
+  }
+
   async * children (
     filter: PUPPET.filters.Post = {},
   ): AsyncIterableIterator<PostInterface> {
