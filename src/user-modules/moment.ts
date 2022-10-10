@@ -25,6 +25,7 @@ import { validationMixin } from '../user-mixins/validation.js'
 import {
   wechatifyMixinBase,
 }                       from '../user-mixins/wechatify.js'
+import type { FileBoxInterface } from 'file-box'
 
 class MomentMixin extends wechatifyMixinBase() {
 
@@ -36,6 +37,18 @@ class MomentMixin extends wechatifyMixinBase() {
     // list all moment
     void contact
     return []
+  }
+
+  static async signature (signature?: string): Promise<void | string> {
+    log.verbose('Moment', 'signature(%s)', signature)
+
+    return this.wechaty.puppet.momentSignature(signature)
+  }
+
+  static async coverage (coverage?: FileBoxInterface): Promise<void | FileBoxInterface> {
+    log.verbose('Moment', 'coverage(%s)', JSON.stringify(coverage))
+
+    return this.wechaty.puppet.momentCoverage(coverage)
   }
 
   /*
