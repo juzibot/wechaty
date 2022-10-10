@@ -305,8 +305,7 @@ class PostMixin extends wechatifyMixinBase() {
 
     if (PUPPET.payloads.isPostServer(this.payload)) {
       for (const sayableId of this.payload.sayableList) {
-        const sayablePayload = await this.wechaty.puppet.postPayloadSayable(this.id!, sayableId)
-        const sayable = await payloadToSayable(sayablePayload)
+        const sayable = await this.getSayableWithId(sayableId)
 
         if (sayable) {
           yield sayable
