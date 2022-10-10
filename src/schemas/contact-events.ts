@@ -16,6 +16,7 @@ type ContactEventListenerTagAdd = (tagList: TagInterface[]) => void | Promise<vo
 type ContactEventListenerTagRemove = (tagList: TagInterface[]) => void | Promise<void>
 type ContactEventListenerName = (newName: string, oldName: string) => void | Promise<void>
 type ContactEventListenerDescription = (newDescription: string, oldDescription: string) => void | Promise<void>
+type ContactEventListenerCorporation = (newCorporation: string, oldCorporation: string) => void | Promise<void>
 type ContactEventListenerPhone = (newPhoneList: string[], oldPhoneList: string[]) => void | Promise<void>
 type ContactEventListenerAlias = (newAlias: string, oldAlias: string) => void | Promise<void>
 
@@ -27,6 +28,7 @@ interface ContactEventListeners {
   'tag-remove': ContactEventListenerTagRemove,
   name        : ContactEventListenerName,
   description : ContactEventListenerDescription,
+  corporation : ContactEventListenerCorporation,
   phone       : ContactEventListenerPhone,
   alias       : ContactEventListenerAlias,
 }
@@ -44,6 +46,7 @@ export type {
   ContactEventListenerTagRemove,
   ContactEventListenerName,
   ContactEventListenerDescription,
+  ContactEventListenerCorporation,
   ContactEventListenerPhone,
   ContactEventListenerAlias,
 }

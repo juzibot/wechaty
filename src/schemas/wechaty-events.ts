@@ -33,6 +33,7 @@ const WECHATY_EVENT_DICT = {
   'contact-alias'      : 'Will be emitted when contact alias has been changed.',
   'contact-phone'      : 'Will be emitted when contact phone has been changed.',
   'contact-description': 'Will be emitted when contact description has been changed.',
+  'contact-corporation': 'Will be emitted when contact corporation has been changed.',
   'room-owner'         : 'Will be emitted when room owner has been changed.',
 } as const
 
@@ -65,6 +66,7 @@ type WechatyEventListenerContactName        = (contact: ContactInterface, newNam
 type WechatyEventListenerContactPhone       = (contact: ContactInterface, newPhoneList: string[], oldPhoneList: []) => void | Promise<void>
 type WechatyEventListenerContactAlias       = (contact: ContactInterface, newAlias: string, oldAlias: string) => void | Promise<void>
 type WechatyEventListenerContactDescription = (contact: ContactInterface, newDescription: string, oldDescription: string) => void | Promise<void>
+type WechatyEventListenerContactCorporation = (contact: ContactInterface, newCorporation: string, oldCorporation: string) => void | Promise<void>
 type WechatyEventListenerTag                = (type: PUPPET.types.TagEvent, list: TagInterface[], date?: Date) => void | Promise<void>
 type WechatyEventListenerTagGroup           = (type: PUPPET.types.TagGroupEvent, list: TagGroupInterface[], date?: Date) => void | Promise<void>
 
@@ -247,6 +249,7 @@ interface WechatyEventListeners {
   'contact-alias'      : WechatyEventListenerContactAlias
   'contact-phone'      : WechatyEventListenerContactPhone
   'contact-description': WechatyEventListenerContactDescription
+  'contact-corporation': WechatyEventListenerContactCorporation
   'room-owner'         : WechatyEventListenerRoomOwner
   'tag'                : WechatyEventListenerTag
   'tag-group'          : WechatyEventListenerTagGroup
@@ -284,6 +287,7 @@ export type {
   WechatyEventListenerContactAlias,
   WechatyEventListenerContactPhone,
   WechatyEventListenerContactDescription,
+  WechatyEventListenerContactCorporation,
   WechatyEventListenerTag,
   WechatyEventListenerTagGroup,
 }
