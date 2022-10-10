@@ -2,7 +2,7 @@
 import * as PUPPET from '@juzi/wechaty-puppet'
 
 export const ContactImportantFields = [
-  'name', 'tags', 'alias', 'phone', 'description',
+  'name', 'tags', 'alias', 'phone', 'description', 'corporation',
 ] as const
 
 export const RoomImportantFields = [

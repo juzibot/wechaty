@@ -582,6 +582,11 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                           contact?.emit('description', difference.newValue || '', difference.oldValue || '')
                           break
                         }
+                        case 'corporation': {
+                          this.emit('contact-corporation', contact, difference.newValue || '', difference.oldValue || '')
+                          contact?.emit('corporation', difference.newValue || '', difference.oldValue || '')
+                          break
+                        }
                         default:
                           log.warn('WechatyPuppetMixin', 'puppet dirty unsupported difference type: %s', JSON.stringify(difference))
                       }
