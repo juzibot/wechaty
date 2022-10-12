@@ -90,7 +90,7 @@ class PostBuilder {
     }
 
     this.payload.parentId = post.payload.id
-    this.payload.rootId   = post.payload.rootId
+    this.payload.rootId   = post.payload.rootId || post.payload.id
 
     return this
   }
