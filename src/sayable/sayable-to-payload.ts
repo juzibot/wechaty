@@ -10,6 +10,7 @@ import {
   UrlLinkImpl,
   ContactImpl,
   PostImpl,
+  ChannelImpl,
 }                       from '../user-modules/mod.js'
 
 import type {
@@ -43,6 +44,8 @@ async function sayableToPayload (sayable: Sayable): Promise<undefined | PUPPET.p
     return PUPPET.payloads.sayable.post(sayable.payload)
   } else if (UrlLinkImpl.validInstance(sayable)) {
     return PUPPET.payloads.sayable.url(sayable.payload)
+  } else if (ChannelImpl.validInstance(sayable)) {
+    return PUPPET.payloads.sayable.channel(sayable.payload)
   } else {
     log.error('Wechaty', 'sayableToPayload() unsupported sayable: %s', sayable)
     return undefined
