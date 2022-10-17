@@ -326,13 +326,20 @@ class PostMixin extends wechatifyMixinBase() {
   async getSayableWithIndex (sayableIndex: number) {
     log.verbose('Post', 'getSayableWithIndex(%s)', sayableIndex)
 
+    const payloadToSayable = payloadToSayableWechaty(this.wechaty)
+
     if (PUPPET.payloads.isPostServer(this.payload)) {
-      const payloadToSayable = payloadToSayableWechaty(this.wechaty)
       const sayablePayload = await this.wechaty.puppet.postPayloadSayable(this.id!, this.payload.sayableList[sayableIndex]!)
       const sayable = await payloadToSayable(sayablePayload)
       return sayable
     } else {
-      return this.payload.sayableList[sayableIndex]
+      const sayablePayload = this.payload.sayableList[sayableIndex]
+      if (sayablePayload) {
+        const sayable = await payloadToSayable(sayablePayload)
+        return sayable
+      } else {
+        throw new Error(`post has no sayable with index ${sayableIndex}`)
+      }
     }
   }
 
