@@ -21,6 +21,7 @@ import type {
   UrlLinkConstructor,
   MessageInterface,
   ChannelConstructor,
+  MomentConstructor,
 }                             from '../user-modules/mod.js'
 
 import {
@@ -49,6 +50,7 @@ test('Wechaty interface', async t => {
     TagGroup       : TagGroupConstructor
     UrlLink        : UrlLinkConstructor
     Channel        : ChannelConstructor
+    Moment         : MomentConstructor
 
     constructor () {
       super()
@@ -68,6 +70,7 @@ test('Wechaty interface', async t => {
         = this.TagGroup
         = this.UrlLink
         = this.Channel
+        = this.Moment
         = {} as any
     }
 
