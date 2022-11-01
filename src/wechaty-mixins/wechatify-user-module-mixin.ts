@@ -16,6 +16,7 @@ import {
   TagGroupImpl,
   UrlLinkImpl,
   ChannelImpl,
+  MomentImpl,
 
   ContactConstructor,
   ContactSelfConstructor,
@@ -32,6 +33,7 @@ import {
   TagGroupConstructor,
   UrlLinkConstructor,
   ChannelConstructor,
+  MomentConstructor,
 
   wechatifyUserModule,
 }                       from '../user-modules/mod.js'
@@ -65,6 +67,7 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
     __wechatifiedTagGroup?       : TagGroupConstructor
     __wechatifiedUrlLink?        : UrlLinkConstructor
     __wechatifiedChannel?        : ChannelConstructor
+    __wechatifiedMoment?         : MomentConstructor
 
     get Contact ()        : ContactConstructor        { return guardWechatify(this.__wechatifiedContact)        }
     get ContactSelf ()    : ContactSelfConstructor    { return guardWechatify(this.__wechatifiedContactSelf)    }
@@ -81,6 +84,7 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
     get TagGroup ()       : TagGroupConstructor       { return guardWechatify(this.__wechatifiedTagGroup)       }
     get UrlLink ()        : UrlLinkConstructor        { return guardWechatify(this.__wechatifiedUrlLink)        }
     get Channel ()        : ChannelConstructor        { return guardWechatify(this.__wechatifiedChannel)        }
+    get Moment ()         : MomentConstructor         { return guardWechatify(this.__wechatifiedMoment)         }
 
     override async init (): Promise<void> {
       log.verbose('WechatifyUserModuleMixin', 'init()')
@@ -117,6 +121,7 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
       this.__wechatifiedTagGroup       = wechatifyUserModule(TagGroupImpl)(this as any)
       this.__wechatifiedUrlLink        = wechatifyUserModule(UrlLinkImpl)(this as any)
       this.__wechatifiedChannel        = wechatifyUserModule(ChannelImpl)(this as any)
+      this.__wechatifiedMoment         = wechatifyUserModule(MomentImpl)(this as any)
 
       log.verbose('WechatifyUserModuleMixin', 'init() initializing Wechaty User Module (WUM) ... done')
     }
@@ -153,6 +158,7 @@ type ProtectedPropertyWechatifyUserModuleMixin =
   | '__wechatifiedTagGroup'
   | '__wechatifiedUrlLink'
   | '__wechatifiedChannel'
+  | '__wechatifiedMoment'
 
 export type {
   WechatifyUserModuleMixin,
