@@ -316,6 +316,47 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
             })
             break
 
+          case 'post-comment':
+            puppet.on('post-comment', async payload => {
+              try {
+                const comment = await this.Post.find({ id: payload.commentId })
+                const post = await this.Post.find({ id: payload.postId })
+                if (!post) {
+                  this.emit('error', GError.from('post not found for id: ' + payload.postId))
+                  return
+                }
+                if (!comment) {
+                  this.emit('error', GError.from('comment not found for id: ' + payload.commentId))
+                  return
+                }
+                this.emit('post-comment', comment, post)
+              } catch (e) {
+                this.emit('error', GError.from(e))
+              }
+            })
+            break
+
+          case 'post-tap':
+            puppet.on('post-tap', async payload => {
+              try {
+                const post = await this.Post.find({ id: payload.postId })
+                const contact = await this.Contact.find({ id: payload.contactId })
+                const date = timestampToDate(payload.timestamp)
+                if (!post) {
+                  this.emit('error', GError.from('post not found for id: ' + payload.postId))
+                  return
+                }
+                if (!contact) {
+                  this.emit('error', GError.from('contact not found for id: ' + payload.contactId))
+                  return
+                }
+                this.emit('post-tap', post, contact, payload.tapType, payload.tap, date)
+              }  catch (e) {
+                this.emit('error', GError.from(e))
+              }
+            })
+            break
+
           case 'ready':
             puppet.on('ready', () => {
               log.silly('WechatyPuppetMixin', '__setupPuppetEvents() puppet.on(ready)')
