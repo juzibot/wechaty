@@ -42,7 +42,6 @@ import {
   payloadToSayableWechaty,
 }                       from '../sayable/mod.js'
 
-import { ContactImpl } from './contact.js'
 import type { ContactInterface } from './contact.js'
 import { concurrencyExecuter } from 'rx-queue'
 
