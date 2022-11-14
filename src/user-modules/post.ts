@@ -244,7 +244,7 @@ class PostMixin extends wechatifyMixinBase() {
       return this.wechaty.currentUser
     }
 
-    const author = await ContactImpl.find(this.payload.contactId)
+    const author = await this.wechaty.Contact.find({ id: this.payload.contactId })
     if (!author) {
       throw new Error('no author for id: ' + this.payload.contactId)
     }
