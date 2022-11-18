@@ -27,6 +27,7 @@ import {
 }                       from '../user-mixins/wechatify.js'
 import type { FileBoxInterface } from 'file-box'
 import type { PostInterface } from './post.js'
+import { concurrencyExecuter } from 'rx-queue'
 
 class MomentMixin extends wechatifyMixinBase() {
 
@@ -51,6 +52,37 @@ class MomentMixin extends wechatifyMixinBase() {
     log.verbose('Moment', 'coverage(%s)', JSON.stringify(coverage))
 
     return this.wechaty.puppet.momentCoverage(coverage)
+  }
+
+  static async visibleList (): Promise<ContactInterface[]> {
+    log.verbose('Moment', 'visibleList()')
+
+    try {
+      const contactIdList: string[] = await this.wechaty.puppet.momentVisibleList()
+
+      const idToContact = async (id: string) => this.wechaty.Contact.find({ id }).catch(e => this.wechaty.emitError(e))
+
+      /**
+       * we need to use concurrencyExecuter to reduce the parallel number of the requests
+       */
+      const CONCURRENCY = 17
+      const contactIterator = concurrencyExecuter(CONCURRENCY)(idToContact)(contactIdList)
+
+      const contactList: ContactInterface[] = []
+
+      for await (const contact of contactIterator) {
+        if (contact) {
+          contactList.push(contact)
+        }
+      }
+
+      return contactList
+
+    } catch (e) {
+      this.wechaty.emitError(e)
+      log.error('Moment', 'this.wechaty.puppet.momentVisibleList() rejected: %s', (e as Error).message)
+      return []
+    }
   }
 
   /*

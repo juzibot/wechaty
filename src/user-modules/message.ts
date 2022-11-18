@@ -1157,6 +1157,18 @@ class MessageMixin extends MixinBase implements SayableSayer {
     return this.wechaty.Message.find({ id: this.payload.quoteId })
   }
 
+  additionalInfo (): undefined | any {
+    let additionalInfoObj = {}
+    if (this.payload?.additionalInfo) {
+      try {
+        additionalInfoObj = JSON.parse(this.payload.additionalInfo)
+      } catch (e) {
+        log.warn('Message', 'additionalInfo() parse failed, additionalInfo: %s', this.payload.additionalInfo)
+      }
+    }
+    return additionalInfoObj
+  }
+
 }
 
 class MessageImplBase extends validationMixin(MessageMixin)<MessageImplInterface>() {}
