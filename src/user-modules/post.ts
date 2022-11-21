@@ -42,8 +42,9 @@ import {
   payloadToSayableWechaty,
 }                       from '../sayable/mod.js'
 
-import type { ContactInterface } from './contact.js'
+import { ContactImpl, ContactInterface } from './contact.js'
 import { concurrencyExecuter } from 'rx-queue'
+import type { LocationInterface } from './location.js'
 
 interface Tap {
   contact: ContactInterface
@@ -92,6 +93,23 @@ class PostBuilder {
     this.payload.rootId   = post.payload.rootId || post.payload.id
 
     return this
+  }
+
+  location (location: LocationInterface) {
+    this.payload.location = {
+      ...location.payload,
+    }
+  }
+
+  visible (contactList: ContactInterface[]) {
+    const contactIds = contactList.map(contact => {
+      if (!ContactImpl.valid(contact)) {
+        log.warn(`expect contact instance but ${contact} is not a contact`)
+        return ''
+      }
+      return contact.id
+    })
+    this.payload.visibleList = contactIds.filter(id => !!id)
   }
 
   async build (): Promise<PostInterface> {
@@ -558,6 +576,44 @@ class PostMixin extends wechatifyMixinBase() {
     }
 
     return [tapList, nextPageToken]
+  }
+
+  location (): LocationInterface | undefined {
+    log.verbose('Post', 'location()')
+
+    if (!this.payload.location) {
+      log.warn('this post has no location info')
+      return
+    }
+    return new this.wechaty.Location(this.payload.location)
+  }
+
+  async visibleList (): Promise<ContactInterface[]> {
+    log.verbose('Post', 'visibleList()')
+
+    if (!this.payload.visibleList) {
+      return []
+    }
+
+    const contactIdList: string[] = this.payload.visibleList
+
+    const idToContact = async (id: string) => this.wechaty.Contact.find({ id }).catch(e => this.wechaty.emitError(e))
+
+    /**
+       * we need to use concurrencyExecuter to reduce the parallel number of the requests
+       */
+    const CONCURRENCY = 17
+    const contactIterator = concurrencyExecuter(CONCURRENCY)(idToContact)(contactIdList)
+
+    const contactList: ContactInterface[] = []
+
+    for await (const contact of contactIterator) {
+      if (contact) {
+        contactList.push(contact)
+      }
+    }
+
+    return contactList
   }
 
 }
