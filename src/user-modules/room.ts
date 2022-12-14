@@ -17,7 +17,7 @@
  *   limitations under the License.
  *
  */
-import type * as PUPPET           from '@juzi/wechaty-puppet'
+import * as PUPPET           from '@juzi/wechaty-puppet'
 import type { FileBoxInterface }  from 'file-box'
 import { concurrencyExecuter }    from 'rx-queue'
 import type {
@@ -934,6 +934,26 @@ class RoomMixin extends MixinBase implements SayableSayer {
     }
 
     return undefined
+  }
+
+  async joinScene (contact: ContactInterface): Promise<PUPPET.types.RoomMemberJoinScene> {
+    const memberPayload = await this.wechaty.puppet.roomMemberPayload(this.id, contact.id)
+
+    return memberPayload.joinScene || PUPPET.types.RoomMemberJoinScene.Unknown
+  }
+
+  async joinTime (contact: ContactInterface): Promise<undefined | number> {
+    const memberPayload = await this.wechaty.puppet.roomMemberPayload(this.id, contact.id)
+    if (memberPayload.joinTime) {
+      return memberPayload.joinTime
+    }
+    return undefined
+  }
+
+  async joinInviter (contact: ContactInterface): Promise<undefined | ContactInterface> {
+    const memberPayload = await this.wechaty.puppet.roomMemberPayload(this.id, contact.id)
+
+    return this.wechaty.Contact.find({ id: memberPayload.inviterId })
   }
 
   async readMark (hasRead: boolean): Promise<void>
