@@ -205,6 +205,7 @@ class ContactMixin extends MixinBase implements SayableSayer {
   // eslint-disable-next-line no-use-before-define
   static async delete (contact: ContactInterface): Promise<void> {
     log.verbose('Contact', 'static delete(%s)', contact.id)
+    await this.wechaty.puppet.contactDelete(contact.id)
   }
 
   /**
