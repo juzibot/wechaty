@@ -76,6 +76,14 @@ class ChannelMixin extends wechatifyMixinBase() {
     return this.payload.url
   }
 
+  objectId (): undefined | string {
+    return this.payload.objectId
+  }
+
+  objectNonceId (): undefined | string {
+    return this.payload.objectNonceId
+  }
+
 }
 
 class ChannelImpl extends validationMixin(ChannelMixin)<ChannelInterface>() { }
