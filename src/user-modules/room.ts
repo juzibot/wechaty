@@ -952,7 +952,10 @@ class RoomMixin extends MixinBase implements SayableSayer {
 
   async joinInviter (contact: ContactInterface): Promise<undefined | ContactInterface> {
     const memberPayload = await this.wechaty.puppet.roomMemberPayload(this.id, contact.id)
-
+    const inviterId = memberPayload.inviterId
+    if (!inviterId) {
+      return
+    }
     return this.wechaty.Contact.find({ id: memberPayload.inviterId })
   }
 
