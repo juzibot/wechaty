@@ -7,7 +7,7 @@ import type { InfoUpdateValuePair } from '../schemas/update'
  *   2. users does not want to compare array items, they just need to know this field has changed. And we don't offer methods to get a subObject value
  */
 export const diffPayload = <T>(objectOld: any, objectNew: any): InfoUpdateValuePair<T>[] => {
-  const keys = new Set([...Object.keys(objectOld || {}), ...Object.keys(objectNew || {})])
+  const keys = new Set([ ...Object.keys(objectOld || {}), ...Object.keys(objectNew || {}) ])
   const result = []
   for (const item of keys) {
     const key = item as keyof T
@@ -50,7 +50,7 @@ export const diffPayload = <T>(objectOld: any, objectNew: any): InfoUpdateValueP
 }
 
 const objectDeepDiff = (objectA: any, objectB: any) => {
-  const keys = new Set([...Object.keys(objectA), ...Object.keys(objectB)])
+  const keys = new Set([ ...Object.keys(objectA), ...Object.keys(objectB) ])
   for (const key of keys) {
     if (typeof objectA[key] !== typeof objectB[key]) {
       return false

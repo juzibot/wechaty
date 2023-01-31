@@ -167,7 +167,7 @@ class PostMixin extends wechatifyMixinBase() {
       return post
     }
 
-    const [postList] = await this.findAll(filter, { pageSize: 1 })
+    const [ postList ] = await this.findAll(filter, { pageSize: 1 })
     if (postList.length > 0) {
       return postList[0]
     }
@@ -211,7 +211,7 @@ class PostMixin extends wechatifyMixinBase() {
       }
     }
 
-    return [postList, nextPageToken]
+    return [ postList, nextPageToken ]
   }
 
   protected _payload?: PUPPET.payloads.Post
@@ -387,7 +387,7 @@ class PostMixin extends wechatifyMixinBase() {
       parentId: this.id,
     }
 
-    let [postList, nextPageToken] = await this.wechaty.Post.findAll(
+    let [ postList, nextPageToken ] = await this.wechaty.Post.findAll(
       parentIdFilter,
       pagination,
     )
@@ -400,7 +400,7 @@ class PostMixin extends wechatifyMixinBase() {
         break
       }
 
-      [postList, nextPageToken] = await this.wechaty.Post.findAll(
+      [ postList, nextPageToken ] = await this.wechaty.Post.findAll(
         parentIdFilter,
         {
           ...pagination,
@@ -438,7 +438,7 @@ class PostMixin extends wechatifyMixinBase() {
 
     const pagination: PUPPET.filters.PaginationRequest = {}
 
-    let [tapList, nextPageToken] = await this.tapFind(
+    let [ tapList, nextPageToken ] = await this.tapFind(
       filter,
       pagination,
     )
@@ -451,7 +451,7 @@ class PostMixin extends wechatifyMixinBase() {
         break
       }
 
-      [tapList, nextPageToken] = await this.tapFind(
+      [ tapList, nextPageToken ] = await this.tapFind(
         filter,
         { ...pagination, pageToken: nextPageToken },
       )
@@ -556,8 +556,8 @@ class PostMixin extends wechatifyMixinBase() {
     )
 
     const tapList: Tap[] = []
-    for (const [type, data] of Object.entries(response)) {
-      for (const [i, contactId] of data.contactId.entries()) {
+    for (const [ type, data ] of Object.entries(response)) {
+      for (const [ i, contactId ] of data.contactId.entries()) {
         const contact = await this.wechaty.Contact.find({ id: contactId })
         if (!contact) {
           log.warn('Post', 'tapFind() contact not found for id: %s', contactId)
@@ -575,7 +575,7 @@ class PostMixin extends wechatifyMixinBase() {
       }
     }
 
-    return [tapList, nextPageToken]
+    return [ tapList, nextPageToken ]
   }
 
   location (): LocationInterface | undefined {

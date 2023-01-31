@@ -131,7 +131,7 @@ class ContactMixin extends MixinBase implements SayableSayer {
       log.warn('Contact', 'find() got more than 1 result: %d total', contactList.length)
     }
 
-    for (const [idx, contact] of contactList.entries()) {
+    for (const [ idx, contact ] of contactList.entries()) {
       // use puppet.contactValidate() to confirm double confirm that this contactId is valid.
       // https://github.com/wechaty/wechaty-puppet-padchat/issues/64
       // https://github.com/wechaty/wechaty/issues/1345
@@ -672,11 +672,11 @@ class ContactMixin extends MixinBase implements SayableSayer {
     log.verbose('Contact', 'tag(%s) for %s', JSON.stringify(tags), this)
 
     if (!Array.isArray(tags)) {
-      tags = [tags]
+      tags = [ tags ]
     }
 
     const tagIds = tags.map(tag => tag.id)
-    await this.wechaty.puppet.tagContactTagAdd(tagIds, [this.id])
+    await this.wechaty.puppet.tagContactTagAdd(tagIds, [ this.id ])
 
   }
 
@@ -688,12 +688,12 @@ class ContactMixin extends MixinBase implements SayableSayer {
     log.verbose('Contact', 'tagRemove(%s) for %s', JSON.stringify(tags), this)
 
     if (!Array.isArray(tags)) {
-      tags = [tags]
+      tags = [ tags ]
     }
 
     const tagIds = tags.map(tag => tag.id)
 
-    await this.wechaty.puppet.tagContactTagRemove(tagIds, [this.id])
+    await this.wechaty.puppet.tagContactTagRemove(tagIds, [ this.id ])
 
   }
 
