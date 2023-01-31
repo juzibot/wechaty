@@ -192,9 +192,9 @@ class TagMixin extends MixinBase {
     if (Array.isArray(contacts)) {
       contactIds = contacts.map(c => c.id)
     } else {
-      contactIds = [contacts.id]
+      contactIds = [ contacts.id ]
     }
-    await this.wechaty.puppet.tagContactTagAdd([this.id], contactIds)
+    await this.wechaty.puppet.tagContactTagAdd([ this.id ], contactIds)
   }
 
   static async createTag (name: string, tagGroup?: TagGroupInterface): Promise<TagInterface | void> {

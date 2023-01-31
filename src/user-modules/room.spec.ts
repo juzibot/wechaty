@@ -35,7 +35,7 @@ import type {
 test('findAll()', async t => {
   const EXPECTED_ROOM_ID      = 'test-id'
   const EXPECTED_ROOM_TOPIC   = 'test-topic'
-  const EXPECTED_ROOM_ID_LIST = [EXPECTED_ROOM_ID]
+  const EXPECTED_ROOM_ID_LIST = [ EXPECTED_ROOM_ID ]
 
   const sandbox = sinon.createSandbox()
 
@@ -113,7 +113,7 @@ test('room.say() smoke testing', async () => {
 
   const fakeIdSearcher = async (...args: any[]) => {
     await new Promise(setImmediate)
-    return [args[0].id]
+    return [ args[0].id ]
   }
   sandbox.stub(puppet, 'contactSearch').callsFake(fakeIdSearcher)
   sandbox.stub(puppet, 'roomSearch').callsFake(fakeIdSearcher)
@@ -144,7 +144,7 @@ test('room.say() smoke testing', async () => {
       // { contactId: EXPECTED_CONTACT_1_ID, roomId: EXPECTED_ROOM_ID },
       EXPECTED_ROOM_ID,
       'To be @little1 or not to be @big2',
-      [EXPECTED_CONTACT_1_ID, EXPECTED_CONTACT_2_ID],
+      [ EXPECTED_CONTACT_1_ID, EXPECTED_CONTACT_2_ID ],
     ], 'Tagged Template say should be matched')
   })
 
@@ -156,7 +156,7 @@ test('room.say() smoke testing', async () => {
       // { contactId: EXPECTED_CONTACT_1_ID, roomId: EXPECTED_ROOM_ID },
       EXPECTED_ROOM_ID,
       '@little1 Yo',
-      [EXPECTED_CONTACT_1_ID],
+      [ EXPECTED_CONTACT_1_ID ],
     ], 'Single mention should work with old ways')
   })
 
@@ -168,7 +168,7 @@ test('room.say() smoke testing', async () => {
       // { contactId: EXPECTED_CONTACT_1_ID, roomId: EXPECTED_ROOM_ID },
       EXPECTED_ROOM_ID,
       '@little1 @big2 hey buddies, let\'s party',
-      [EXPECTED_CONTACT_1_ID, EXPECTED_CONTACT_2_ID],
+      [ EXPECTED_CONTACT_1_ID, EXPECTED_CONTACT_2_ID ],
     ], 'Multiple mention should work with new way')
   })
 
@@ -180,7 +180,7 @@ test('room.say() smoke testing', async () => {
       // { contactId: EXPECTED_CONTACT_1_ID, roomId: EXPECTED_ROOM_ID },
       EXPECTED_ROOM_ID,
       '@all @little1 hey buddies, let\'s party',
-      ['@all', EXPECTED_CONTACT_1_ID],
+      [ '@all', EXPECTED_CONTACT_1_ID ],
     ], 'should be alble to call with say')
   })
 
@@ -192,7 +192,7 @@ test('room.say() smoke testing', async () => {
       // { contactId: EXPECTED_CONTACT_1_ID, roomId: EXPECTED_ROOM_ID },
       EXPECTED_ROOM_ID,
       'hey @all let\'s party, especially @little1',
-      ['@all', EXPECTED_CONTACT_1_ID],
+      [ '@all', EXPECTED_CONTACT_1_ID ],
     ], 'should be alble to call with template string array')
   })
 

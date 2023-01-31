@@ -227,7 +227,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
       log.warn('Room', 'find() got more than one(%d) result', roomList.length)
     }
 
-    for (const [idx, room] of roomList.entries()) {
+    for (const [ idx, room ] of roomList.entries()) {
       // use puppet.roomValidate() to confirm double confirm that this roomId is valid.
       // https://github.com/wechaty/wechaty-puppet-padchat/issues/64
       // https://github.com/wechaty/wechaty/issues/1345
@@ -735,7 +735,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
     if (Array.isArray(contacts)) {
       contactIds = contacts.map(c => c.id)
     } else {
-      contactIds = [contacts.id]
+      contactIds = [ contacts.id ]
     }
     await this.wechaty.puppet.roomDel(this.id, contactIds)
     // this.delLocal(contact)
@@ -952,7 +952,10 @@ class RoomMixin extends MixinBase implements SayableSayer {
 
   async joinInviter (contact: ContactInterface): Promise<undefined | ContactInterface> {
     const memberPayload = await this.wechaty.puppet.roomMemberPayload(this.id, contact.id)
-
+    const inviterId = memberPayload.inviterId
+    if (!inviterId) {
+      return
+    }
     return this.wechaty.Contact.find({ id: memberPayload.inviterId })
   }
 
