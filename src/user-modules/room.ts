@@ -1203,6 +1203,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
     } else {
       return this.payload?.remark
     }
+    return undefined
   }
 
 }
