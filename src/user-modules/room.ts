@@ -1199,9 +1199,9 @@ class RoomMixin extends MixinBase implements SayableSayer {
 
   async remark (remark?: string): Promise<undefined | string> {
     if (typeof remark === 'string') {
-      return this.wechaty.puppet.roomRemark(this.id, remark)
+      await this.wechaty.puppet.roomRemark(this.id, remark)
     } else {
-      return this.payload.remark
+      return this.payload?.remark
     }
   }
 
