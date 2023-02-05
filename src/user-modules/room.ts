@@ -1197,6 +1197,15 @@ class RoomMixin extends MixinBase implements SayableSayer {
     return additionalInfoObj
   }
 
+  async remark (remark?: string): Promise<undefined | string> {
+    if (typeof remark === 'string') {
+      await this.wechaty.puppet.roomRemark(this.id, remark)
+    } else {
+      return this.payload?.remark
+    }
+    return undefined
+  }
+
 }
 
 class RoomImpl extends validationMixin(RoomMixin)<RoomImplInterface>() {}
