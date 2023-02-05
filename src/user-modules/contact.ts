@@ -824,6 +824,10 @@ class ContactMixin extends MixinBase implements SayableSayer {
     return additionalInfoObj
   }
 
+  async payloadModify (payload: Partial<PUPPET.payloads.Contact>): Promise<void> {
+    return this.wechaty.puppet.contactPayloadModify(this.id, payload)
+  }
+
 }
 
 class ContactImplBase extends validationMixin(ContactMixin)<ContactImplInterface>() {}
