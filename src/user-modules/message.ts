@@ -225,7 +225,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
     }
   }
 
-  static async createBroadcast (targets: ContactInterface[] | RoomInterface[], post: PostInterface): Promise<PostInterface | undefined> {
+  static async createBroadcast (targets: ContactInterface[] | RoomInterface[], post: PostInterface): Promise<PostInterface | void> {
     log.verbose('Message', 'static createBroadcast()')
 
     const targetIds = targets.map(target => target.id)
