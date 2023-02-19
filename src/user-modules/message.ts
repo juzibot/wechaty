@@ -74,6 +74,7 @@ import type {
 
 import { validationMixin } from '../user-mixins/validation.js'
 import type { ContactSelfImpl } from './contact-self.js'
+import { concurrencyExecuter } from 'rx-queue'
 
 const MixinBase = wechatifyMixin(
   EventEmitter,
@@ -182,6 +183,63 @@ class MessageMixin extends MixinBase implements SayableSayer {
     const msg = new this(id)
 
     return msg
+  }
+
+  static async getBroadcastTargets (): Promise<{ contacts: ContactInterface[]; rooms: RoomInterface[] }> {
+    log.verbose('Message', 'static getBroadcastTargets()')
+
+    const { contactIds = [], roomIds = [] } = await this.wechaty.puppet.getMessageBroadcastTarget()
+
+    const CONCURRENCY = 17
+    const idToRoom = async (id: string) =>
+      this.wechaty.Room.find({ id })
+        .catch(e => this.wechaty.emitError(e))
+
+    const roomIterator = concurrencyExecuter(CONCURRENCY)(idToRoom)(roomIds)
+
+    const roomList: RoomInterface[] = []
+
+    for await (const room of roomIterator) {
+      if (room) {
+        roomList.push(room)
+      }
+    }
+
+    const idToContact = async (id: string) =>
+      this.wechaty.Contact.find({ id })
+        .catch(e => this.wechaty.emitError(e))
+
+    const contactIterator = concurrencyExecuter(CONCURRENCY)(idToContact)(contactIds)
+
+    const contactList: ContactInterface[] = []
+
+    for await (const contact of contactIterator) {
+      if (contact) {
+        contactList.push(contact)
+      }
+    }
+
+    return {
+      contacts: contactList,
+      rooms: roomList,
+    }
+  }
+
+  static async createBroadcast (targets: ContactInterface[] | RoomInterface[], post: PostInterface): Promise<PostInterface | void> {
+    log.verbose('Message', 'static createBroadcast()')
+
+    const targetIds = targets.map(target => target.id)
+    const type = post.payload.type || PUPPET.types.Post.Unspecified
+
+    if (type !== PUPPET.types.Post.Broadcast) {
+      throw new Error(`you cannot create broadcast with type ${PUPPET.types.Post[type]}`)
+    }
+
+    const postId = await this.wechaty.puppet.createMessageBroadcast(targetIds, post.payload)
+
+    if (postId) {
+      return this.wechaty.Post.find({ id: postId })
+    }
   }
 
   /**
