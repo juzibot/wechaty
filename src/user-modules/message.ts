@@ -225,7 +225,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
     }
   }
 
-  static async createBroadcast (targets: ContactInterface[] | RoomInterface[], post: PostInterface): Promise<PostInterface | void> {
+  static async createBroadcast (targets: (ContactInterface | RoomInterface)[], post: PostInterface): Promise<PostInterface | void> {
     log.verbose('Message', 'static createBroadcast()')
 
     const targetIds = targets.map(target => target.id)
@@ -240,6 +240,83 @@ class MessageMixin extends MixinBase implements SayableSayer {
     if (postId) {
       return this.wechaty.Post.find({ id: postId })
     }
+  }
+
+  static async getBroadcastStatus (broadcast: PostInterface): Promise<{
+    status: PUPPET.types.BroadcastStatus,
+    detail: {
+      contact?: ContactInterface,
+      room?: RoomInterface,
+      status: PUPPET.types.BroadcastTargetStatus,
+    }[]
+  }> {
+    log.verbose('Message', 'static getBroadcastStatus()')
+
+    const postId = broadcast.id
+    if (!postId) {
+      throw new Error('cannot get status from a post with no Id')
+    }
+    const type = broadcast.payload.type
+    if (type !== PUPPET.types.Post.Broadcast) {
+      throw new Error(`cannot get status from a ${PUPPET.types.Post[type || 0]} post`)
+    }
+
+    const result = await this.wechaty.puppet.getMessageBroadcastStatus(postId)
+    const broadcastStatus: {
+      status: PUPPET.types.BroadcastStatus,
+      detail: {
+        contact?: ContactInterface,
+        room?: RoomInterface,
+        status: PUPPET.types.BroadcastTargetStatus,
+      }[]
+    } = {
+      status: result.status,
+      detail: [],
+    }
+
+    const CONCURRENCY = 17
+
+    const targetStatusToWechatyTargetStatus = async (detail: {
+      contactId?: string,
+      roomId?: string,
+      status: PUPPET.types.BroadcastTargetStatus,
+    }) => {
+      let contact: ContactInterface | undefined
+      let room: RoomInterface | undefined
+      if (detail.contactId) {
+        try {
+          contact = await this.wechaty.Contact.find({ id: detail.contactId })
+        } catch (e) {
+          this.wechaty.emitError(e)
+          contact = undefined
+        }
+      }
+
+      if (detail.roomId) {
+        try {
+          room = await this.wechaty.Room.find({ id: detail.roomId })
+        } catch (e) {
+          this.wechaty.emitError(e)
+          room = undefined
+        }
+      }
+
+      return {
+        contact,
+        room,
+        status: detail.status,
+      }
+    }
+
+    const targetStatusIterator = concurrencyExecuter(CONCURRENCY)(targetStatusToWechatyTargetStatus)(result.detail)
+
+    for await (const targetStatus of targetStatusIterator) {
+      if (targetStatus.contact || targetStatus.room) {
+        broadcastStatus.detail.push(targetStatus)
+      }
+    }
+
+    return broadcastStatus
   }
 
   /**
