@@ -85,6 +85,7 @@ test('Wechaty interface', async t => {
     abstract logout      : WechatyInterface['logout']
     abstract name        : WechatyInterface['name']
     abstract publish     : WechatyInterface['publish']
+    abstract unpublish   : WechatyInterface['unpublish']
     abstract puppet      : WechatyInterface['puppet']
     abstract ready       : WechatyInterface['ready']
     abstract reset       : WechatyInterface['reset']
