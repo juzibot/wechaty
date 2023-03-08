@@ -292,7 +292,7 @@ class WechatyBase extends mixinBase implements SayableSayer {
   async unpublish (
     post: PostInterface,
   ): Promise<void> {
-    log.verbose('Wechaty', 'inpublish(%s)', post.id)
+    log.verbose('Wechaty', 'unpublish(%s)', post.id)
 
     if (!post.id) {
       throw new Error('cannot unpublish a post without id')
