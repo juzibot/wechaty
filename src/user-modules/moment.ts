@@ -36,6 +36,10 @@ class MomentMixin extends wechatifyMixinBase() {
     return this.wechaty.publish(post)
   }
 
+  static async unPost (post: PostInterface) {
+    return this.wechaty.unpublish(post)
+  }
+
   static timeline (contact: ContactInterface): PostInterface[] {
     // list all moment
     void contact
