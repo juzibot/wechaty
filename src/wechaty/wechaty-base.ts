@@ -21,7 +21,7 @@ import {
   serviceCtlMixin,
 }                       from 'state-switch'
 import { function as FP } from 'fp-ts'
-import type * as PUPPET from '@juzi/wechaty-puppet'
+import * as PUPPET from '@juzi/wechaty-puppet'
 
 import {
   config,
@@ -287,6 +287,20 @@ class WechatyBase extends mixinBase implements SayableSayer {
     if (postId) {
       return this.Post.find({ id: postId })
     }
+  }
+
+  async unpublish (
+    post: PostInterface,
+  ): Promise<void> {
+    log.verbose('Wechaty', 'unpublish(%s)', post.id)
+
+    if (!post.id) {
+      throw new Error('cannot unpublish a post without id')
+    }
+    if (post.payload.type !== PUPPET.types.Post.Moment) {
+      throw new Error('cannot unpublish a post that is not a moment')
+    }
+    await this.puppet.postUnpublish(post.id)
   }
 
 }
