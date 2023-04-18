@@ -233,6 +233,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
               try {
                 await friendship.ready()
                 this.emit('friendship', friendship)
+                await friendship.contact().sync()
                 friendship.contact().emit('friendship', friendship)
               } catch (e) {
                 this.emit('error', GError.from(e))
