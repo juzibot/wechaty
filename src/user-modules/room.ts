@@ -100,9 +100,10 @@ class RoomMixin extends MixinBase implements SayableSayer {
   ): Promise<RoomInterface> {
     log.verbose('Room', 'create(%s, %s)', contactList.join(','), topic)
 
-    if (contactList.length < 2) {
-      throw new Error('contactList need at least 2 contact to create a new room')
-    }
+    // if (contactList.length < 2) {
+    //   throw new Error('contactList need at least 2 contact to create a new room')
+    // }
+    // Let puppet decide the minium number of initial room members
 
     try {
       const contactIdList = contactList.map(contact => contact.id)
