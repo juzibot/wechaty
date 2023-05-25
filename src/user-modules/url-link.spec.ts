@@ -33,3 +33,5 @@
 //   t.ok(UrlLinkImpl.valid(urlLink), 'should pass the validation of UrlLinkImpl')
 //   t.notOk(MessageImpl.valid(urlLink), 'should not pass the validation of MessageImpl')
 // })
+
+export {}
