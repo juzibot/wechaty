@@ -1207,6 +1207,18 @@ class RoomMixin extends MixinBase implements SayableSayer {
     return undefined
   }
 
+  permission (permission?: Partial<PUPPET.types.RoomPermission>): Promise<void | PUPPET.types.RoomPermission> {
+    return this.wechaty.puppet.roomPermission(this.id, permission)
+  }
+
+  async roomOwnerTransfer (contact: ContactInterface): Promise<void> {
+    if (!(await this.has(contact))) {
+      throw new Error('cannot transfer room owner to a contact that\'s not in room.')
+    }
+
+    await this.wechaty.puppet.roomOwnerTransfer(this.id, contact.id)
+  }
+
 }
 
 class RoomImpl extends validationMixin(RoomMixin)<RoomImplInterface>() {}
