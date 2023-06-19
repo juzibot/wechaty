@@ -1207,7 +1207,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
     return undefined
   }
 
-  permission (permission?: Partial<PUPPET.types.RoomPermission>): Promise<void | PUPPET.types.RoomPermission> {
+  permission (permission?: Partial<PUPPET.types.RoomPermission>): Promise<void | Partial<PUPPET.types.RoomPermission>> {
     return this.wechaty.puppet.roomPermission(this.id, permission)
   }
 
