@@ -26,6 +26,7 @@ import { openGraph }          from '../helper-functions/open-graph.js'
 import { validationMixin }    from '../user-mixins/validation.js'
 import { wechatifyMixinBase } from '../user-mixins/wechatify.js'
 import { log } from '../config.js'
+import type { FileBoxInterface } from 'file-box'
 
 class UrlLinkMixin extends wechatifyMixinBase() {
 
@@ -124,6 +125,10 @@ class UrlLinkMixin extends wechatifyMixinBase() {
 
   description (): undefined | string {
     return this.payload.description
+  }
+
+  thumbnailFile (): undefined | FileBoxInterface {
+    return this.payload.thumbnailFileBox
   }
 
 }
