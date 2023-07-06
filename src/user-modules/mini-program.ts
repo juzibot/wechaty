@@ -27,6 +27,7 @@ import { validationMixin } from '../user-mixins/validation.js'
 import {
   wechatifyMixinBase,
 }                       from '../user-mixins/wechatify.js'
+import type { FileBoxInterface } from 'file-box'
 
 class MiniProgramMixin extends wechatifyMixinBase() {
 
@@ -90,6 +91,10 @@ class MiniProgramMixin extends wechatifyMixinBase() {
 
   thumbKey (): undefined | string {
     return this.payload.thumbKey
+  }
+
+  thumbnailFile (): undefined | FileBoxInterface {
+    return this.payload.thumbnailFileBox
   }
 
 }
