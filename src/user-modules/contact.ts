@@ -176,7 +176,20 @@ class ContactMixin extends MixinBase implements SayableSayer {
     try {
       const contactIdList: string[] = await this.wechaty.puppet.contactSearch(query)
 
-      const idToContact = async (id: string) => this.wechaty.Contact.find({ id }).catch(e => this.wechaty.emitError(e))
+      let continuousErrorCount = 0
+      let totalErrorCount = 0
+      const idToContact = async (id: string) => {
+        const result = await this.wechaty.Contact.find({ id }).catch(e => {
+          this.wechaty.emitError(e)
+          continuousErrorCount++
+          totalErrorCount++
+          if (continuousErrorCount > 5 || totalErrorCount > 100) {
+            throw new Error('5 continuous errors!')
+          }
+        })
+        continuousErrorCount = 0
+        return result
+      }
 
       /**
        * we need to use concurrencyExecuter to reduce the parallel number of the requests
