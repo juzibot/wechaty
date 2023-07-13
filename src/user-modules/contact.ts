@@ -183,8 +183,11 @@ class ContactMixin extends MixinBase implements SayableSayer {
           this.wechaty.emitError(e)
           continuousErrorCount++
           totalErrorCount++
-          if (continuousErrorCount > 5 || totalErrorCount > 100) {
+          if (continuousErrorCount > 5) {
             throw new Error('5 continuous errors!')
+          }
+          if (totalErrorCount > 100) {
+            throw new Error('100 total errors!')
           }
         })
         continuousErrorCount = 0
