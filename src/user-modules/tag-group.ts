@@ -67,7 +67,27 @@ class TagGroupMixin extends MixinBase {
     try {
       const tagGroupIds = await this.wechaty.puppet.tagGroupList()
 
-      const idToTagGroup = async (id: string) => this.find({ id }).catch(e => this.wechaty.emitError(e))
+      let continuousErrorCount = 0
+      let totalErrorCount = 0
+      const totalErrorThreshold = Math.round(tagGroupIds.length / 5)
+      const idToTagGroup = async (id: string) => {
+        if (!this.wechaty.isLoggedIn) {
+          throw new Error('wechaty not logged in')
+        }
+        const result = this.find({ id }).catch(e => {
+          this.wechaty.emitError(e)
+          continuousErrorCount++
+          totalErrorCount++
+          if (continuousErrorCount > 5) {
+            throw new Error('5 continuous errors!')
+          }
+          if (totalErrorCount > totalErrorThreshold) {
+            throw new Error(`${totalErrorThreshold} total errors!`)
+          }
+        })
+        continuousErrorCount = 0
+        return result
+      }
 
       const CONCURRENCY = 17
       const tagGroupIterator = concurrencyExecuter(CONCURRENCY)(idToTagGroup)(tagGroupIds)

@@ -147,48 +147,45 @@ class RoomMixin extends MixinBase implements SayableSayer {
   ): Promise<RoomInterface[]> {
     log.verbose('Room', 'findAll(%s)', JSON.stringify(query, stringifyFilter) || '')
 
-    try {
-      const roomIdList = await this.wechaty.puppet.roomSearch(query)
+    const roomIdList = await this.wechaty.puppet.roomSearch(query)
 
-      let continuousErrorCount = 0
-      let totalErrorCount = 0
-      const idToRoom = async (id: string) => {
-        const result = await this.wechaty.Room.find({ id }).catch(e => {
-          this.wechaty.emitError(e)
-          continuousErrorCount++
-          totalErrorCount++
-          if (continuousErrorCount > 5) {
-            throw new Error('5 continuous errors!')
-          }
-          if (totalErrorCount > 100) {
-            throw new Error('100 total errors!')
-          }
-        })
-        continuousErrorCount = 0
-        return result
+    let continuousErrorCount = 0
+    let totalErrorCount = 0
+    const totalErrorThreshold = Math.round(roomIdList.length / 5)
+    const idToRoom = async (id: string) => {
+      if (!this.wechaty.isLoggedIn) {
+        throw new Error('wechaty not logged in')
       }
-
-      /**
-       * we need to use concurrencyExecuter to reduce the parallel number of the requests
-       */
-      const CONCURRENCY = 17
-      const roomIterator = concurrencyExecuter(CONCURRENCY)(idToRoom)(roomIdList)
-
-      const roomList: RoomInterface[] = []
-
-      for await (const room of roomIterator) {
-        if (room) {
-          roomList.push(room)
+      const result = await this.wechaty.Room.find({ id }).catch(e => {
+        this.wechaty.emitError(e)
+        continuousErrorCount++
+        totalErrorCount++
+        if (continuousErrorCount > 5) {
+          throw new Error('5 continuous errors!')
         }
-      }
-
-      return roomList
-
-    } catch (e) {
-      this.wechaty.emitError(e)
-      log.verbose('Room', 'findAll() rejected: %s', (e as Error).message)
-      return [] as RoomInterface[] // fail safe
+        if (totalErrorCount > totalErrorThreshold) {
+          throw new Error(`${totalErrorThreshold} total errors!`)
+        }
+      })
+      continuousErrorCount = 0
+      return result
     }
+
+    /**
+     * we need to use concurrencyExecuter to reduce the parallel number of the requests
+     */
+    const CONCURRENCY = 17
+    const roomIterator = concurrencyExecuter(CONCURRENCY)(idToRoom)(roomIdList)
+
+    const roomList: RoomInterface[] = []
+
+    for await (const room of roomIterator) {
+      if (room) {
+        roomList.push(room)
+      }
+    }
+
+    return roomList
   }
 
   /**

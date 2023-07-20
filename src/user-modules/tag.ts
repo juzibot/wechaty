@@ -77,28 +77,41 @@ class TagMixin extends MixinBase {
   static async list (): Promise<TagInterface[]> {
     log.verbose('Tag', 'list()')
 
-    try {
-      const tagIdList = await this.wechaty.puppet.tagTagList()
+    const tagIdList = await this.wechaty.puppet.tagTagList()
 
-      const idToTag = async (id: string) => this.find({ id }).catch(e => this.wechaty.emitError(e))
-
-      const CONCURRENCY = 17
-      const tagIterator = concurrencyExecuter(CONCURRENCY)(idToTag)(tagIdList)
-
-      const tagList: TagInterface[] = []
-      for await (const tag of tagIterator) {
-        if (tag) {
-          tagList.push(tag)
-        }
+    let continuousErrorCount = 0
+    let totalErrorCount = 0
+    const totalErrorThreshold = Math.round(tagIdList.length / 5)
+    const idToTag = async (id: string) => {
+      if (!this.wechaty.isLoggedIn) {
+        throw new Error('wechaty not logged in')
       }
-
-      return tagList
-
-    } catch (e) {
-      this.wechaty.emitError(e)
-      log.error('Tag', 'list() exception: %s', (e as Error).message)
-      return []
+      const result = this.find({ id }).catch(e => {
+        this.wechaty.emitError(e)
+        continuousErrorCount++
+        totalErrorCount++
+        if (continuousErrorCount > 5) {
+          throw new Error('5 continuous errors!')
+        }
+        if (totalErrorCount > totalErrorThreshold) {
+          throw new Error(`${totalErrorThreshold} total errors!`)
+        }
+      })
+      continuousErrorCount = 0
+      return result
     }
+
+    const CONCURRENCY = 17
+    const tagIterator = concurrencyExecuter(CONCURRENCY)(idToTag)(tagIdList)
+
+    const tagList: TagInterface[] = []
+    for await (const tag of tagIterator) {
+      if (tag) {
+        tagList.push(tag)
+      }
+    }
+
+    return tagList
   }
 
   static async find (filter: TagQueryFilter): Promise<TagInterface | undefined> {

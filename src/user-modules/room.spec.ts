@@ -52,10 +52,43 @@ test('findAll()', async t => {
       topic: EXPECTED_ROOM_TOPIC,
     } as PUPPET.payloads.Room
   })
+  const mockContact = puppet.mocker.createContact({ name: 'bot' })
+  await puppet.mocker.login(mockContact)
+
+  const future = new Promise(resolve => {
+    wechaty.on('login', resolve)
+  })
+  await future
 
   const roomList = await wechaty.Room.findAll()
   t.equal(roomList.length, 1, 'should find 1 room')
   t.equal(await roomList[0]!.topic(), EXPECTED_ROOM_TOPIC, 'should get topic from payload')
+
+  await wechaty.stop()
+})
+
+test('room.findAll() not login test', async t => {
+  const EXPECTED_ROOM_ID      = 'test-id'
+  const EXPECTED_ROOM_TOPIC   = 'test-topic'
+  const EXPECTED_ROOM_ID_LIST = [ EXPECTED_ROOM_ID ]
+
+  const sandbox = sinon.createSandbox()
+
+  const puppet = new PuppetMock() as any
+  const wechaty = WechatyBuilder.build({ puppet })
+
+  await wechaty.start()
+
+  sandbox.stub(puppet, 'roomSearch').resolves(EXPECTED_ROOM_ID_LIST)
+  sandbox.stub(puppet, 'roomMemberList').resolves([])
+  sandbox.stub(puppet, 'roomPayload').callsFake(async () => {
+    await new Promise(resolve => setImmediate(resolve))
+    return {
+      topic: EXPECTED_ROOM_TOPIC,
+    } as PUPPET.payloads.Room
+  })
+
+  await t.rejects(wechaty.Room.findAll())
 
   await wechaty.stop()
 })
