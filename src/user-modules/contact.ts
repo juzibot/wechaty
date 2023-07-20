@@ -173,48 +173,46 @@ class ContactMixin extends MixinBase implements SayableSayer {
   ): Promise<ContactInterface[]> {
     log.verbose('Contact', 'findAll(%s)', JSON.stringify(query, stringifyFilter) || '')
 
-    try {
-      const contactIdList: string[] = await this.wechaty.puppet.contactSearch(query)
+    const contactIdList: string[] = await this.wechaty.puppet.contactSearch(query)
 
-      let continuousErrorCount = 0
-      let totalErrorCount = 0
-      const idToContact = async (id: string) => {
-        const result = await this.wechaty.Contact.find({ id }).catch(e => {
-          this.wechaty.emitError(e)
-          continuousErrorCount++
-          totalErrorCount++
-          if (continuousErrorCount > 5) {
-            throw new Error('5 continuous errors!')
-          }
-          if (totalErrorCount > 100) {
-            throw new Error('100 total errors!')
-          }
-        })
-        continuousErrorCount = 0
-        return result
+    let continuousErrorCount = 0
+    let totalErrorCount = 0
+    const totalErrorThreshold = Math.round(contactIdList.length / 5)
+
+    const idToContact = async (id: string) => {
+      if (!this.wechaty.isLoggedIn) {
+        throw new Error('wechaty not logged in')
       }
-
-      /**
-       * we need to use concurrencyExecuter to reduce the parallel number of the requests
-       */
-      const CONCURRENCY = 17
-      const contactIterator = concurrencyExecuter(CONCURRENCY)(idToContact)(contactIdList)
-
-      const contactList: ContactInterface[] = []
-
-      for await (const contact of contactIterator) {
-        if (contact) {
-          contactList.push(contact)
+      const result = await this.wechaty.Contact.find({ id }).catch(e => {
+        this.wechaty.emitError(e)
+        continuousErrorCount++
+        totalErrorCount++
+        if (continuousErrorCount > 5) {
+          throw new Error('5 continuous errors!')
         }
-      }
-
-      return contactList
-
-    } catch (e) {
-      this.wechaty.emitError(e)
-      log.error('Contact', 'this.wechaty.puppet.contactFindAll() rejected: %s', (e as Error).message)
-      return [] // fail safe
+        if (totalErrorCount > totalErrorThreshold) {
+          throw new Error(`${totalErrorThreshold} total errors!`)
+        }
+      })
+      continuousErrorCount = 0
+      return result
     }
+
+    /**
+     * we need to use concurrencyExecuter to reduce the parallel number of the requests
+     */
+    const CONCURRENCY = 17
+    const contactIterator = concurrencyExecuter(CONCURRENCY)(idToContact)(contactIdList)
+
+    const contactList: ContactInterface[] = []
+
+    for await (const contact of contactIterator) {
+      if (contact) {
+        contactList.push(contact)
+      }
+    }
+
+    return contactList
   }
 
   // TODO

@@ -191,9 +191,28 @@ class MessageMixin extends MixinBase implements SayableSayer {
     const { contactIds = [], roomIds = [] } = await this.wechaty.puppet.getMessageBroadcastTarget()
 
     const CONCURRENCY = 17
-    const idToRoom = async (id: string) =>
-      this.wechaty.Room.find({ id })
-        .catch(e => this.wechaty.emitError(e))
+
+    let roomContinuousErrorCount = 0
+    let roomTotalErrorCount = 0
+    const roomTotalErrorThreshold = Math.round(roomIds.length / 5)
+    const idToRoom = async (id: string) => {
+      if (!this.wechaty.isLoggedIn) {
+        throw new Error('wechaty not logged in')
+      }
+      const result = await this.wechaty.Room.find({ id }).catch(e => {
+        this.wechaty.emitError(e)
+        roomContinuousErrorCount++
+        roomTotalErrorCount++
+        if (roomContinuousErrorCount > 5) {
+          throw new Error('5 continuous errors!')
+        }
+        if (roomTotalErrorCount > roomTotalErrorThreshold) {
+          throw new Error(`${roomTotalErrorThreshold} total errors!`)
+        }
+      })
+      roomContinuousErrorCount = 0
+      return result
+    }
 
     const roomIterator = concurrencyExecuter(CONCURRENCY)(idToRoom)(roomIds)
 
@@ -205,9 +224,27 @@ class MessageMixin extends MixinBase implements SayableSayer {
       }
     }
 
-    const idToContact = async (id: string) =>
-      this.wechaty.Contact.find({ id })
-        .catch(e => this.wechaty.emitError(e))
+    let contactContinuousErrorCount = 0
+    let contactTotalErrorCount = 0
+    const contactTotalErrorThreshold = Math.round(roomIds.length / 5)
+    const idToContact = async (id: string) => {
+      if (!this.wechaty.isLoggedIn) {
+        throw new Error('wechaty not logged in')
+      }
+      const result = await this.wechaty.Contact.find({ id }).catch(e => {
+        this.wechaty.emitError(e)
+        contactContinuousErrorCount++
+        contactTotalErrorCount++
+        if (contactContinuousErrorCount > 5) {
+          throw new Error('5 continuous errors!')
+        }
+        if (contactTotalErrorCount > contactTotalErrorThreshold) {
+          throw new Error(`${contactTotalErrorThreshold} total errors!`)
+        }
+      })
+      contactContinuousErrorCount = 0
+      return result
+    }
 
     const contactIterator = concurrencyExecuter(CONCURRENCY)(idToContact)(contactIds)
 
