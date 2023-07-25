@@ -36,6 +36,7 @@ import {
 }                       from './contact.js'
 import { validationMixin } from '../user-mixins/validation.js'
 import { poolifyMixin } from '../user-mixins/poolify.js'
+import type { RoomInterface } from './room.js'
 
 const MixinBase = poolifyMixin(
   ContactImpl,
@@ -197,6 +198,20 @@ class ContactSelfMixin extends MixinBase {
     }
 
     return this.wechaty.puppet.contactSelfSignature(signature).then(this.sync.bind(this))
+  }
+
+  public async roomAlias (room: RoomInterface, alias?: string): Promise<void | string> {
+    log.verbose('ContactSelf', 'roomAlias()')
+
+    if (typeof alias === 'undefined') {
+      return room.alias(this)
+    }
+
+    if (!(await room.has(this))) {
+      throw new Error('cannot edit room alias because you are not in room')
+    }
+
+    return this.wechaty.puppet.contactSelfRoomAlias(room.id, alias)
   }
 
 }
