@@ -392,9 +392,10 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
               await new Promise(resolve => {
                 setTimeout(resolve, 15 * 1000)
               })
-
-              this.emit('ready')
-              this.__readyState.active(true)
+              if (this.__loginIndicator.value()) {
+                this.emit('ready')
+                this.__readyState.active(true)
+              }
             })
             break
 
