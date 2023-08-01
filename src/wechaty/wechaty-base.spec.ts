@@ -246,21 +246,30 @@ test('@event ready', async t => {
   const sandbox = sinon.createSandbox()
   const spy     = sandbox.spy()
 
+  const mockContact = puppet.mocker.createContact({ name: 'any' })
+
   wechaty.on('ready', spy)
   t.ok(spy.notCalled, 'should no ready event with new wechaty instance')
 
   await wechaty.start()
   t.ok(spy.notCalled, 'should no ready event right start wechaty started')
 
+  await puppet.mocker.login(mockContact)
   puppet.emit('ready', { data: 'test' })
+  await new Promise(resolve => {
+    setTimeout(resolve, 16 * 1000)
+  })
   t.equal(spy.callCount, 1, 'should fire ready event after puppet ready')
 
   await wechaty.stop()
   await wechaty.start()
   t.equal(spy.callCount, 1, 'should fire ready event second time after stop/start wechaty')
 
+  await puppet.mocker.login(mockContact)
   puppet.emit('ready', { data: 'test' })
-
+  await new Promise(resolve => {
+    setTimeout(resolve, 16 * 1000)
+  })
   t.equal(spy.callCount, 2, 'should fire ready event third time after stop/start wechaty')
 
   await wechaty.stop()
@@ -274,6 +283,8 @@ test('ready()', async t => {
 
   const spy = sandbox.spy()
 
+  const mockContact = puppet.mocker.createContact({ name: 'any' })
+
   wechaty.ready()
     .then(spy)
     .catch(e => t.fail('rejection: ' + e))
@@ -284,8 +295,11 @@ test('ready()', async t => {
 
   t.ok(spy.notCalled, 'should not ready after right start wechaty')
 
+  await puppet.mocker.login(mockContact)
   puppet.emit('ready', { data: 'test' })
-  await new Promise(resolve => setImmediate(resolve))
+  await new Promise(resolve => {
+    setTimeout(resolve, 16 * 1000)
+  })
   t.ok(spy.calledOnce, 'should ready after puppet ready')
 
   await wechaty.stop()
@@ -294,8 +308,11 @@ test('ready()', async t => {
     .then(spy)
     .catch(e => t.fail('rejection: ' + e))
 
+  await puppet.mocker.login(mockContact)
   puppet.emit('ready', { data: 'test' })
-  await new Promise(resolve => setImmediate(resolve))
+  await new Promise(resolve => {
+    setTimeout(resolve, 16 * 1000)
+  })
   t.ok(spy.calledTwice, 'should ready again after stop/start wechaty')
 
   await wechaty.stop()
