@@ -6,10 +6,11 @@ import {
   TimeoutPromiseGError,
 }                       from 'gerror'
 
-import { StateSwitch }  from 'state-switch'
-import type {
+import {
+  StateSwitch,
+  BooleanIndicator,
   StateSwitchInterface,
-}                       from 'state-switch'
+}  from 'state-switch'
 
 import { config, PUPPET_PAYLOAD_SYNC_GAP, PUPPET_PAYLOAD_SYNC_MAX_RETRY }               from '../config.js'
 import { timestampToDate }      from '../pure-functions/timestamp-to-date.js'
@@ -57,13 +58,18 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
 
     readonly __readyState : StateSwitchInterface
 
+    __loginIndicator: BooleanIndicator
+
     __puppetMixinInited = false
+
+    __offCallbackList: (() => void)[] = []
 
     constructor (...args: any[]) {
       log.verbose('WechatyPuppetMixin', 'construct()')
       super(...args)
 
       this.__readyState = new StateSwitch('WechatyReady', { log })
+      this.__loginIndicator = new BooleanIndicator()
     }
 
     override async start (): Promise<void> {
@@ -111,6 +117,20 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
       } catch (e) {
         this.emitError(e)
       }
+
+      const loginListener = () => {
+        this.__loginIndicator.value(true)
+      }
+      this.on('login', loginListener)
+      const offLoginListener = () => this.off('login', loginListener)
+      this.__offCallbackList.push(offLoginListener)
+
+      const logoutListener = () => {
+        this.__loginIndicator.value(false)
+      }
+      this.on('logout', logoutListener)
+      const offLogoutListener = () => this.off('logout', logoutListener)
+      this.__offCallbackList.push(offLogoutListener)
     }
 
     override async stop (): Promise<void> {
@@ -134,6 +154,11 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
       log.verbose('WechatyPuppetMixin', 'stop() super.stop() ...')
       await super.stop()
       log.verbose('WechatyPuppetMixin', 'stop() super.stop() ... done')
+
+      while (this.__offCallbackList.length > 0) {
+        const func = this.__offCallbackList.pop()
+        func && func()
+      }
     }
 
     async ready (): Promise<void> {
@@ -359,8 +384,14 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
             break
 
           case 'ready':
-            puppet.on('ready', () => {
+            puppet.on('ready', async () => {
               log.silly('WechatyPuppetMixin', '__setupPuppetEvents() puppet.on(ready)')
+
+              // ready event should be emitted 15s after login
+              await this.__loginIndicator.ready(true)
+              await new Promise(resolve => {
+                setTimeout(resolve, 15 * 1000)
+              })
 
               this.emit('ready')
               this.__readyState.active(true)
@@ -747,6 +778,8 @@ type ProtectedPropertyPuppetMixin =
   | '__puppet'
   | '__readyState'
   | '__setupPuppetEvents'
+  | '__loginIndicator'
+  | '__offCallbackList'
 
 export type {
   PuppetMixin,
