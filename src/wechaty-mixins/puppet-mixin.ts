@@ -389,7 +389,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
 
               // ready event should be emitted 15s after login
               let onceLogout: () => void
-              let timeout: NodeJS.Timeout
+              let timeout: ReturnType<typeof setTimeout> // 'NodeJS' is not defined.
               const future = new Promise((resolve, reject) => {
                 onceLogout = () => {
                   reject(new Error('puppet logout!'))
