@@ -454,7 +454,6 @@ test('ReadyMeetsLogout', async t => {
   wechaty.on('ready', () => {
     readyEmitted = true
   })
-  console.log(new Date(), 0)
 
   puppet.emit('ready')
   await new Promise(resolve => {
@@ -466,8 +465,6 @@ test('ReadyMeetsLogout', async t => {
     setTimeout(resolve, 15 * 1000)
   })
 
-  console.log(new Date(), 1)
-
   t.ok(!readyEmitted, 'ready should not be emitted because puppet logout')
 
   puppet.emit('login', { contactId: mockContact.id })
@@ -475,8 +472,6 @@ test('ReadyMeetsLogout', async t => {
   await new Promise(resolve => {
     setTimeout(resolve, 5 * 1000)
   })
-
-  console.log(new Date(), 2)
 
   t.ok(!readyEmitted, 'ready should not be emitted because it should wait for a new ready')
 
@@ -486,6 +481,5 @@ test('ReadyMeetsLogout', async t => {
   })
   t.ok(readyEmitted, 'ready should be emitted')
 
-  console.log(new Date(), 3)
   await wechaty.stop()
 })
