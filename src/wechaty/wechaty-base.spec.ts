@@ -50,6 +50,7 @@ import type {
   WechatyInterface,
 }                           from '../wechaty/wechaty-impl.js'
 import { WechatySkeleton }  from './wechaty-skeleton.js'
+import { WechatyBuilder } from '../mods/mod.js'
 
 class WechatyTest extends WechatyBase {
 }
@@ -406,4 +407,85 @@ test('WechatySkeleton: super.{start,stop}()', async t => {
   await wechaty.stop()
   t.ok(startStub.calledOnce, 'should only call start once')
   t.ok(stopStub.calledOnce, 'should call the skeleton stop(), which means all mixin stops()s are chained correctly')
+})
+
+test('ReadyDelay', async t => {
+
+  const puppet = new PuppetMock() as any
+  const wechaty = WechatyBuilder.build({ puppet })
+
+  const mockContact = puppet.mocker.createContact({ name: 'any' })
+
+  await wechaty.start()
+
+  let loginCalled = false
+  wechaty.on('login', () => {
+    loginCalled = true
+  })
+
+  const future = new Promise<void>(resolve => {
+    wechaty.on('ready', () => {
+      if (loginCalled) {
+        t.pass('ready emitted after login')
+      } else {
+        t.fail('ready emitted before login')
+      }
+      resolve()
+    })
+  })
+
+  puppet.emit('ready')
+  await puppet.mocker.login(mockContact)
+
+  await future
+  await wechaty.stop()
+})
+
+test('ReadyMeetsLogout', async t => {
+  const puppet = new PuppetMock() as any
+  const wechaty = WechatyBuilder.build({ puppet })
+
+  const mockContact = puppet.mocker.createContact({ name: 'any' })
+
+  await wechaty.start()
+  await puppet.mocker.login(mockContact)
+
+  let readyEmitted = false
+  wechaty.on('ready', () => {
+    readyEmitted = true
+  })
+  console.log(new Date(), 0)
+
+  puppet.emit('ready')
+  await new Promise(resolve => {
+    setTimeout(resolve, 5 * 1000)
+  })
+
+  puppet.emit('logout', { contactId: mockContact.id })
+  await new Promise(resolve => {
+    setTimeout(resolve, 15 * 1000)
+  })
+
+  console.log(new Date(), 1)
+
+  t.ok(!readyEmitted, 'ready should not be emitted because puppet logout')
+
+  puppet.emit('login', { contactId: mockContact.id })
+
+  await new Promise(resolve => {
+    setTimeout(resolve, 5 * 1000)
+  })
+
+  console.log(new Date(), 2)
+
+  t.ok(!readyEmitted, 'ready should not be emitted because it should wait for a new ready')
+
+  puppet.emit('ready')
+  await new Promise(resolve => {
+    setTimeout(resolve, 16 * 1000)
+  })
+  t.ok(readyEmitted, 'ready should be emitted')
+
+  console.log(new Date(), 3)
+  await wechaty.stop()
 })
