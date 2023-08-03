@@ -388,13 +388,33 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
               log.silly('WechatyPuppetMixin', '__setupPuppetEvents() puppet.on(ready)')
 
               // ready event should be emitted 15s after login
-              await this.__loginIndicator.ready(true)
-              await new Promise(resolve => {
-                setTimeout(resolve, 15 * 1000)
+              let onceLogout: () => void
+              let timeout: NodeJS.Timeout
+              const future = new Promise((resolve, reject) => {
+                onceLogout = () => {
+                  reject(new Error('puppet logout!'))
+                }
+                puppet.once('logout', onceLogout)
+                timeout = setTimeout(() => {
+                  reject(new Error('waiting for login timeout'))
+                }, 60 * 1000)
+                void this.__loginIndicator.ready(true).then(resolve)
+              }).finally(() => {
+                puppet.off('logout', onceLogout)
+                clearTimeout(timeout)
               })
-              if (this.__loginIndicator.value()) {
-                this.emit('ready')
-                this.__readyState.active(true)
+
+              try {
+                await future
+                await new Promise(resolve => {
+                  setTimeout(resolve, 15 * 1000)
+                })
+                if (this.__loginIndicator.value()) {
+                  this.emit('ready')
+                  this.__readyState.active(true)
+                }
+              } catch (e) {
+                log.error(`ready ignored: ${(e as Error).message}`)
               }
             })
             break
