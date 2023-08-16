@@ -62,8 +62,6 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
 
     __puppetMixinInited = false
 
-    __offCallbackList: (() => void)[] = []
-
     constructor (...args: any[]) {
       log.verbose('WechatyPuppetMixin', 'construct()')
       super(...args)
@@ -147,11 +145,6 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
       log.verbose('WechatyPuppetMixin', 'stop() super.stop() ...')
       await super.stop()
       log.verbose('WechatyPuppetMixin', 'stop() super.stop() ... done')
-
-      while (this.__offCallbackList.length > 0) {
-        const func = this.__offCallbackList.pop()
-        func && func()
-      }
     }
 
     async ready (): Promise<void> {
@@ -798,7 +791,6 @@ type ProtectedPropertyPuppetMixin =
   | '__readyState'
   | '__setupPuppetEvents'
   | '__loginIndicator'
-  | '__offCallbackList'
 
 export type {
   PuppetMixin,
