@@ -70,6 +70,13 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
 
       this.__readyState = new StateSwitch('WechatyReady', { log })
       this.__loginIndicator = new BooleanIndicator()
+
+      this.on('login', () => {
+        this.__loginIndicator.value(true)
+      })
+      this.on('logout', () => {
+        this.__loginIndicator.value(false)
+      })
     }
 
     override async start (): Promise<void> {
@@ -117,20 +124,6 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
       } catch (e) {
         this.emitError(e)
       }
-
-      const loginListener = () => {
-        this.__loginIndicator.value(true)
-      }
-      this.on('login', loginListener)
-      const offLoginListener = () => this.off('login', loginListener)
-      this.__offCallbackList.push(offLoginListener)
-
-      const logoutListener = () => {
-        this.__loginIndicator.value(false)
-      }
-      this.on('logout', logoutListener)
-      const offLogoutListener = () => this.off('logout', logoutListener)
-      this.__offCallbackList.push(offLogoutListener)
     }
 
     override async stop (): Promise<void> {
