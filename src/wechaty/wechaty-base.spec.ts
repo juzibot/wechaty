@@ -409,6 +409,41 @@ test('WechatySkeleton: super.{start,stop}()', async t => {
   t.ok(stopStub.calledOnce, 'should call the skeleton stop(), which means all mixin stops()s are chained correctly')
 })
 
+test('ReadyWhenLoggedIn', async t => {
+
+  const puppet = new PuppetMock() as any
+  const wechaty = WechatyBuilder.build({ puppet })
+
+  const mockContact = puppet.mocker.createContact({ name: 'any' })
+
+  await wechaty.start()
+
+  let loginCalled = false
+  wechaty.on('login', () => {
+    loginCalled = true
+  })
+
+  const future = new Promise<void>(resolve => {
+    wechaty.on('ready', () => {
+      if (loginCalled) {
+        t.pass('ready emitted after login')
+      } else {
+        t.fail('ready emitted before login')
+      }
+      resolve()
+    })
+  })
+  await puppet.mocker.login(mockContact)
+
+  await new Promise(resolve => {
+    setTimeout(resolve, 5 * 1000)
+  })
+  puppet.emit('ready')
+
+  await future
+  await wechaty.stop()
+})
+
 test('ReadyDelay', async t => {
 
   const puppet = new PuppetMock() as any

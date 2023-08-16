@@ -62,14 +62,19 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
 
     __puppetMixinInited = false
 
-    __offCallbackList: (() => void)[] = []
-
     constructor (...args: any[]) {
       log.verbose('WechatyPuppetMixin', 'construct()')
       super(...args)
 
       this.__readyState = new StateSwitch('WechatyReady', { log })
       this.__loginIndicator = new BooleanIndicator()
+
+      this.on('login', () => {
+        this.__loginIndicator.value(true)
+      })
+      this.on('logout', () => {
+        this.__loginIndicator.value(false)
+      })
     }
 
     override async start (): Promise<void> {
@@ -117,20 +122,6 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
       } catch (e) {
         this.emitError(e)
       }
-
-      const loginListener = () => {
-        this.__loginIndicator.value(true)
-      }
-      this.on('login', loginListener)
-      const offLoginListener = () => this.off('login', loginListener)
-      this.__offCallbackList.push(offLoginListener)
-
-      const logoutListener = () => {
-        this.__loginIndicator.value(false)
-      }
-      this.on('logout', logoutListener)
-      const offLogoutListener = () => this.off('logout', logoutListener)
-      this.__offCallbackList.push(offLogoutListener)
     }
 
     override async stop (): Promise<void> {
@@ -154,11 +145,6 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
       log.verbose('WechatyPuppetMixin', 'stop() super.stop() ...')
       await super.stop()
       log.verbose('WechatyPuppetMixin', 'stop() super.stop() ... done')
-
-      while (this.__offCallbackList.length > 0) {
-        const func = this.__offCallbackList.pop()
-        func && func()
-      }
     }
 
     async ready (): Promise<void> {
@@ -414,7 +400,12 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                   this.__readyState.active(true)
                 }
               } catch (e) {
-                log.error(`ready ignored: ${(e as Error).message}`)
+                log.error(`ready error: ${(e as Error).message}, will emit event anyway if it's logged in now`)
+                if (this.puppet.isLoggedIn) {
+                  this.emit('ready')
+                  this.__loginIndicator.value(true)
+                  this.__readyState.active(true)
+                }
               }
             })
             break
@@ -800,7 +791,6 @@ type ProtectedPropertyPuppetMixin =
   | '__readyState'
   | '__setupPuppetEvents'
   | '__loginIndicator'
-  | '__offCallbackList'
 
 export type {
   PuppetMixin,
