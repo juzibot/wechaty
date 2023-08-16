@@ -407,7 +407,12 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                   this.__readyState.active(true)
                 }
               } catch (e) {
-                log.error(`ready ignored: ${(e as Error).message}`)
+                log.error(`ready error: ${(e as Error).message}, will emit event anyway if it's logged in now`)
+                if (this.puppet.isLoggedIn) {
+                  this.emit('ready')
+                  this.__loginIndicator.value(true)
+                  this.__readyState.active(true)
+                }
               }
             })
             break
