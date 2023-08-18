@@ -303,6 +303,34 @@ class WechatyBase extends mixinBase implements SayableSayer {
     await this.puppet.postUnpublish(post.id)
   }
 
+  async enterVerifyCode (
+    id: string,
+    code: string,
+  ): Promise<void> {
+    log.verbose('Wechaty', 'enterVerifyCode(%s, %s)', id, code)
+
+    return this.puppet.enterVerifyCode(id, code)
+  }
+
+  async cancelVerifyCode (
+    id: string,
+  ): Promise<void> {
+    log.verbose('Wechaty', 'cancelVerifyCode(%s)', id)
+
+    return this.puppet.cancelVerifyCode(id)
+  }
+
+  async refreshQrCode (
+  ): Promise<void> {
+    log.verbose('Wechaty', 'refreshQrCode(%s)')
+
+    if (this.isLoggedIn) {
+      throw new Error('cannot refresh qr because bot is logged in')
+    }
+
+    return this.puppet.refreshQRCode()
+  }
+
 }
 
 type WechatyBaseProtectedProperty =
