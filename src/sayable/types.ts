@@ -65,11 +65,16 @@ interface SayOptionsObject {
   quoteMessage?: MessageInterface,
 }
 
+const sayOptionKeys = [
+  'mentionList',
+  'quoteMessage',
+]
+
 export const isSayOptionsObject = (target: any) => {
   return (typeof target === 'object'
-    && ((target.mentionList && target.mentionList.every((c: any) => ContactImpl.valid(c)))
-      || (target.quoteMessage && MessageImpl.valid(target.quoteMessage))
-    )
+    && Object.keys(target).every(item => sayOptionKeys.includes(item))
+    && (typeof target.mentionList === 'undefined' || (Array.isArray(target.mentionList) && target.mentionList.every((c: any) => ContactImpl.valid(c) || (c as string) === '@all')))
+    && (typeof target.quoteMessage === 'undefined' || MessageImpl.valid(target.quoteMessage))
   )
 }
 
