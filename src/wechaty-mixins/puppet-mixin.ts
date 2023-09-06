@@ -647,6 +647,11 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                     const newPayload = JSON.parse(JSON.stringify(contact?.payload || {}))
 
                     const differences = diffPayload<PUPPET.payloads.Contact>(oldPayload, newPayload)
+                    if (differences.length === 0) {
+                      log.info('WechatyPuppetMixin', `got dirty for contact ${payloadId} but cannot find any difference. old payload: ${JSON.stringify(oldPayload)}, new payload: ${JSON.stringify(newPayload)}`)
+                      return
+                    }
+
                     const importantDifferences = differences.filter(ele => ele && ContactImportantFields.some(key => key === ele.key))
                     const regularDifferences = differences.filter(ele => ele && !ContactImportantFields.some(key => key === ele.key)) as ContactUpdatableValuePair[]
                     if (regularDifferences.length > 0) {
@@ -713,6 +718,12 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                     const newPayload = JSON.parse(JSON.stringify(room?.payload || {}))
 
                     const differences = diffPayload<PUPPET.payloads.Room>(oldPayload, newPayload)
+
+                    if (differences.length === 0) {
+                      log.info('WechatyPuppetMixin', `got dirty for room ${payloadId} but cannot find any difference. old payload: ${JSON.stringify(oldPayload)}, new payload: ${JSON.stringify(newPayload)}`)
+                      return
+                    }
+
                     const importantDifferences = differences.filter(ele => ele && RoomImportantFields.some(key => key === ele.key))
                     const regularDifferences = differences.filter(ele => ele && !RoomImportantFields.some(key => key === ele.key)) as RoomUpdatableValuePair[]
                     if (regularDifferences.length > 0) {
