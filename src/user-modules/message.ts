@@ -871,6 +871,9 @@ class MessageMixin extends MixinBase implements SayableSayer {
         && 'mentionIdList' in this.payload
         && Array.isArray(this.payload.mentionIdList)
     ) {
+      if (this.payload.mentionIdList.some(id => id === this.id)) {
+        return this.room()!.memberAll()
+      }
       const idToContact = (id: string) => this.wechaty.Contact.find({ id })
       const allContact = await Promise.all(
         this.payload.mentionIdList
@@ -938,6 +941,24 @@ class MessageMixin extends MixinBase implements SayableSayer {
       log.silly('Message', `message.mentionList() can not found member using room.member() from mentionList, mention string: ${JSON.stringify(mentionNameList)}`)
     }
     return contactList
+  }
+
+  isMentionAll (): boolean {
+    log.verbose('Message', 'isMentionAll()')
+
+    const room = this.room()
+    if (this.type() !== PUPPET.types.Message.Text || !room) {
+      return false
+    }
+
+    if (this.payload
+      && 'mentionIdList' in this.payload
+      && Array.isArray(this.payload.mentionIdList)
+    ) {
+      return this.payload.mentionIdList.some(id => id === room.id)
+    } else {
+      return false
+    }
   }
 
   /**
