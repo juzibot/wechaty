@@ -872,7 +872,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
         && Array.isArray(this.payload.mentionIdList)
     ) {
       if (this.payload.mentionIdList.some(id => id === this.id)) {
-        return this.room()!.memberAll()
+        return room().memberAll()
       }
       const idToContact = (id: string) => this.wechaty.Contact.find({ id })
       const allContact = await Promise.all(
