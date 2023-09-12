@@ -871,9 +871,6 @@ class MessageMixin extends MixinBase implements SayableSayer {
         && 'mentionIdList' in this.payload
         && Array.isArray(this.payload.mentionIdList)
     ) {
-      if (this.payload.mentionIdList.some(id => id === this.id)) {
-        return room.memberAll()
-      }
       const idToContact = (id: string) => this.wechaty.Contact.find({ id })
       const allContact = await Promise.all(
         this.payload.mentionIdList
@@ -955,7 +952,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
       && 'mentionIdList' in this.payload
       && Array.isArray(this.payload.mentionIdList)
     ) {
-      return this.payload.mentionIdList.some(id => id === room.id)
+      return this.payload.mentionIdList.some(id => id === this.payload?.talkerId)
     } else {
       return false
     }
