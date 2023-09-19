@@ -36,19 +36,22 @@ class CallRecordMixin extends wechatifyMixinBase() {
     log.verbose('CallRecord', 'constructor()')
   }
 
-  starter (): undefined | ContactInterface {
+  async starter (): Promise<undefined | ContactInterface> {
     const starterId = this.payload.starter
     if (!starterId) {
       return undefined
     }
-    const starter = (this.wechaty.Contact as typeof ContactImpl).load(starterId)
+    const starter = (this.wechaty.Contact as typeof ContactImpl).find({ id: starterId })
     return starter
   }
 
-  participants (): ContactInterface[] {
+  async participants (): Promise<ContactInterface[]> {
     const participantIds = this.payload.participants
 
-    return participantIds.map((this.wechaty.Contact as typeof ContactImpl).load.bind(this.wechaty.Contact))
+    const contactPromises = participantIds.map((this.wechaty.Contact as typeof ContactImpl).find.bind(this.wechaty.Contact))
+    const contacts = await Promise.all(contactPromises)
+
+    return contacts.filter(item => !!item) as ContactInterface[]
   }
 
   length (): number {
