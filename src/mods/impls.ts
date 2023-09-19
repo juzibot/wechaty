@@ -49,6 +49,7 @@ export {
   TagGroupImpl,
   UrlLinkImpl,
   ChannelImpl,
+  CallRecordImpl,
 }                             from '../user-modules/mod.js'
 
 // export {
@@ -89,6 +90,7 @@ export type {
   TagGroupInterface,
   UrlLinkInterface,
   ChannelInterface,
+  CallRecordInterface,
 }                               from '../user-modules/mod.js'
 
 export type {

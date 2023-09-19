@@ -75,6 +75,7 @@ import type {
 import { validationMixin } from '../user-mixins/validation.js'
 import type { ContactSelfImpl } from './contact-self.js'
 import { concurrencyExecuter } from 'rx-queue'
+import type { CallRecordInterface } from './call.js'
 
 const MixinBase = wechatifyMixin(
   EventEmitter,
@@ -1327,6 +1328,21 @@ class MessageMixin extends MixinBase implements SayableSayer {
 
     const channelPayload = await this.wechaty.puppet.messageChannel(this.id)
     return new this.wechaty.Channel(channelPayload)
+  }
+
+  public async toCallRecord (): Promise<CallRecordInterface> {
+    log.verbose('Message', 'toCallRecord()')
+
+    if (!this.payload) {
+      throw new Error('no payload')
+    }
+
+    if (this.type() !== PUPPET.types.Message.CallRecord) {
+      throw new Error('message not a CallRecord')
+    }
+
+    const callRecordPayload = await this.wechaty.puppet.messageCallRecord(this.id)
+    return new this.wechaty.CallRecord(callRecordPayload)
   }
 
   async toSayable (): Promise<undefined | Sayable> {

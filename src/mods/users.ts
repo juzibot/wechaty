@@ -43,4 +43,5 @@ export type {
   TagGroupInterface       as TagGroup,
   UrlLinkInterface        as UrlLink,
   ChannelInterface        as Channel,
+  CallRecordInterface     as CallRecord,
 }                                               from '../user-modules/mod.js'

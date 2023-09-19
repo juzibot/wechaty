@@ -22,6 +22,7 @@ import type {
   MessageInterface,
   ChannelConstructor,
   MomentConstructor,
+  CallRecordConstructor,
 }                             from '../user-modules/mod.js'
 
 import {
@@ -51,6 +52,7 @@ test('Wechaty interface', async t => {
     UrlLink        : UrlLinkConstructor
     Channel        : ChannelConstructor
     Moment         : MomentConstructor
+    CallRecord     : CallRecordConstructor
 
     constructor () {
       super()
@@ -71,6 +73,7 @@ test('Wechaty interface', async t => {
         = this.UrlLink
         = this.Channel
         = this.Moment
+        = this.CallRecord
         = {} as any
     }
 
