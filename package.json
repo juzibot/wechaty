@@ -109,7 +109,7 @@
   },
   "homepage": "https://github.com/wechaty/",
   "dependencies": {
-    "@juzi/wechaty-puppet-service": "^1.0.71",
+    "@juzi/wechaty-puppet-service": "^1.0.72",
     "clone-class": "^1.1.1",
     "cmd-ts": "^0.10.0",
     "cockatiel": "^2.0.2",
