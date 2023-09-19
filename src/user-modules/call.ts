@@ -48,7 +48,7 @@ class CallRecordMixin extends wechatifyMixinBase() {
   participants (): ContactInterface[] {
     const participantIds = this.payload.participants
 
-    return participantIds.map((this.wechaty.Contact as typeof ContactImpl).load)
+    return participantIds.map((this.wechaty.Contact as typeof ContactImpl).load.bind(this.wechaty.Contact))
   }
 
   length (): number {
