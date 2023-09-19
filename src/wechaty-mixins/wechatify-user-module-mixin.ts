@@ -17,6 +17,7 @@ import {
   UrlLinkImpl,
   ChannelImpl,
   MomentImpl,
+  CallRecordImpl,
 
   ContactConstructor,
   ContactSelfConstructor,
@@ -34,6 +35,7 @@ import {
   UrlLinkConstructor,
   ChannelConstructor,
   MomentConstructor,
+  CallRecordConstructor,
 
   wechatifyUserModule,
 }                       from '../user-modules/mod.js'
@@ -68,6 +70,7 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
     __wechatifiedUrlLink?        : UrlLinkConstructor
     __wechatifiedChannel?        : ChannelConstructor
     __wechatifiedMoment?         : MomentConstructor
+    __wechatifiedCallRecord?     : CallRecordConstructor
 
     get Contact ()        : ContactConstructor        { return guardWechatify(this.__wechatifiedContact)        }
     get ContactSelf ()    : ContactSelfConstructor    { return guardWechatify(this.__wechatifiedContactSelf)    }
@@ -85,6 +88,7 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
     get UrlLink ()        : UrlLinkConstructor        { return guardWechatify(this.__wechatifiedUrlLink)        }
     get Channel ()        : ChannelConstructor        { return guardWechatify(this.__wechatifiedChannel)        }
     get Moment ()         : MomentConstructor         { return guardWechatify(this.__wechatifiedMoment)         }
+    get CallRecord ()     : CallRecordConstructor     { return guardWechatify(this.__wechatifiedCallRecord) }
 
     override async init (): Promise<void> {
       log.verbose('WechatifyUserModuleMixin', 'init()')
@@ -122,6 +126,7 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
       this.__wechatifiedUrlLink        = wechatifyUserModule(UrlLinkImpl)(this as any)
       this.__wechatifiedChannel        = wechatifyUserModule(ChannelImpl)(this as any)
       this.__wechatifiedMoment         = wechatifyUserModule(MomentImpl)(this as any)
+      this.__wechatifiedCallRecord     = wechatifyUserModule(CallRecordImpl)(this as any)
 
       log.verbose('WechatifyUserModuleMixin', 'init() initializing Wechaty User Module (WUM) ... done')
     }
@@ -159,6 +164,7 @@ type ProtectedPropertyWechatifyUserModuleMixin =
   | '__wechatifiedUrlLink'
   | '__wechatifiedChannel'
   | '__wechatifiedMoment'
+  | '__wechatifiedCallRecord'
 
 export type {
   WechatifyUserModuleMixin,

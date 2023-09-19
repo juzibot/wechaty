@@ -107,6 +107,11 @@ import {
   ChannelInterface,
   ChannelConstructor,
 }                           from './channel.js'
+import {
+  CallRecordImpl,
+  CallRecordInterface,
+  CallRecordConstructor,
+}                           from './call.js'
 
 import { wechatifyUserModule } from '../user-mixins/wechatify.js'
 
@@ -129,6 +134,7 @@ export type {
   DelayInterface,
   UrlLinkInterface,
   ChannelInterface,
+  CallRecordInterface,
 }
 
 export type {
@@ -150,6 +156,7 @@ export type {
   TagGroupConstructor,
   UrlLinkConstructor,
   ChannelConstructor,
+  CallRecordConstructor,
 }
 
 export {
@@ -173,4 +180,5 @@ export {
   TagGroupImpl,
   UrlLinkImpl,
   ChannelImpl,
+  CallRecordImpl,
 }
