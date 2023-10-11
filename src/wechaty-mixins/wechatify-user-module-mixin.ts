@@ -18,6 +18,7 @@ import {
   ChannelImpl,
   MomentImpl,
   CallRecordImpl,
+  ChatHistoryImpl,
 
   ContactConstructor,
   ContactSelfConstructor,
@@ -36,6 +37,7 @@ import {
   ChannelConstructor,
   MomentConstructor,
   CallRecordConstructor,
+  ChatHistoryConstructor,
 
   wechatifyUserModule,
 }                       from '../user-modules/mod.js'
@@ -71,6 +73,7 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
     __wechatifiedChannel?        : ChannelConstructor
     __wechatifiedMoment?         : MomentConstructor
     __wechatifiedCallRecord?     : CallRecordConstructor
+    __wechatifiedChatHistory?    : ChatHistoryConstructor
 
     get Contact ()        : ContactConstructor        { return guardWechatify(this.__wechatifiedContact)        }
     get ContactSelf ()    : ContactSelfConstructor    { return guardWechatify(this.__wechatifiedContactSelf)    }
@@ -88,7 +91,8 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
     get UrlLink ()        : UrlLinkConstructor        { return guardWechatify(this.__wechatifiedUrlLink)        }
     get Channel ()        : ChannelConstructor        { return guardWechatify(this.__wechatifiedChannel)        }
     get Moment ()         : MomentConstructor         { return guardWechatify(this.__wechatifiedMoment)         }
-    get CallRecord ()     : CallRecordConstructor     { return guardWechatify(this.__wechatifiedCallRecord) }
+    get CallRecord ()     : CallRecordConstructor     { return guardWechatify(this.__wechatifiedCallRecord)     }
+    get ChatHistory ()    : ChatHistoryConstructor    { return guardWechatify(this.__wechatifiedChatHistory)    }
 
     override async init (): Promise<void> {
       log.verbose('WechatifyUserModuleMixin', 'init()')
@@ -127,6 +131,7 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
       this.__wechatifiedChannel        = wechatifyUserModule(ChannelImpl)(this as any)
       this.__wechatifiedMoment         = wechatifyUserModule(MomentImpl)(this as any)
       this.__wechatifiedCallRecord     = wechatifyUserModule(CallRecordImpl)(this as any)
+      this.__wechatifiedChatHistory    = wechatifyUserModule(ChatHistoryImpl)(this as any)
 
       log.verbose('WechatifyUserModuleMixin', 'init() initializing Wechaty User Module (WUM) ... done')
     }
@@ -165,6 +170,7 @@ type ProtectedPropertyWechatifyUserModuleMixin =
   | '__wechatifiedChannel'
   | '__wechatifiedMoment'
   | '__wechatifiedCallRecord'
+  | '__wechatifiedChatHistory'
 
 export type {
   WechatifyUserModuleMixin,
