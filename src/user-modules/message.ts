@@ -1353,12 +1353,12 @@ class MessageMixin extends MixinBase implements SayableSayer {
       throw new Error('no payload')
     }
 
-    if (this.type() !== PUPPET.types.Message.CallRecord) {
-      throw new Error('message not a CallRecord')
+    if (this.type() !== PUPPET.types.Message.ChatHistory) {
+      throw new Error('message not a ChatHistory')
     }
 
-    const callRecordPayload = await this.wechaty.puppet.messageChatHistory(this.id)
-    return new this.wechaty.ChatHistory(callRecordPayload)
+    const chatHistoryPayload = await this.wechaty.puppet.messageChatHistory(this.id)
+    return new this.wechaty.ChatHistory(chatHistoryPayload)
   }
 
   async toSayable (): Promise<undefined | Sayable> {
