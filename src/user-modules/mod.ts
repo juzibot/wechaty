@@ -112,6 +112,11 @@ import {
   CallRecordInterface,
   CallRecordConstructor,
 }                           from './call.js'
+import {
+  ChatHistoryImpl,
+  ChatHistoryInterface,
+  ChatHistoryConstructor,
+}                           from './chat-history.js'
 
 import { wechatifyUserModule } from '../user-mixins/wechatify.js'
 
@@ -135,6 +140,7 @@ export type {
   UrlLinkInterface,
   ChannelInterface,
   CallRecordInterface,
+  ChatHistoryInterface,
 }
 
 export type {
@@ -157,6 +163,7 @@ export type {
   UrlLinkConstructor,
   ChannelConstructor,
   CallRecordConstructor,
+  ChatHistoryConstructor,
 }
 
 export {
@@ -181,4 +188,5 @@ export {
   UrlLinkImpl,
   ChannelImpl,
   CallRecordImpl,
+  ChatHistoryImpl,
 }
