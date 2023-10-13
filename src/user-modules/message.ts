@@ -873,9 +873,9 @@ class MessageMixin extends MixinBase implements SayableSayer {
         && 'mentionIdList' in this.payload
         && Array.isArray(this.payload.mentionIdList)
     ) {
-      const allContact = await (this.wechaty.Contact as any as typeof ContactImpl).batchLoadContacts(this.payload.mentionIdList)
+      const contactList = await (this.wechaty.Contact as any as typeof ContactImpl).batchLoadContacts(this.payload.mentionIdList)
       // remove `undefined` types because we use a `filter(Boolean)`
-      return allContact.filter(Boolean) as ContactInterface[]
+      return contactList
     }
 
     /**
