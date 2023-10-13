@@ -837,12 +837,9 @@ class RoomMixin extends MixinBase implements SayableSayer {
         return this.payload.topic
       } else {
         const memberIdList = await this.wechaty.puppet.roomMemberList(this.id)
-        const memberListFuture = memberIdList
+        const memberIdListWithoutBot = memberIdList
           .filter(id => id !== this.wechaty.puppet.currentUserId)
-          .map(id => this.wechaty.Contact.find({ id }))
-
-        const memberList = (await Promise.all(memberListFuture))
-          .filter(Boolean) as ContactInterface[]
+        const memberList = await (this.wechaty.Contact as any as typeof ContactImpl).batchLoadContacts(memberIdListWithoutBot)
 
         let defaultTopic = (memberList[0] && memberList[0].name()) || ''
         for (let i = 1; i < 3 && memberList[i]; i++) {
@@ -1069,11 +1066,8 @@ class RoomMixin extends MixinBase implements SayableSayer {
     }
 
     const contactIdList   = await this.wechaty.puppet.roomMemberSearch(this.id, query)
-    const contactListAll  = await Promise.all(
-      contactIdList.map(id => this.wechaty.Contact.find({ id })),
-    )
+    const contactList = await (this.wechaty.Contact as any as typeof ContactImpl).batchLoadContacts(contactIdList)
 
-    const contactList = contactListAll.filter(c => !!c) as ContactInterface[]
     return contactList
   }
 
@@ -1153,13 +1147,8 @@ class RoomMixin extends MixinBase implements SayableSayer {
     //   return []
     // }
 
-    const contactListAll = await Promise.all(
-      memberIdList.map(
-        id => this.wechaty.Contact.find({ id }),
-      ),
-    )
+    const contactList = await (this.wechaty.Contact as any as typeof ContactImpl).batchLoadContacts(memberIdList)
 
-    const contactList = contactListAll.filter(c => !!c) as ContactInterface[]
     return contactList
   }
 

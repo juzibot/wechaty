@@ -215,6 +215,46 @@ class ContactMixin extends MixinBase implements SayableSayer {
     return contactList
   }
 
+  static async batchLoadContacts (contactIdList: string[]) {
+    let continuousErrorCount = 0
+    let totalErrorCount = 0
+    const totalErrorThreshold = Math.round(contactIdList.length / 5)
+
+    const idToContact = async (id: string) => {
+      if (!this.wechaty.isLoggedIn) {
+        throw new Error('wechaty not logged in')
+      }
+      const result = await this.wechaty.Contact.find({ id }).catch(e => {
+        this.wechaty.emitError(e)
+        continuousErrorCount++
+        totalErrorCount++
+        if (continuousErrorCount > 5) {
+          throw new Error('5 continuous errors!')
+        }
+        if (totalErrorCount > totalErrorThreshold) {
+          throw new Error(`${totalErrorThreshold} total errors!`)
+        }
+      })
+      continuousErrorCount = 0
+      return result
+    }
+
+    /**
+     * we need to use concurrencyExecuter to reduce the parallel number of the requests
+     */
+    const CONCURRENCY = 17
+    const contactIterator = concurrencyExecuter(CONCURRENCY)(idToContact)(contactIdList)
+
+    const contactList: ContactInterface[] = []
+
+    for await (const contact of contactIterator) {
+      if (contact) {
+        contactList.push(contact)
+      }
+    }
+    return contactList
+  }
+
   // TODO
   // eslint-disable-next-line no-use-before-define
   static async delete (contact: ContactInterface): Promise<void> {
@@ -855,7 +895,7 @@ class ContactImpl extends validationMixin(ContactImplBase)<ContactInterface>() {
 
 type ContactConstructor = Constructor<
   ContactImplInterface,
-  Omit<typeof ContactImpl, 'load'>
+  Omit<typeof ContactImpl, 'load' | 'batchLoadContacts'>
 >
 
 export type {
