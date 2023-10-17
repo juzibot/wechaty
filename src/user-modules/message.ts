@@ -1003,7 +1003,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
    * }
    */
   mentionSelf (): boolean {
-    if (this.payload
+    if (this.payload?.roomId
       && 'mentionIdList' in this.payload
       && Array.isArray(this.payload.mentionIdList)
     ) {
