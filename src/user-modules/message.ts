@@ -996,16 +996,24 @@ class MessageMixin extends MixinBase implements SayableSayer {
   /**
    * Check if a message is mention self.
    *
-   * @returns {Promise<boolean>} - Return `true` for mention me.
+   * @returns {boolean} - Return `true` for mention me.
    * @example
-   * if (await message.mentionSelf()) {
+   * if (message.mentionSelf()) {
    *  console.log('this message were mentioned me! [You were mentioned] tip ([有人@我]的提示)')
    * }
    */
-  async mentionSelf (): Promise<boolean> {
-    const currentUserId = this.wechaty.puppet.currentUserId
-    const mentionList = await this.mentionList()
-    return mentionList.some(contact => contact.id === currentUserId)
+  mentionSelf (): boolean {
+    if (this.payload
+      && 'mentionIdList' in this.payload
+      && Array.isArray(this.payload.mentionIdList)
+    ) {
+      const currentUserId = this.wechaty.puppet.currentUserId
+      // const mentionList = await this.mentionList()
+      const mentionIdList = this.payload.mentionIdList
+      return mentionIdList.some(id => id === currentUserId)
+    } else {
+      return false
+    }
   }
 
   /**
