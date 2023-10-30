@@ -649,7 +649,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                     const differences = diffPayload<PUPPET.payloads.Contact>(oldPayload, newPayload)
                     if (differences.length === 0) {
                       log.info('WechatyPuppetMixin', `got dirty for contact ${payloadId} but cannot find any difference. old payload: ${JSON.stringify(oldPayload)}, new payload: ${JSON.stringify(newPayload)}`)
-                      return
+                      break
                     }
 
                     const importantDifferences = differences.filter(ele => ele && ContactImportantFields.some(key => key === ele.key))
@@ -721,7 +721,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
 
                     if (differences.length === 0) {
                       log.info('WechatyPuppetMixin', `got dirty for room ${payloadId} but cannot find any difference. old payload: ${JSON.stringify(oldPayload)}, new payload: ${JSON.stringify(newPayload)}`)
-                      return
+                      break
                     }
 
                     const importantDifferences = differences.filter(ele => ele && RoomImportantFields.some(key => key === ele.key))
@@ -778,6 +778,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                   default:
                     throw new Error('unknown payload type: ' + payloadType)
                 }
+                this.emit('dirty', payloadId, payloadType)
               } catch (e) {
                 this.emit('error', GError.from(e))
               }
