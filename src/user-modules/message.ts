@@ -370,6 +370,23 @@ class MessageMixin extends MixinBase implements SayableSayer {
     return broadcastStatus
   }
 
+  static async mergeForward (to: ContactInterface | RoomInterface, messageList: MessageInterface[]): Promise<void | MessageInterface> {
+    log.verbose('Message', `mergeForward(${messageList})`)
+    try {
+      const msgId = await this.wechaty.puppet.messageForward(
+        to.id,
+        messageList.map(msg => msg.id),
+      )
+      if (msgId) {
+        const msg = await this.wechaty.Message.find({ id: msgId })
+        return msg
+      }
+    } catch (e) {
+      log.error('Message', 'forward(%s) exception: %s', to, e)
+      throw e
+    }
+  }
+
   /**
    *
    * Instance Properties
