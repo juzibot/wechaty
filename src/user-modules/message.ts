@@ -117,6 +117,18 @@ class MessageMixin extends MixinBase implements SayableSayer {
   ): Promise<undefined | MessageInterface> {
     log.verbose('Message', 'find(%s)', JSON.stringify(query))
 
+    if (typeof query === 'object' && query.id) {
+      const message = this.load(query.id)
+      try {
+        await message.ready()
+      } catch (e) {
+        this.wechaty.emitError(e)
+        return undefined
+      }
+
+      return message
+    }
+
     if (typeof query === 'string') {
       query = { text: query }
     }
