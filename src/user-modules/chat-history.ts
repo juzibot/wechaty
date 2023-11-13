@@ -8,6 +8,7 @@ import { validationMixin } from '../user-mixins/validation.js'
 import {
   wechatifyMixinBase,
 } from '../user-mixins/wechatify.js'
+import { FileBox } from 'file-box'
 import type { FileBoxInterface } from 'file-box'
 import type { ChannelInterface } from './channel.js'
 import type { ContactInterface } from './contact.js'
@@ -19,6 +20,21 @@ import { timestampToDate } from '../pure-functions/timestamp-to-date.js'
 type ChatHistoryMessageType = string | ContactInterface | LocationInterface | MiniProgramInterface | UrlLinkInterface | ChannelInterface | ChatHistoryInterface | FileBoxInterface
 
 class ChatHistoryMixin extends wechatifyMixinBase() {
+
+  static async create (): Promise<ChatHistoryInterface> {
+    log.verbose('ChatHistory', 'create()')
+
+    const payload: PUPPET.payloads.ChatHistory = {
+      type: PUPPET.types.Message.Text,
+      avatar: FileBox.fromUrl(''),
+      senderName: 'senderName',
+      corpName: 'corpName',
+      time: 1699889645,
+      message: 'text',
+    }
+
+    return new this(payload)
+  }
 
   /*
    * @hideconstructor
