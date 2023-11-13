@@ -103,11 +103,13 @@ class ChatHistoryMixin extends wechatifyMixinBase() {
       switch (type) {
         case PUPPET.types.Message.Text:
         case PUPPET.types.Message.Contact:
-          responseList.push(payload.message)
+        case PUPPET.types.Message.Audio:
+        case PUPPET.types.Message.GroupNote:
+        case PUPPET.types.Message.Emoticon:
+        case PUPPET.types.Message.Channel:
+          responseList.push(payload.message as string)
           break
         case PUPPET.types.Message.Attachment:
-        case PUPPET.types.Message.Audio:
-        case PUPPET.types.Message.Emoticon:
         case PUPPET.types.Message.Image:
         case PUPPET.types.Message.Video:
           responseList.push(payload.message)
