@@ -175,6 +175,40 @@ class ContactSelfMixin extends MixinBase {
     return this.wechaty.puppet.contactSelfName(name).then(this.sync.bind(this))
   }
 
+  public override realName (): string
+  public override realName (realName: string): Promise<void>
+
+  public override realName (realName?: string): string | Promise<void> {
+    log.verbose('ContactSelf', 'realName(%s)', realName || '')
+
+    if (typeof realName === 'undefined') {
+      return super.realName()
+    }
+
+    if (this.id !== this.wechaty.puppet.currentUserId) {
+      throw new Error('only can set realName for user self')
+    }
+
+    return this.wechaty.puppet.contactSelfRealName(realName).then(this.sync.bind(this))
+  }
+
+  public override aka (): string
+  public override aka (aka: string): Promise<void>
+
+  public override aka (aka?: string): string | Promise<void> {
+    log.verbose('ContactSelf', 'aka(%s)', aka || '')
+
+    if (typeof aka === 'undefined') {
+      return super.aka()
+    }
+
+    if (this.id !== this.wechaty.puppet.currentUserId) {
+      throw new Error('only can set aka for user self')
+    }
+
+    return this.wechaty.puppet.contactSelfAka(aka).then(this.sync.bind(this))
+  }
+
   /**
    * Change bot signature
    *

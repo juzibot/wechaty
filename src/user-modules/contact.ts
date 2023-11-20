@@ -396,6 +396,14 @@ class ContactMixin extends MixinBase implements SayableSayer {
     return (this.payload && this.payload.name) || ''
   }
 
+  aka (): string {
+    return (this.payload && this.payload.aka) || ''
+  }
+
+  realName (): string {
+    return (this.payload && this.payload.realName) || ''
+  }
+
   async alias ()                  : Promise<undefined | string>
   async alias (newAlias:  string) : Promise<void>
   async alias (empty:     null)   : Promise<void>
