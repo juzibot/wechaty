@@ -28,6 +28,7 @@ class ChatHistoryMixin extends wechatifyMixinBase() {
         senderName: 'senderName',
         corpName: 'corpName',
         time: 1699889645,
+        title: '群聊的聊天记录',
         message: 'text',
       },
     ]
