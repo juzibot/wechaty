@@ -50,6 +50,7 @@ export {
   UrlLinkImpl,
   ChannelImpl,
   CallRecordImpl,
+  WecomImpl,
 }                             from '../user-modules/mod.js'
 
 // export {
@@ -91,6 +92,7 @@ export type {
   UrlLinkInterface,
   ChannelInterface,
   CallRecordInterface,
+  WecomInterface,
 }                               from '../user-modules/mod.js'
 
 export type {
@@ -112,6 +114,7 @@ export type {
   TagGroupConstructor,
   UrlLinkConstructor,
   ChannelConstructor,
+  WecomConstructor,
 }                               from '../user-modules/mod.js'
 
 export {

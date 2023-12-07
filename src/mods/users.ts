@@ -44,4 +44,5 @@ export type {
   UrlLinkInterface        as UrlLink,
   ChannelInterface        as Channel,
   CallRecordInterface     as CallRecord,
+  WecomInterface          as Wecom,
 }                                               from '../user-modules/mod.js'
