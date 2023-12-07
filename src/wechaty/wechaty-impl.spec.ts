@@ -30,7 +30,7 @@ import type {
 import {
   type WechatyConstructor,
   type WechatyInterface,
-  type AllProtectedProperty,
+  // type AllProtectedProperty,
   WechatyImpl,
   // WechatyConstructor,
 }                       from './wechaty-impl.js'
