@@ -121,16 +121,16 @@ test('Wechaty interface', async t => {
   t.ok(typeof WechatyImplementation, 'should no typing error')
 })
 
-test('ProtectedProperties', async t => {
-  // won't work before wecom mixin
-  // probably because node version change?
+// test('ProtectedProperties', async t => {
+// won't work before wecom mixin
+// probably because node version change?
 
-  // type NotExistInWechaty = Exclude<AllProtectedProperty, keyof WechatyImpl | `_${string}`>
-  // type NotExistTest = NotExistInWechaty extends never ? true : false
+// type NotExistInWechaty = Exclude<AllProtectedProperty, keyof WechatyImpl | `_${string}`>
+// type NotExistTest = NotExistInWechaty extends never ? true : false
 
-  // const noOneLeft: NotExistTest = true
-  // t.ok(noOneLeft, 'should match Wechaty properties for every protected property')
-})
+// const noOneLeft: NotExistTest = true
+// t.ok(noOneLeft, 'should match Wechaty properties for every protected property')
+// })
 
 test('options.puppet initialization', async t => {
   const puppet  = new PuppetMock() as any
