@@ -24,6 +24,7 @@ import type {
   MomentConstructor,
   CallRecordConstructor,
   ChatHistoryConstructor,
+  WecomConstructor,
 }                             from '../user-modules/mod.js'
 
 import {
@@ -55,6 +56,7 @@ test('Wechaty interface', async t => {
     Moment         : MomentConstructor
     CallRecord     : CallRecordConstructor
     ChatHistory    : ChatHistoryConstructor
+    Wecom          : WecomConstructor
 
     constructor () {
       super()
@@ -77,6 +79,7 @@ test('Wechaty interface', async t => {
         = this.Moment
         = this.CallRecord
         = this.ChatHistory
+        = this.Wecom
         = {} as any
     }
 
