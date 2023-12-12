@@ -28,8 +28,6 @@ import type {
 
 import type { GErrorMixin } from './gerror-mixin.js'
 import type { IoMixin }     from './io-mixin.js'
-import { ContactImportantFields, ContactUpdatableValuePair, InfoUpdateInterface, RoomImportantFields, RoomUpdatableValuePair } from '../schemas/update.js'
-import { checkUntilChanged, diffPayload } from '../pure-functions/update.js'
 
 const PUPPET_MEMORY_NAME = 'puppet'
 
@@ -642,116 +640,12 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                 switch (payloadType) {
                   case PUPPET.types.Payload.Contact: {
                     const contact = await this.Contact.find({ id: payloadId }) as unknown as undefined | ContactImpl
-                    const oldPayload = JSON.parse(JSON.stringify(contact?.payload || {}))
                     await contact?.ready(true)
-                    const newPayload = JSON.parse(JSON.stringify(contact?.payload || {}))
-
-                    const differences = diffPayload<PUPPET.payloads.Contact>(oldPayload, newPayload)
-                    if (differences.length === 0) {
-                      log.info('WechatyPuppetMixin', `got dirty for contact ${payloadId} but cannot find any difference. old payload: ${JSON.stringify(oldPayload)}, new payload: ${JSON.stringify(newPayload)}`)
-                      break
-                    }
-
-                    const importantDifferences = differences.filter(ele => ele && ContactImportantFields.some(key => key === ele.key))
-                    const regularDifferences = differences.filter(ele => ele && !ContactImportantFields.some(key => key === ele.key)) as ContactUpdatableValuePair[]
-                    if (regularDifferences.length > 0) {
-                      const updateEvent: InfoUpdateInterface = {
-                        type: payloadType,
-                        id: payloadId,
-                        updates: regularDifferences,
-                      }
-                      this.emit('update', updateEvent)
-                      contact?.emit('update', updateEvent)
-                    }
-                    for (const difference of importantDifferences) {
-                      switch (difference?.key) {
-                        case 'tags': {
-                          const oldTagsSet = new Set(difference.oldValue)
-                          const newTagsSet = new Set(difference.newValue)
-                          const addedTagPromises = difference.newValue?.filter(ele => !oldTagsSet.has(ele)).map(ele => this.Tag.find({ id: ele })) || []
-                          const removedTagPromises = difference.oldValue?.filter(ele => !newTagsSet.has(ele)).map(ele => this.Tag.find({ id: ele })) || []
-                          if (addedTagPromises.length > 0) {
-                            const addedTags = await Promise.all(addedTagPromises)
-                            this.emit('contact-tag-add', contact, addedTags)
-                          }
-                          if (removedTagPromises.length > 0) {
-                            const removedTags = await Promise.all(removedTagPromises)
-                            this.emit('contact-tag-remove', contact, removedTags)
-                          }
-                          break
-                        }
-                        case 'name': {
-                          this.emit('contact-name', contact, difference.newValue || '', difference.oldValue || '')
-                          contact?.emit('name', difference.newValue || '', difference.oldValue || '')
-                          break
-                        }
-                        case 'alias': {
-                          this.emit('contact-alias', contact, difference.newValue || '', difference.oldValue || '')
-                          contact?.emit('alias', difference.newValue || '', difference.oldValue || '')
-                          break
-                        }
-                        case 'phone': {
-                          this.emit('contact-phone', contact, difference.newValue || [], difference.oldValue || [])
-                          contact?.emit('phone', difference.newValue || [], difference.oldValue || [])
-                          break
-                        }
-                        case 'description': {
-                          this.emit('contact-description', contact, difference.newValue || '', difference.oldValue || '')
-                          contact?.emit('description', difference.newValue || '', difference.oldValue || '')
-                          break
-                        }
-                        case 'corporation': {
-                          this.emit('contact-corporation', contact, difference.newValue || '', difference.oldValue || '')
-                          contact?.emit('corporation', difference.newValue || '', difference.oldValue || '')
-                          break
-                        }
-                        default:
-                          log.warn('WechatyPuppetMixin', 'puppet dirty unsupported difference type: %s', JSON.stringify(difference))
-                      }
-                    }
                     break
                   }
                   case PUPPET.types.Payload.Room: {
                     const room = await this.Room.find({ id: payloadId })  as unknown as undefined | RoomImpl
-                    const oldPayload = JSON.parse(JSON.stringify(room?.payload || {}))
                     await room?.ready(true)
-                    const newPayload = JSON.parse(JSON.stringify(room?.payload || {}))
-
-                    const differences = diffPayload<PUPPET.payloads.Room>(oldPayload, newPayload)
-
-                    if (differences.length === 0) {
-                      log.info('WechatyPuppetMixin', `got dirty for room ${payloadId} but cannot find any difference. old payload: ${JSON.stringify(oldPayload)}, new payload: ${JSON.stringify(newPayload)}`)
-                      break
-                    }
-
-                    const importantDifferences = differences.filter(ele => ele && RoomImportantFields.some(key => key === ele.key))
-                    const regularDifferences = differences.filter(ele => ele && !RoomImportantFields.some(key => key === ele.key)) as RoomUpdatableValuePair[]
-                    if (regularDifferences.length > 0) {
-                      const updateEvent: InfoUpdateInterface = {
-                        type: payloadType,
-                        id: payloadId,
-                        updates: regularDifferences,
-                      }
-                      this.emit('update', updateEvent)
-                      room?.emit('update', updateEvent)
-                    }
-                    for (const difference of importantDifferences) {
-                      switch (difference?.key) {
-                        case 'ownerId': {
-                          const oldOwner = (await this.Contact.find({ id: difference.oldValue }))!
-                          const newOwner = (await this.Contact.find({ id: difference.newValue }))!
-                          this.emit('room-owner', room, newOwner, oldOwner)
-                          room?.emit('owner', newOwner, oldOwner)
-                          break
-                        }
-                        case 'memberIdList':
-                          break // this diff has been handled by room-join and room-leave events
-                        case 'topic':
-                          break // this diff has been handled by room-topic event
-                        default:
-                          log.warn('WechatyPuppetMixin', 'puppet dirty unsupported difference type: %s', JSON.stringify(difference))
-                      }
-                    }
                     break
                   }
                   case PUPPET.types.Payload.RoomMember: {
