@@ -28,6 +28,7 @@ import type {
 
 import type { GErrorMixin } from './gerror-mixin.js'
 import type { IoMixin }     from './io-mixin.js'
+import { checkUntilChanged } from '../pure-functions/retry-policy.js'
 
 const PUPPET_MEMORY_NAME = 'puppet'
 
