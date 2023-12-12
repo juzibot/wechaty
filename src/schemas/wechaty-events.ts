@@ -15,7 +15,6 @@ import type {
   TagInterface,
   TagGroupInterface,
 }                       from '../user-modules/mod.js'
-import type { InfoUpdateInterface } from './update.js'
 
 const WECHATY_EVENT_DICT = {
   ...PUPPET.types.CHAT_EVENT_DICT,
@@ -26,7 +25,6 @@ const WECHATY_EVENT_DICT = {
   ready                : 'All underlined data source are ready for use.',
   start                : 'Will be emitted after the Wechaty had been started.',
   stop                 : 'Will be emitted after the Wechaty had been stopped.',
-  update               : 'Will be emitted when some info has been changed.',
   'contact-tag-add'    : 'Will be emitted when contact has new tags.',
   'contact-tag-remove' : 'Will be emitted when contact has some tags removed.',
   'contact-name'       : 'Will be emitted when contact name has been changed.',
@@ -60,7 +58,6 @@ type WechatyEventListenerRoomAnnounce       = (room: RoomInterface, newAnnounce:
 type WechatyEventListenerRoomOwner          = (room: RoomInterface, newOwner: ContactInterface, oldOwner: ContactInterface) => void | Promise<void>
 type WechatyEventListenerScan               = (qrcode: string, status: PUPPET.types.ScanStatus, data?: string) => void | Promise<void>
 type WechatyEventListenerStartStop          = () => void | Promise<void>
-type WechatyEventListenerUpdate             = (info: InfoUpdateInterface) => void | Promise<void>
 type WechatyEventListenerContactTagAdd      = (contact: ContactInterface, tagList: TagInterface[]) => void | Promise<void>
 type WechatyEventListenerContactTagRemove   = (contact: ContactInterface, tagList: TagInterface[]) => void | Promise<void>
 type WechatyEventListenerContactName        = (contact: ContactInterface, newName: string, oldName: string) => void | Promise<void>
@@ -248,7 +245,6 @@ interface WechatyEventListeners {
   scan                 : WechatyEventListenerScan
   start                : WechatyEventListenerStartStop
   stop                 : WechatyEventListenerStartStop
-  update               : WechatyEventListenerUpdate
   'contact-tag-add'    : WechatyEventListenerContactTagAdd
   'contact-tag-remove' : WechatyEventListenerContactTagRemove
   'contact-name'       : WechatyEventListenerContactName
@@ -291,7 +287,6 @@ export type {
   WechatyEventListenerRoomAnnounce,
   WechatyEventListenerScan,
   WechatyEventListenerStartStop,
-  WechatyEventListenerUpdate,
   WechatyEventListenerContactTagAdd,
   WechatyEventListenerContactTagRemove,
   WechatyEventListenerContactName,
