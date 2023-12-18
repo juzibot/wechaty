@@ -762,6 +762,16 @@ class RoomMixin extends MixinBase implements SayableSayer {
     return this.remove(contact)
   }
 
+  async dismiss (): Promise<void> {
+    log.verbose('Room', 'dismiss()')
+
+    if (!this.owner()?.self()) {
+      throw new Error('you cannot dismiss a room you don\'t own')
+    }
+
+    return this.wechaty.puppet.roomDismiss(this.id)
+  }
+
   // private delLocal(contact: Contact): void {
   //   log.verbose('Room', 'delLocal(%s)', contact)
 
