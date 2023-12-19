@@ -259,6 +259,16 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                   throw new Error('no contact found for id: ' + payload.contactId)
                 }
                 this.emit('login', contact)
+                const readyTimeout = setTimeout(() => {
+                  if (this.puppet.readyIndicator.value()) {
+                    this.emit('ready')
+                  }
+                }, 15 * 1000)
+                puppet.once('ready', () => {
+                  // if we got ready from puppet, we don't have to fire it here.
+                  // it will be fired by ready listener
+                  clearTimeout(readyTimeout)
+                })
               } catch (e) {
                 this.emit('error', GError.from(e))
               }
