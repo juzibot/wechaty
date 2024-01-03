@@ -29,6 +29,7 @@ import type {
 import type { GErrorMixin } from './gerror-mixin.js'
 import type { IoMixin }     from './io-mixin.js'
 import { checkUntilChanged } from '../pure-functions/retry-policy.js'
+import { ScanType } from '@juzi/wechaty-puppet/types'
 
 const PUPPET_MEMORY_NAME = 'puppet'
 
@@ -541,7 +542,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
           case 'scan':
             puppet.on('scan', async payload => {
               this.__readyState.inactive(true)
-              this.emit('scan', payload.qrcode || '', payload.status, payload.data)
+              this.emit('scan', payload.qrcode || '', payload.status, payload.data || '', payload.type || ScanType.Unknown)
             })
             break
 
