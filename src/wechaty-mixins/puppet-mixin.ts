@@ -542,7 +542,8 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
           case 'scan':
             puppet.on('scan', async payload => {
               this.__readyState.inactive(true)
-              this.emit('scan', payload.qrcode || '', payload.status, payload.data || '', payload.type || ScanType.Unknown)
+              const date = timestampToDate(Number(payload.timestamp) || 0)
+              this.emit('scan', payload.qrcode || '', payload.status, payload.data || '', payload.type || ScanType.Unknown, date)
             })
             break
 
