@@ -255,6 +255,46 @@ class RoomMixin extends MixinBase implements SayableSayer {
     return undefined
   }
 
+  static async batchLoadRooms (roomIdList: string[]) {
+    let continuousErrorCount = 0
+    let totalErrorCount = 0
+    const totalErrorThreshold = Math.round(roomIdList.length / 5)
+
+    const idToRoom = async (id: string) => {
+      if (!this.wechaty.isLoggedIn) {
+        throw new Error('wechaty not logged in')
+      }
+      const result = await this.wechaty.Room.find({ id }).catch(e => {
+        this.wechaty.emitError(e)
+        continuousErrorCount++
+        totalErrorCount++
+        if (continuousErrorCount > 5) {
+          throw new Error('5 continuous errors!')
+        }
+        if (totalErrorCount > totalErrorThreshold) {
+          throw new Error(`${totalErrorThreshold} total errors!`)
+        }
+      })
+      continuousErrorCount = 0
+      return result
+    }
+
+    /**
+     * we need to use concurrencyExecuter to reduce the parallel number of the requests
+     */
+    const CONCURRENCY = 17
+    const roomIterator = concurrencyExecuter(CONCURRENCY)(idToRoom)(roomIdList)
+
+    const roomList: RoomInterface[] = []
+
+    for await (const room of roomIterator) {
+      if (room) {
+        roomList.push(room)
+      }
+    }
+    return roomList
+  }
+
   /**      const roomList: RoomInterface[] = []
 
    * @ignore
