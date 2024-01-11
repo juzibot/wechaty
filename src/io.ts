@@ -163,11 +163,14 @@ export class Io {
       this.ws = await this.initWebSocket()
 
       this.options.wechaty.on('login', () => { this.scanPayload = undefined })
-      this.options.wechaty.on('scan', (qrcode, status) => {
+      this.options.wechaty.on('scan', (qrcode, status, data, type, date) => {
         this.scanPayload = {
           ...this.scanPayload,
           qrcode,
           status,
+          type,
+          data,
+          timestamp: date.valueOf(),
         }
       })
 
