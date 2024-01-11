@@ -44,7 +44,9 @@ class WecomMixin extends wechatifyMixinBase() {
       log.warn(`these rooms cannot be applied with anti-spam strategy: ${filteredRoomIds}`)
     }
 
-    return this.wechaty.puppet.applyRoomAntiSpamStrategy(strategyId, Array.from(actualRoomIdSet), active)
+    if (actualRoomIdSet.size) {
+      return this.wechaty.puppet.applyRoomAntiSpamStrategy(strategyId, Array.from(actualRoomIdSet), active)
+    }
   }
 
   /*
