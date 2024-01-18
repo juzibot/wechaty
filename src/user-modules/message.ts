@@ -630,7 +630,14 @@ class MessageMixin extends MixinBase implements SayableSayer {
       throw new Error('no payload')
     }
 
-    return this.payload.text || ''
+    const oldText = this.payload.text || ''
+    const newText = (this.payload.textContent || []).map(item => item.text).join()
+    if (newText && oldText !== newText) {
+      log.warn('Message', `got different text, old: ${oldText}, new: ${newText}`)
+    }
+
+    // still use old text before we deprecate old text field
+    return oldText
   }
 
   /**
@@ -1005,21 +1012,37 @@ class MessageMixin extends MixinBase implements SayableSayer {
       return text
     }
 
-    const toAliasName = async (member: ContactInterface) => {
-      const alias = await room.alias(member)
-      const name = member.name()
-      return alias || name
+    if (this.payload?.textContent?.length) {
+      const text = this.payload.textContent.map(item => {
+        const type = item.type
+        switch (type) {
+          case PUPPET.types.TextContentType.Regular:
+            return item.text
+          case PUPPET.types.TextContentType.At:
+            return ''
+          default:
+            log.warn(`got unknown type ${type} in text content`)
+            return ''
+        }
+      }).join()
+      return text
+    } else {
+      const toAliasName = async (member: ContactInterface) => {
+        const alias = await room.alias(member)
+        const name = member.name()
+        return alias || name
+      }
+
+      const mentionNameList = await Promise.all(mentionList.map(toAliasName))
+
+      const textWithoutMention = mentionNameList.reduce((prev, cur) => {
+        const escapedCur = escapeRegExp(cur)
+        const regex = new RegExp(`@${escapedCur}(\u2005|\u0020|$)`)
+        return prev.replace(regex, '')
+      }, text)
+
+      return textWithoutMention.trim()
     }
-
-    const mentionNameList = await Promise.all(mentionList.map(toAliasName))
-
-    const textWithoutMention = mentionNameList.reduce((prev, cur) => {
-      const escapedCur = escapeRegExp(cur)
-      const regex = new RegExp(`@${escapedCur}(\u2005|\u0020|$)`)
-      return prev.replace(regex, '')
-    }, text)
-
-    return textWithoutMention.trim()
   }
 
   /**
