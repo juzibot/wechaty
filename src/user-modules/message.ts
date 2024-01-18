@@ -631,7 +631,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
     }
 
     const oldText = this.payload.text || ''
-    const newText = (this.payload.textContent || []).map(item => item.text).join()
+    const newText = (this.payload.textContent || []).map(item => item.text).join('')
     if (newText && oldText !== newText) {
       log.warn('Message', `got different text, old: ${oldText}, new: ${newText}`)
     }
@@ -1024,7 +1024,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
             log.warn(`got unknown type ${type} in text content`)
             return ''
         }
-      }).join()
+      }).join('')
       return text
     } else {
       const toAliasName = async (member: ContactInterface) => {
