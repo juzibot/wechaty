@@ -236,6 +236,17 @@ class TagMixin extends MixinBase {
     }
   }
 
+  static async modifyTag (tagInstance: TagInterface, tagNewName: string): Promise<void> {
+    log.verbose('Tag', 'modifyTag(%s, %s)', tagInstance)
+
+    try {
+      await this.wechaty.puppet.tagTagModify(tagInstance.id, tagNewName)
+    } catch (e) {
+      this.wechaty.emitError(e)
+      log.error('Tag', 'modifyTag() exception: %s', (e as Error).message)
+    }
+  }
+
   override toString () {
     return `<Tag#${this.name() || this.id}>`
   }
