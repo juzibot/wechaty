@@ -25,6 +25,7 @@ import { concurrencyExecuter } from 'rx-queue'
 import { log } from '../config.js'
 import { poolifyMixin } from '../user-mixins/poolify.js'
 
+import assert from 'assert'
 import { validationMixin } from '../user-mixins/validation.js'
 import {
   wechatifyMixin,
@@ -140,6 +141,48 @@ class TagMixin extends MixinBase {
     // TODO: use a puppet method to find tag, like how contact and room do it
   }
 
+  static async findMulti (filters: TagQueryFilter[]): Promise<TagInterface[] | undefined> {
+    log.silly('Tag', 'find(%s)', JSON.stringify(filters))
+
+    const filterIdList = filters.filter(i => !!i.id).map(i => i.id)
+    const filterNameList = filters.filter(i => !!i.name).map(i => i.name)
+    const resultSet = new Set<TagInterface>()
+
+    if (filterIdList.length) {
+      const tags = filterIdList.map(i => {
+        assert(i, 'Should not be undefined')
+        return (this.wechaty.Tag as any as typeof TagImpl).load(i)
+      })
+
+      try {
+        await Promise.all(tags.map(i => i.ready()))
+      } catch (e) {
+        this.wechaty.emitError(e)
+        return undefined
+      }
+      for (const tag of tags) {
+        resultSet.add(tag)
+      }
+    }
+
+    if (filterNameList.length) {
+      const list = await this.wechaty.Tag.list()
+      const tagMap = new Map<string, TagInterface>()
+      // FIXME: There are two tag types in wework, and the names can be repeated
+      list.forEach(i => tagMap.set(i.name(), i))
+      for (const name of filterNameList) {
+        assert(typeof name === 'string', 'Only supported string')
+        const tag = tagMap.get(name)
+        if (tag) {
+          resultSet.add(tag)
+        }
+      }
+    }
+
+    return resultSet.size ? Array.from(resultSet) : undefined
+    // TODO: use a puppet method to find tag, like how contact and room do it
+  }
+
   /**
    * Force reload data for Tag, Sync data from low-level API again.
    *
@@ -214,9 +257,12 @@ class TagMixin extends MixinBase {
     log.verbose('Tag', 'createTag(%s, %s)', tagGroup, name)
 
     try {
-      const tagId = await this.wechaty.puppet.tagTagAdd(name, tagGroup?.name())
-      if (tagId) {
-        const newTag = await this.find({ id: tagId })
+      const tagInfoList = await this.wechaty.puppet.tagTagAdd([ name ], tagGroup?.name())
+      if (tagInfoList?.length) {
+        const filter : PUPPET.filters.Tag = {
+          id: tagInfoList[0]?.id,
+        }
+        const newTag = await this.find(filter)
         return newTag
       }
     } catch (e) {
@@ -225,25 +271,89 @@ class TagMixin extends MixinBase {
     }
   }
 
+  static async createMultiTag (nameList: string[], tagGroup?: TagGroupInterface): Promise<TagInterface[] | void> {
+    log.verbose('Tag', 'createMultiTag(%s, %s)', tagGroup, nameList)
+
+    try {
+      const tagInfoList = await this.wechaty.puppet.tagTagAdd(nameList, tagGroup?.name())
+      if (tagInfoList?.length) {
+        const filterList : PUPPET.filters.Tag[] = tagInfoList.map(i => ({
+          id: i.id,
+        }))
+        const newTagList = await this.findMulti(filterList)
+        return newTagList
+      }
+    } catch (e) {
+      this.wechaty.emitError(e)
+      log.error('Tag', 'createMultiTag() exception: %s', (e as Error).message)
+    }
+  }
+
   static async deleteTag (tagInstance: TagInterface): Promise<void> {
     log.verbose('Tag', 'deleteTag(%s, %s)', tagInstance)
 
     try {
-      await this.wechaty.puppet.tagTagDelete(tagInstance.id)
+      await this.wechaty.puppet.tagTagDelete([ tagInstance.id ])
     } catch (e) {
       this.wechaty.emitError(e)
       log.error('Tag', 'deleteTag() exception: %s', (e as Error).message)
     }
   }
 
-  static async modifyTag (tagInstance: TagInterface, tagNewName: string): Promise<void> {
+  static async deleteMultiTag (tagInstances: TagInterface[]): Promise<void> {
+    log.verbose('Tag', 'deleteMultiTag(%s, %s)', tagInstances)
+
+    try {
+      await this.wechaty.puppet.tagTagDelete(tagInstances.map(i => i.id))
+    } catch (e) {
+      this.wechaty.emitError(e)
+      log.error('Tag', 'deleteMultiTag() exception: %s', (e as Error).message)
+    }
+  }
+
+  static async modifyTag (tagInstance: TagInterface, tagNewName: string): Promise<TagInterface | void> {
     log.verbose('Tag', 'modifyTag(%s, %s)', tagInstance)
 
     try {
-      await this.wechaty.puppet.tagTagModify(tagInstance.id, tagNewName)
+      const tagNewInfo: PUPPET.types.TagInfo = {
+        id: tagInstance.id,
+        name: tagNewName,
+      }
+      const tagInfoList = await this.wechaty.puppet.tagTagModify([ tagNewInfo ])
+      if (tagInfoList?.length) {
+        const filter : PUPPET.filters.Tag = {
+          id: tagInfoList[0]?.id,
+        }
+        const newTag = await this.find(filter)
+        return newTag
+      }
     } catch (e) {
       this.wechaty.emitError(e)
       log.error('Tag', 'modifyTag() exception: %s', (e as Error).message)
+    }
+  }
+
+  static async modifyMultiTag (
+    tagInfos: Array<{ tag: TagInterface, newName: string }>,
+  ): Promise<TagInterface[] | void> {
+    log.verbose('Tag', 'modifyMultiTag(%o)', tagInfos)
+
+    try {
+      const tagNewInfoList: PUPPET.types.TagInfo[] = tagInfos.map(i => ({
+        id: i.tag.id,
+        name: i.newName,
+      }))
+      const tagInfoList = await this.wechaty.puppet.tagTagModify(tagNewInfoList)
+      if (tagInfoList?.length) {
+        const filterList : PUPPET.filters.Tag[] = tagInfoList.map(i => ({
+          id: i.id,
+        }))
+        const newTagList = await this.findMulti(filterList)
+        return newTagList
+      }
+    } catch (e) {
+      this.wechaty.emitError(e)
+      log.error('Tag', 'modifyMultiTag() exception: %s', (e as Error).message)
     }
   }
 
