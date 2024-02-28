@@ -96,11 +96,15 @@ class FriendshipMixin extends MixinBase implements Accepter {
    */
   static async search (
     queryFilter : PUPPET.filters.Friendship,
+    type?: PUPPET.types.Contact,
   ): Promise<undefined | ContactInterface> {
     log.verbose('Friendship', 'static search("%s")',
       JSON.stringify(queryFilter),
     )
-    const contactId = await this.wechaty.puppet.friendshipSearch(queryFilter)
+    if (typeof (type) === 'undefined') {
+      type = PUPPET.types.Contact.Individual
+    }
+    const contactId = await this.wechaty.puppet.friendshipSearch(queryFilter, type)
 
     if (!contactId) {
       return undefined
