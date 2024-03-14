@@ -49,6 +49,10 @@ class WecomMixin extends wechatifyMixinBase() {
     }
   }
 
+  static async getCorpMessageInterceptionStrategies (): Promise<types.CorpMessageInterceptionStrategy[]> {
+    return this.wechaty.puppet.getCorpMessageInterceptionStrategies()
+  }
+
   /*
    * @hideconstructor
    */
