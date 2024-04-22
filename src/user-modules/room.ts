@@ -1280,6 +1280,18 @@ class RoomMixin extends MixinBase implements SayableSayer {
     await this.wechaty.puppet.roomOwnerTransfer(this.id, contact.id)
   }
 
+  external (): boolean | undefined {
+    return this.payload?.external
+  }
+
+  createDate (): Date | undefined {
+    const timestamp = this.payload?.createTime
+    if (timestamp) {
+      return new Date(timestamp)
+    }
+    return undefined
+  }
+
 }
 
 class RoomImpl extends validationMixin(RoomMixin)<RoomImplInterface>() {}
