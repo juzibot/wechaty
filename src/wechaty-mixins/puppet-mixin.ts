@@ -663,6 +663,9 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                     break
                   }
                   case PUPPET.types.Payload.RoomMember: {
+                    if (payloadId.includes(PUPPET.STRING_SPLITTER)) {
+                      break
+                    }
                     const room = await this.Room.find({ id: payloadId }) as unknown as undefined | RoomImpl
                     await room?.ready()
                     break
