@@ -54,7 +54,7 @@ type WechatyEventListenerRoomInvite         = (roomInvitation: RoomInvitationInt
 type WechatyEventListenerRoomJoin           = (room: RoomInterface, inviteeList: ContactInterface[], inviter: ContactInterface, date?: Date) => void | Promise<void>
 type WechatyEventListenerRoomLeave          = (room: RoomInterface, leaverList: ContactInterface[], remover?: ContactInterface, date?: Date) => void | Promise<void>
 type WechatyEventListenerRoomTopic          = (room: RoomInterface, newTopic: string, oldTopic: string, changer: ContactInterface, date?: Date) => void | Promise<void>
-type WechatyEventListenerRoomAnnounce       = (room: RoomInterface, newAnnounce: string, changer: ContactInterface, oldAnnounce?: string, date?: Date) => void | Promise<void>
+type WechatyEventListenerRoomAnnounce       = (room: RoomInterface, newAnnounce: string, changer?: ContactInterface, oldAnnounce?: string, date?: Date) => void | Promise<void>
 type WechatyEventListenerRoomOwner          = (room: RoomInterface, newOwner: ContactInterface, oldOwner: ContactInterface) => void | Promise<void>
 type WechatyEventListenerScan               = (qrcode: string, status: PUPPET.types.ScanStatus, data: string, type: PUPPET.types.ScanType, createDate: Date, expireDate?: Date) => void | Promise<void>
 type WechatyEventListenerStartStop          = () => void | Promise<void>

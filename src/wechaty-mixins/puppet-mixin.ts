@@ -526,9 +526,13 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                 }
 
                 await room.sync()
-                const changer = await this.Contact.find({ id: payload.changerId })
-                if (!changer) {
-                  throw new Error('no changer found for id: ' + payload.changerId)
+                let changer: ContactInterface | undefined
+                try {
+                  if (payload.changerId) {
+                    changer = await this.Contact.find({ id: payload.changerId })
+                  }
+                } catch (e) {
+                  log.warn('room-announce', 'room-announce event error: %s', (e as Error).message)
                 }
                 const date = timestampToDate(payload.timestamp)
                 this.emit('room-announce', room, payload.newAnnounce, changer, payload.oldAnnounce, date)
