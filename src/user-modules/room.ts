@@ -118,6 +118,19 @@ class RoomMixin extends MixinBase implements SayableSayer {
   }
 
   /**
+   * Parse the dynamic QR Code of the room
+   * @param {string} url
+   * @returns {Promise<PUPPET.types.RoomParseDynamicQRCode>}
+   */
+  static async parseDynamicQRCode (url: string): Promise<PUPPET.types.RoomParseDynamicQRCode> {
+    log.info('Room', 'parseDynamicQRCode(%s)', url)
+    if (!url) {
+      throw new Error('parseDynamicQRCode() url is required')
+    }
+    return this.wechaty.puppet.roomParseDynamicQRCode(url)
+  }
+
+  /**
    * The filter to find the room:  {topic: string | RegExp}
    *
    * @typedef    RoomQueryFilter
@@ -966,15 +979,6 @@ class RoomMixin extends MixinBase implements SayableSayer {
     log.verbose('Room', 'qrCode()')
     const qrcodeValue = await this.wechaty.puppet.roomQRCode(this.id)
     return guardQrCodeValue(qrcodeValue)
-  }
-
-  /**
-   * Parse the dynamic QR Code of the room
-   * @param {string} url
-   * @returns {Promise<PUPPET.types.RoomParseDynamicQRCode>}
-   */
-  async parseDynamicQRCode (url: string): Promise<PUPPET.types.RoomParseDynamicQRCode> {
-    return this.wechaty.puppet.roomParseDynamicQRCode(url)
   }
 
   /**
