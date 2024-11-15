@@ -969,6 +969,15 @@ class RoomMixin extends MixinBase implements SayableSayer {
   }
 
   /**
+   * Parse the dynamic QR Code of the room
+   * @param {string} url
+   * @returns {Promise<PUPPET.types.RoomParseDynamicQRCode>}
+   */
+  async parseDynamicQRCode (url: string): Promise<PUPPET.types.RoomParseDynamicQRCode> {
+    return this.wechaty.puppet.roomParseDynamicQRCode(url)
+  }
+
+  /**
    * Return contact's roomAlias in the room
    * @param {ContactInterface} contact
    * @returns {Promise<string | null>} - If a contact has an alias in room, return string, otherwise return null

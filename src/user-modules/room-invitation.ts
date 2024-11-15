@@ -85,6 +85,8 @@ class RoomInvitationMixin extends wechatifyMixinBase() implements Accepter {
     ].join('')
   }
 
+  async accept ()             : Promise<void>
+  async accept (qrcode: string) : Promise<PUPPET.types.RoomInvitationAcceptByQRCode>
   /**
    * Accept Room Invitation
    *
@@ -102,11 +104,15 @@ class RoomInvitationMixin extends wechatifyMixinBase() implements Accepter {
    * }
    * .start()
    */
-  async accept (): Promise<void> {
+  async accept (qrcode?: string): Promise<void | PUPPET.types.RoomInvitationAcceptByQRCode> {
     log.verbose('RoomInvitation', 'accept()')
 
     try {
-      await this.wechaty.puppet.roomInvitationAccept(this.id)
+      if (qrcode) {
+        return this.wechaty.puppet.roomInvitationAcceptByQRCode(qrcode)
+      } else {
+        await this.wechaty.puppet.roomInvitationAccept(this.id)
+      }
 
       const inviter = await this.inviter()
       const topic   = await this.topic()
