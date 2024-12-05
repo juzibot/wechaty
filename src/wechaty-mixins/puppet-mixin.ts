@@ -700,6 +700,12 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
             })
             break
 
+          case 'login-url':
+            puppet.on('login-url', (payload) => {
+              this.emit('login-url', payload.url)
+            })
+            break
+
           default:
             /**
              * Check: The eventName here should have the type `never`
