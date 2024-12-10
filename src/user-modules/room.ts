@@ -1241,7 +1241,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
    * This function is depending on the Puppet Implementation, see [puppet-compatible-table](https://github.com/wechaty/wechaty/wiki/Puppet#3-puppet-compatible-table)
    * @returns {(ContactInterface[])}
    * @example
-   * const owner = room.owner()
+   * const adminList = room.adminList()
    */
   async adminList (): Promise<ContactInterface[]> {
     log.verbose('Room', 'adminList()')
@@ -1251,11 +1251,11 @@ class RoomMixin extends MixinBase implements SayableSayer {
       return []
     }
 
-    if (this.payload?.adminIdList.length === 0) {
+    if (this.payload!.adminIdList.length === 0) {
       return []
     }
 
-    const adminList = await (this.wechaty.Contact as any as typeof ContactImpl).batchLoadContacts(this.payload?.adminIdList)
+    const adminList = await (this.wechaty.Contact as any as typeof ContactImpl).batchLoadContacts(this.payload!.adminIdList)
     return adminList
   }
 
