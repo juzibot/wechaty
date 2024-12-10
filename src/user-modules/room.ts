@@ -1236,6 +1236,30 @@ class RoomMixin extends MixinBase implements SayableSayer {
   }
 
   /**
+   * Get room's admin list from the room.
+   * > Tips:
+   * This function is depending on the Puppet Implementation, see [puppet-compatible-table](https://github.com/wechaty/wechaty/wiki/Puppet#3-puppet-compatible-table)
+   * @returns {(ContactInterface[])}
+   * @example
+   * const adminList = room.adminList()
+   */
+  async adminList (): Promise<ContactInterface[]> {
+    log.verbose('Room', 'adminList()')
+
+    if (!this.isReady()) {
+      log.warn('Room', 'adminList() room not ready')
+      return []
+    }
+
+    if (this.payload!.adminIdList.length === 0) {
+      return []
+    }
+
+    const adminList = await (this.wechaty.Contact as any as typeof ContactImpl).batchLoadContacts(this.payload!.adminIdList)
+    return adminList
+  }
+
+  /**
    * Get avatar from the room.
    * @returns {FileBox}
    * @example
