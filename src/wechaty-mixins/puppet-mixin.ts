@@ -688,10 +688,12 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                     break
                   case PUPPET.types.Payload.TagGroup:
                     break
+                  case PUPPET.types.Payload.Post:
+                    break
 
                   case PUPPET.types.Payload.Unspecified:
                   default:
-                    throw new Error('unknown payload type: ' + payloadType)
+                    log.warn('unknown payload type: ' + payloadType)
                 }
                 this.emit('dirty', payloadId, payloadType)
               } catch (e) {
