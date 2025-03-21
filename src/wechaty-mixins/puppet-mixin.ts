@@ -17,6 +17,7 @@ import { timestampToDate }      from '../pure-functions/timestamp-to-date.js'
 import type {
   ContactImpl,
   ContactInterface,
+  MessageImpl,
   RoomImpl,
   TagGroupInterface,
   TagInterface,
@@ -681,9 +682,12 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                   case PUPPET.types.Payload.Friendship:
                     // Friendship has no payload
                     break
-                  case PUPPET.types.Payload.Message:
+                  case PUPPET.types.Payload.Message: {
                     // Message does not need to dirty (?)
+                    const message = await this.Message.find({ id: payloadId }) as unknown as undefined | MessageImpl
+                    await message?.ready(true)
                     break
+                  }
                   case PUPPET.types.Payload.Tag:
                     break
                   case PUPPET.types.Payload.TagGroup:

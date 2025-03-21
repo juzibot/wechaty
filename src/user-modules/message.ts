@@ -1078,10 +1078,10 @@ class MessageMixin extends MixinBase implements SayableSayer {
   /**
    * @ignore
    */
-  async ready (): Promise<void> {
+  async ready (forceSync = false): Promise<void> {
     log.verbose('Message', 'ready()')
 
-    if (this.isReady()) {
+    if (this.isReady() && !forceSync) {
       return
     }
 
