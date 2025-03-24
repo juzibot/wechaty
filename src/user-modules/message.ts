@@ -1447,6 +1447,14 @@ class MessageMixin extends MixinBase implements SayableSayer {
     return additionalInfoObj
   }
 
+  sendError (): string | undefined {
+    return this.payload?.sendError
+  }
+
+  readList (): string[] | undefined {
+    return this.payload?.readList
+  }
+
 }
 
 class MessageImplBase extends validationMixin(MessageMixin)<MessageImplInterface>() {}
