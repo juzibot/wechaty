@@ -1267,6 +1267,8 @@ class RoomMixin extends MixinBase implements SayableSayer {
    * const name = fileBox.name
    * fileBox.toFile(name)
    */
+  async avatar (): Promise<FileBoxInterface>
+  async avatar (avatar: FileBoxInterface): Promise<void>
   async avatar (avatar?: FileBoxInterface): Promise<FileBoxInterface | void> {
     log.verbose('Room', 'avatar()')
 
