@@ -18,7 +18,7 @@
  *
  */
 import * as PUPPET           from '@juzi/wechaty-puppet'
-import type { FileBoxInterface }  from 'file-box'
+import { FileBox, type FileBoxInterface }  from 'file-box'
 import { concurrencyExecuter }    from 'rx-queue'
 import type {
   Constructor,
@@ -1267,10 +1267,14 @@ class RoomMixin extends MixinBase implements SayableSayer {
    * const name = fileBox.name
    * fileBox.toFile(name)
    */
-  async avatar (): Promise<FileBoxInterface> {
+  async avatar (avatar?: FileBoxInterface): Promise<FileBoxInterface | void> {
     log.verbose('Room', 'avatar()')
 
-    return this.wechaty.puppet.roomAvatar(this.id)
+    if (!avatar && this.payload?.avatar) {
+      return FileBox.fromUrl(this.payload.avatar)
+    }
+
+    return this.wechaty.puppet.roomAvatar(this.id, avatar)
   }
 
   additionalInfo (): undefined | any {
