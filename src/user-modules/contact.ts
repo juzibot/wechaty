@@ -216,43 +216,65 @@ class ContactMixin extends MixinBase implements SayableSayer {
   }
 
   static async batchLoadContacts (contactIdList: string[]) {
-    let continuousErrorCount = 0
-    let totalErrorCount = 0
-    const totalErrorThreshold = Math.round(contactIdList.length / 5)
-
-    const idToContact = async (id: string) => {
-      if (!this.wechaty.isLoggedIn) {
-        throw new Error('wechaty not logged in')
-      }
-      const result = await this.wechaty.Contact.find({ id }).catch(e => {
-        this.wechaty.emitError(e)
-        continuousErrorCount++
-        totalErrorCount++
-        if (continuousErrorCount > 5) {
-          throw new Error('5 continuous errors!')
-        }
-        if (totalErrorCount > totalErrorThreshold) {
-          throw new Error(`${totalErrorThreshold} total errors!`)
+    if (typeof this.wechaty.puppet.batchContactPayload === 'function') {
+      const contactList: ContactInterface[] = contactIdList.map(id => {
+        if (this.wechaty.puppet.currentUserId === id) {
+          return (this.wechaty.ContactSelf as any as typeof ContactSelfImpl).load(id)
+        } else {
+          return (this.wechaty.Contact as any as typeof ContactImpl).load(id)
         }
       })
-      continuousErrorCount = 0
-      return result
-    }
-
-    /**
-     * we need to use concurrencyExecuter to reduce the parallel number of the requests
-     */
-    const CONCURRENCY = 17
-    const contactIterator = concurrencyExecuter(CONCURRENCY)(idToContact)(contactIdList)
-
-    const contactList: ContactInterface[] = []
-
-    for await (const contact of contactIterator) {
-      if (contact) {
-        contactList.push(contact)
+      const needPayloadSet: Set<string> = new Set()
+      for (const contact of contactList) {
+        if (!contact.isReady()) {
+          needPayloadSet.add(contact.id)
+        }
       }
+      if (needPayloadSet.size > 0) {
+        const payloadMap = await this.wechaty.puppet.batchContactPayload(Array.from(needPayloadSet))
+        for (const contact of contactList) {
+          contact.payload = payloadMap.get(contact.id)
+        }
+      }
+      return contactList
+    } else {
+      let continuousErrorCount = 0
+      let totalErrorCount = 0
+      const totalErrorThreshold = Math.round(contactIdList.length / 5)
+
+      const idToContact = async (id: string) => {
+        if (!this.wechaty.isLoggedIn) {
+          throw new Error('wechaty not logged in')
+        }
+        const result = await this.wechaty.Contact.find({ id }).catch(e => {
+          this.wechaty.emitError(e)
+          continuousErrorCount++
+          totalErrorCount++
+          if (continuousErrorCount > 5) {
+            throw new Error('5 continuous errors!')
+          }
+          if (totalErrorCount > totalErrorThreshold) {
+            throw new Error(`${totalErrorThreshold} total errors!`)
+          }
+        })
+        continuousErrorCount = 0
+        return result
+      }
+      /**
+       * we need to use concurrencyExecuter to reduce the parallel number of the requests
+       */
+      const CONCURRENCY = 17
+      const contactIterator = concurrencyExecuter(CONCURRENCY)(idToContact)(contactIdList)
+
+      const contactList: ContactInterface[] = []
+
+      for await (const contact of contactIterator) {
+        if (contact) {
+          contactList.push(contact)
+        }
+      }
+      return contactList
     }
-    return contactList
   }
 
   // TODO

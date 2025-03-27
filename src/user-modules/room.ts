@@ -1335,6 +1335,21 @@ class RoomMixin extends MixinBase implements SayableSayer {
     return undefined
   }
 
+  async memberPayloads () {
+    const memberIdList = await this.wechaty.puppet.roomMemberList(this.id)
+    if (typeof this.wechaty.puppet.batchRoomMemberPayload === 'function') {
+      const payloadMap = await this.wechaty.puppet.batchRoomMemberPayload(this.id, memberIdList)
+      return payloadMap
+    } else {
+      const map = new Map<string, PUPPET.payloads.RoomMember>()
+      for (const id of memberIdList) {
+        const payload = await this.wechaty.puppet.roomMemberPayload(this.id, id)
+        map.set(id, payload)
+      }
+      return map
+    }
+  }
+
 }
 
 class RoomImpl extends validationMixin(RoomMixin)<RoomImplInterface>() {}
