@@ -91,6 +91,7 @@ class ChannelMixin extends wechatifyMixinBase() {
   authJob (): undefined | string {
     return this.payload.authJob
   }
+
 }
 
 class ChannelImpl extends validationMixin(ChannelMixin)<ChannelInterface>() { }
