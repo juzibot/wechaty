@@ -10,6 +10,7 @@ import {
   PostImpl,
   LocationImpl,
   ChannelImpl,
+  ChannelCardImpl,
 }                     from '../user-modules/mod.js'
 
 import type { Sayable, SayOptionsObject } from './types.js'
@@ -102,6 +103,11 @@ const deliverSayableConversationPuppet = (puppet: PUPPET.impls.PuppetInterface) 
     )
   } else if (ChannelImpl.validInstance(sayable)) {
     msgId = await puppet.messageSendChannel(
+      conversationId,
+      sayable.payload,
+    )
+  } else if (ChannelCardImpl.validInstance(sayable)) {
+    msgId = await puppet.messageSendChannelCard(
       conversationId,
       sayable.payload,
     )

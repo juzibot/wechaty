@@ -43,6 +43,9 @@ async function messageToSayable (
     case PUPPET.types.Message.Channel:
       return message.toChannel()
 
+    case PUPPET.types.Message.ChannelCard:
+      return message.toChannelCard()
+
     default:
       log.warn('Wechaty',
         'toSayable() can not convert not re-sayable type: %s(%s) for %s\n%s',
