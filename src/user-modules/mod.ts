@@ -108,6 +108,11 @@ import {
   ChannelConstructor,
 }                           from './channel.js'
 import {
+  ChannelCardImpl,
+  ChannelCardInterface,
+  ChannelCardConstructor,
+}                           from './channel-card.js'
+import {
   CallRecordImpl,
   CallRecordInterface,
   CallRecordConstructor,
@@ -144,6 +149,7 @@ export type {
   DelayInterface,
   UrlLinkInterface,
   ChannelInterface,
+  ChannelCardInterface,
   CallRecordInterface,
   ChatHistoryInterface,
   WecomInterface,
@@ -168,6 +174,7 @@ export type {
   TagGroupConstructor,
   UrlLinkConstructor,
   ChannelConstructor,
+  ChannelCardConstructor,
   CallRecordConstructor,
   ChatHistoryConstructor,
   WecomConstructor,
@@ -194,6 +201,7 @@ export {
   TagGroupImpl,
   UrlLinkImpl,
   ChannelImpl,
+  ChannelCardImpl,
   CallRecordImpl,
   ChatHistoryImpl,
   WecomImpl,

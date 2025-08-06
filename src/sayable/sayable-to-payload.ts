@@ -11,6 +11,7 @@ import {
   ContactImpl,
   PostImpl,
   ChannelImpl,
+  ChannelCardImpl,
 }                       from '../user-modules/mod.js'
 
 import type {
@@ -46,6 +47,8 @@ async function sayableToPayload (sayable: Sayable): Promise<undefined | PUPPET.p
     return PUPPET.payloads.sayable.url(sayable.payload)
   } else if (ChannelImpl.validInstance(sayable)) {
     return PUPPET.payloads.sayable.channel(sayable.payload)
+  } else if (ChannelCardImpl.validInstance(sayable)) {
+    return PUPPET.payloads.sayable.channelCard(sayable.payload)
   } else {
     log.error('Wechaty', 'sayableToPayload() unsupported sayable: %s', sayable)
     return undefined

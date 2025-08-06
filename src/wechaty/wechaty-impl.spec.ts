@@ -21,6 +21,7 @@ import type {
   UrlLinkConstructor,
   MessageInterface,
   ChannelConstructor,
+  ChannelCardConstructor,
   MomentConstructor,
   CallRecordConstructor,
   ChatHistoryConstructor,
@@ -53,6 +54,7 @@ test('Wechaty interface', async t => {
     TagGroup       : TagGroupConstructor
     UrlLink        : UrlLinkConstructor
     Channel        : ChannelConstructor
+    ChannelCard    : ChannelCardConstructor
     Moment         : MomentConstructor
     CallRecord     : CallRecordConstructor
     ChatHistory    : ChatHistoryConstructor
@@ -76,6 +78,7 @@ test('Wechaty interface', async t => {
         = this.TagGroup
         = this.UrlLink
         = this.Channel
+        = this.ChannelCard
         = this.Moment
         = this.CallRecord
         = this.ChatHistory

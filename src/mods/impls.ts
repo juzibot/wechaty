@@ -51,6 +51,7 @@ export {
   ChannelImpl,
   CallRecordImpl,
   WecomImpl,
+  ChannelCardImpl,
 }                             from '../user-modules/mod.js'
 
 // export {
@@ -93,6 +94,7 @@ export type {
   ChannelInterface,
   CallRecordInterface,
   WecomInterface,
+  ChannelCardInterface,
 }                               from '../user-modules/mod.js'
 
 export type {
@@ -115,6 +117,7 @@ export type {
   UrlLinkConstructor,
   ChannelConstructor,
   WecomConstructor,
+  ChannelCardConstructor,
 }                               from '../user-modules/mod.js'
 
 export {
