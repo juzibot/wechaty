@@ -22,6 +22,7 @@ import type {
   MessageInterface,
   ChannelConstructor,
   ChannelCardConstructor,
+  ConsultCardConstructor,
   MomentConstructor,
   CallRecordConstructor,
   ChatHistoryConstructor,
@@ -55,6 +56,7 @@ test('Wechaty interface', async t => {
     UrlLink        : UrlLinkConstructor
     Channel        : ChannelConstructor
     ChannelCard    : ChannelCardConstructor
+    ConsultCard    : ConsultCardConstructor
     Moment         : MomentConstructor
     CallRecord     : CallRecordConstructor
     ChatHistory    : ChatHistoryConstructor
@@ -79,6 +81,7 @@ test('Wechaty interface', async t => {
         = this.UrlLink
         = this.Channel
         = this.ChannelCard
+        = this.ConsultCard
         = this.Moment
         = this.CallRecord
         = this.ChatHistory

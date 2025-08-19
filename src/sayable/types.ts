@@ -33,6 +33,7 @@ import {
   ContactImpl,
   MessageImpl,
   ChannelCardInterface,
+  ConsultCardInterface,
 }                           from '../user-modules/mod.js'
 
 import type {
@@ -52,6 +53,7 @@ type Sayable =
   | UrlLinkInterface
   | ChannelInterface
   | ChannelCardInterface
+  | ConsultCardInterface
 
 interface SayableSayer {
   id      : string,

@@ -17,6 +17,7 @@ import {
   UrlLinkImpl,
   ChannelImpl,
   ChannelCardImpl,
+  ConsultCardImpl,
   MomentImpl,
   CallRecordImpl,
   ChatHistoryImpl,
@@ -38,6 +39,7 @@ import {
   UrlLinkConstructor,
   ChannelConstructor,
   ChannelCardConstructor,
+  ConsultCardConstructor,
   MomentConstructor,
   CallRecordConstructor,
   ChatHistoryConstructor,
@@ -76,6 +78,7 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
     __wechatifiedUrlLink?        : UrlLinkConstructor
     __wechatifiedChannel?        : ChannelConstructor
     __wechatifiedChannelCard?    : ChannelCardConstructor
+    __wechatifiedConsultCard?    : ConsultCardConstructor
     __wechatifiedMoment?         : MomentConstructor
     __wechatifiedCallRecord?     : CallRecordConstructor
     __wechatifiedChatHistory?    : ChatHistoryConstructor
@@ -97,6 +100,7 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
     get UrlLink ()        : UrlLinkConstructor        { return guardWechatify(this.__wechatifiedUrlLink)        }
     get Channel ()        : ChannelConstructor        { return guardWechatify(this.__wechatifiedChannel)        }
     get ChannelCard ()    : ChannelCardConstructor    { return guardWechatify(this.__wechatifiedChannelCard)    }
+    get ConsultCard ()    : ConsultCardConstructor    { return guardWechatify(this.__wechatifiedConsultCard)    }
     get Moment ()         : MomentConstructor         { return guardWechatify(this.__wechatifiedMoment)         }
     get CallRecord ()     : CallRecordConstructor     { return guardWechatify(this.__wechatifiedCallRecord)     }
     get ChatHistory ()    : ChatHistoryConstructor    { return guardWechatify(this.__wechatifiedChatHistory)    }
@@ -138,6 +142,7 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
       this.__wechatifiedUrlLink        = wechatifyUserModule(UrlLinkImpl)(this as any)
       this.__wechatifiedChannel        = wechatifyUserModule(ChannelImpl)(this as any)
       this.__wechatifiedChannelCard    = wechatifyUserModule(ChannelCardImpl)(this as any)
+      this.__wechatifiedConsultCard    = wechatifyUserModule(ConsultCardImpl)(this as any)
       this.__wechatifiedMoment         = wechatifyUserModule(MomentImpl)(this as any)
       this.__wechatifiedCallRecord     = wechatifyUserModule(CallRecordImpl)(this as any)
       this.__wechatifiedChatHistory    = wechatifyUserModule(ChatHistoryImpl)(this as any)
@@ -179,6 +184,7 @@ type ProtectedPropertyWechatifyUserModuleMixin =
   | '__wechatifiedUrlLink'
   | '__wechatifiedChannel'
   | '__wechatifiedChannelCard'
+  | '__wechatifiedConsultCard'
   | '__wechatifiedMoment'
   | '__wechatifiedCallRecord'
   | '__wechatifiedChatHistory'
