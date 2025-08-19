@@ -113,6 +113,11 @@ import {
   ChannelCardConstructor,
 }                           from './channel-card.js'
 import {
+  ConsultCardImpl,
+  ConsultCardInterface,
+  ConsultCardConstructor,
+}                           from './consult-card.js'
+import {
   CallRecordImpl,
   CallRecordInterface,
   CallRecordConstructor,
@@ -150,6 +155,7 @@ export type {
   UrlLinkInterface,
   ChannelInterface,
   ChannelCardInterface,
+  ConsultCardInterface,
   CallRecordInterface,
   ChatHistoryInterface,
   WecomInterface,
@@ -175,6 +181,7 @@ export type {
   UrlLinkConstructor,
   ChannelConstructor,
   ChannelCardConstructor,
+  ConsultCardConstructor,
   CallRecordConstructor,
   ChatHistoryConstructor,
   WecomConstructor,
@@ -202,6 +209,7 @@ export {
   UrlLinkImpl,
   ChannelImpl,
   ChannelCardImpl,
+  ConsultCardImpl,
   CallRecordImpl,
   ChatHistoryImpl,
   WecomImpl,

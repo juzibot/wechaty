@@ -74,6 +74,9 @@ import type {
 import type {
   ChannelCardInterface,
 }                       from './channel-card.js'
+import type {
+  ConsultCardInterface,
+}                       from './consult-card.js'
 
 import { validationMixin } from '../user-mixins/validation.js'
 import type { ContactSelfImpl } from './contact-self.js'
@@ -1404,6 +1407,21 @@ class MessageMixin extends MixinBase implements SayableSayer {
 
     const channelCardPayload = await this.wechaty.puppet.messageChannelCard(this.id)
     return new this.wechaty.ChannelCard(channelCardPayload)
+  }
+
+  public async toConsultCard (): Promise<ConsultCardInterface> {
+    log.verbose('Message', 'toConsultCard()')
+
+    if (!this.payload) {
+      throw new Error('no payload')
+    }
+
+    if (this.type() !== PUPPET.types.Message.ConsultCard) {
+      throw new Error('message not a ConsultCard')
+    }
+
+    const consultCardPayload = await this.wechaty.puppet.messageConsultCard(this.id)
+    return new this.wechaty.ConsultCard(consultCardPayload)
   }
 
   public async toCallRecord (): Promise<CallRecordInterface> {

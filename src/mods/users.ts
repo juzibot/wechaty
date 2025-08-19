@@ -46,4 +46,5 @@ export type {
   CallRecordInterface     as CallRecord,
   WecomInterface          as Wecom,
   ChannelCardInterface    as ChannelCard,
+  ConsultCardInterface    as ConsultCard,
 }                                               from '../user-modules/mod.js'

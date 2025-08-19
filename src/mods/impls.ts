@@ -52,6 +52,7 @@ export {
   CallRecordImpl,
   WecomImpl,
   ChannelCardImpl,
+  ConsultCardImpl,
 }                             from '../user-modules/mod.js'
 
 // export {
@@ -95,6 +96,7 @@ export type {
   CallRecordInterface,
   WecomInterface,
   ChannelCardInterface,
+  ConsultCardInterface,
 }                               from '../user-modules/mod.js'
 
 export type {
@@ -118,6 +120,7 @@ export type {
   ChannelConstructor,
   WecomConstructor,
   ChannelCardConstructor,
+  ConsultCardConstructor,
 }                               from '../user-modules/mod.js'
 
 export {
