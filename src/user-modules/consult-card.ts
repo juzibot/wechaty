@@ -75,6 +75,10 @@ class ConsultCardMixin extends wechatifyMixinBase() {
     return this.payload.statusMsg
   }
 
+  actions (): PUPPET.payloads.ConsultCardAction[] | undefined {
+    return this.payload.actions
+  }
+
 }
 
 class ConsultCardImpl extends validationMixin(ConsultCardMixin)<ConsultCardInterface>() { }
