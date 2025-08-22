@@ -49,6 +49,9 @@ async function messageToSayable (
     case PUPPET.types.Message.ConsultCard:
       return message.toConsultCard()
 
+    case PUPPET.types.Message.PremiumOnlineAppointmentCard:
+      return message.toPremiumOnlineAppointmentCard()
+
     default:
       log.warn('Wechaty',
         'toSayable() can not convert not re-sayable type: %s(%s) for %s\n%s',

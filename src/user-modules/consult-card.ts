@@ -1,6 +1,7 @@
 import type * as PUPPET from '@juzi/wechaty-puppet'
 
 import type { Constructor } from 'clone-class'
+
 import { log } from '../config.js'
 
 import { validationMixin } from '../user-mixins/validation.js'
@@ -11,26 +12,6 @@ import {
 
 class ConsultCardMixin extends wechatifyMixinBase() {
 
-  /**
-   *
-   * Create
-   *
-   */
-  static async create (msgType: number, componentType: number, componentId: number): Promise<ConsultCardInterface> {
-    log.verbose('ConsultCard', 'create()')
-
-    const payload: PUPPET.payloads.ConsultCard = {
-      msgType,
-      componentType,
-      componentId,
-    }
-
-    return new this(payload)
-  }
-
-  /*
-   * @hideconstructor
-   */
   constructor (
     public readonly payload: PUPPET.payloads.ConsultCard,
   ) {
@@ -38,19 +19,52 @@ class ConsultCardMixin extends wechatifyMixinBase() {
     log.verbose('ConsultCard', 'constructor()')
   }
 
-  msgType (): number {
-    return this.payload.msgType
+  static async findAll (query: {
+    cardType: number,
+    status?: number,
+    ids?: number[],
+    page?: number,
+    pageSize?: number
+  }): Promise<ConsultCardInterface[]> {
+    log.verbose('ConsultCard', 'findAll(%s)', JSON.stringify(query))
+
+    const params = {
+      cardType: query.cardType,
+      status: query.status,
+      ids: query.ids,
+      page: query.page || 1,
+      pageSize: query.pageSize || 50,
+    }
+
+    const result = await (this.wechaty.puppet as any).listConsultCards(params)
+
+    if (!result || !result.cards) {
+      return []
+    }
+
+    const consultCardList: ConsultCardInterface[] = result.cards.map((payload: any) => {
+      return new this(payload)
+    })
+
+    return consultCardList
   }
 
-  componentType (): number {
-    return this.payload.componentType
+  static async find (query: {
+    cardType: number,
+    id: number
+  }): Promise<ConsultCardInterface | undefined> {
+    log.verbose('ConsultCard', 'find(%s)', JSON.stringify(query))
+
+    const consultCardList = await this.findAll({
+      cardType: query.cardType,
+      ids: [ query.id ],
+      page: 1,
+      pageSize: 1,
+    })
+
+    return consultCardList.length > 0 ? consultCardList[0] : undefined
   }
 
-  componentId (): number {
-    return this.payload.componentId
-  }
-
-  // 接收/查询时的详细字段
   id (): number | undefined {
     return this.payload.id
   }
@@ -75,7 +89,7 @@ class ConsultCardMixin extends wechatifyMixinBase() {
     return this.payload.statusMsg
   }
 
-  actions (): PUPPET.payloads.ConsultCardAction[] | undefined {
+  actions (): Array<any> | undefined {
     return this.payload.actions
   }
 

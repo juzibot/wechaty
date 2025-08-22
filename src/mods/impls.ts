@@ -53,6 +53,7 @@ export {
   WecomImpl,
   ChannelCardImpl,
   ConsultCardImpl,
+  PremiumOnlineAppointmentCardImpl,
 }                             from '../user-modules/mod.js'
 
 // export {
@@ -97,6 +98,7 @@ export type {
   WecomInterface,
   ChannelCardInterface,
   ConsultCardInterface,
+  PremiumOnlineAppointmentCardInterface,
 }                               from '../user-modules/mod.js'
 
 export type {
@@ -121,6 +123,7 @@ export type {
   WecomConstructor,
   ChannelCardConstructor,
   ConsultCardConstructor,
+  PremiumOnlineAppointmentCardConstructor,
 }                               from '../user-modules/mod.js'
 
 export {

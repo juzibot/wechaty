@@ -219,7 +219,7 @@ class WechatyBase extends mixinBase implements SayableSayer {
    * > Tips:
    * This function is depending on the Puppet Implementation, see [puppet-compatible-table](https://github.com/wechaty/wechaty/wiki/Puppet#3-puppet-compatible-table)
    *
-   * @param {(string | Contact | FileBox | UrlLink | MiniProgram | Location | Channel | ChannelCard | ConsultCard)} sayable
+   * @param {(string | Contact | FileBox | UrlLink | MiniProgram | Location | Channel | ChannelCard | ConsultCard | PremiumOnlineAppointmentCard)} sayable
    * send text, Contact, or file to bot. </br>
    * You can use {@link https://www.npmjs.com/package/file-box|FileBox} to send file
    *

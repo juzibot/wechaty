@@ -50,6 +50,9 @@ const payloadToSayableWechaty: (w: WechatyInterface) => (p: PUPPET.payloads.Saya
     case PUPPET.types.Sayable.ConsultCard:
       return new wechaty.ConsultCard(sayable.payload)
 
+    case PUPPET.types.Sayable.PremiumOnlineAppointmentCard:
+      return new wechaty.PremiumOnlineAppointmentCard(sayable.payload)
+
     default:
       throw new Error('payloadToSayable() not support payload: ' + JSON.stringify(sayable))
   }

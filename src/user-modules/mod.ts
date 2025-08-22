@@ -118,6 +118,11 @@ import {
   ConsultCardConstructor,
 }                           from './consult-card.js'
 import {
+  PremiumOnlineAppointmentCardImpl,
+  PremiumOnlineAppointmentCardInterface,
+  PremiumOnlineAppointmentCardConstructor,
+}                           from './premium-online-appointment-card.js'
+import {
   CallRecordImpl,
   CallRecordInterface,
   CallRecordConstructor,
@@ -156,6 +161,7 @@ export type {
   ChannelInterface,
   ChannelCardInterface,
   ConsultCardInterface,
+  PremiumOnlineAppointmentCardInterface,
   CallRecordInterface,
   ChatHistoryInterface,
   WecomInterface,
@@ -182,6 +188,7 @@ export type {
   ChannelConstructor,
   ChannelCardConstructor,
   ConsultCardConstructor,
+  PremiumOnlineAppointmentCardConstructor,
   CallRecordConstructor,
   ChatHistoryConstructor,
   WecomConstructor,
@@ -210,6 +217,7 @@ export {
   ChannelImpl,
   ChannelCardImpl,
   ConsultCardImpl,
+  PremiumOnlineAppointmentCardImpl,
   CallRecordImpl,
   ChatHistoryImpl,
   WecomImpl,
