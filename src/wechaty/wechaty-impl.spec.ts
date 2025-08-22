@@ -23,6 +23,7 @@ import type {
   ChannelConstructor,
   ChannelCardConstructor,
   ConsultCardConstructor,
+  PremiumOnlineAppointmentCardConstructor,
   MomentConstructor,
   CallRecordConstructor,
   ChatHistoryConstructor,
@@ -40,27 +41,28 @@ import {
 test('Wechaty interface', async t => {
   abstract class WechatyImplementation extends WechatyEventEmitter implements WechatyInterface {
 
-    Contact        : ContactConstructor
-    ContactSelf    : ContactSelfConstructor
-    Delay          : DelayConstructor
-    Friendship     : FriendshipConstructor
-    Image          : ImageConstructor
-    Location       : LocationConstructor
-    Message        : MessageConstructor
-    MiniProgram    : MiniProgramConstructor
-    Post           : PostConstructor
-    Room           : RoomConstructor
-    RoomInvitation : RoomInvitationConstructor
-    Tag            : TagConstructor
-    TagGroup       : TagGroupConstructor
-    UrlLink        : UrlLinkConstructor
-    Channel        : ChannelConstructor
-    ChannelCard    : ChannelCardConstructor
-    ConsultCard    : ConsultCardConstructor
-    Moment         : MomentConstructor
-    CallRecord     : CallRecordConstructor
-    ChatHistory    : ChatHistoryConstructor
-    Wecom          : WecomConstructor
+    Contact                      : ContactConstructor
+    ContactSelf                  : ContactSelfConstructor
+    Delay                        : DelayConstructor
+    Friendship                   : FriendshipConstructor
+    Image                        : ImageConstructor
+    Location                     : LocationConstructor
+    Message                      : MessageConstructor
+    MiniProgram                  : MiniProgramConstructor
+    Post                         : PostConstructor
+    Room                         : RoomConstructor
+    RoomInvitation               : RoomInvitationConstructor
+    Tag                          : TagConstructor
+    TagGroup                     : TagGroupConstructor
+    UrlLink                      : UrlLinkConstructor
+    Channel                      : ChannelConstructor
+    ChannelCard                  : ChannelCardConstructor
+    ConsultCard                  : ConsultCardConstructor
+    PremiumOnlineAppointmentCard : PremiumOnlineAppointmentCardConstructor
+    Moment                       : MomentConstructor
+    CallRecord                   : CallRecordConstructor
+    ChatHistory                  : ChatHistoryConstructor
+    Wecom                        : WecomConstructor
 
     constructor () {
       super()
@@ -82,6 +84,7 @@ test('Wechaty interface', async t => {
         = this.Channel
         = this.ChannelCard
         = this.ConsultCard
+        = this.PremiumOnlineAppointmentCard
         = this.Moment
         = this.CallRecord
         = this.ChatHistory

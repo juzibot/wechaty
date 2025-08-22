@@ -18,6 +18,7 @@ import {
   ChannelImpl,
   ChannelCardImpl,
   ConsultCardImpl,
+  PremiumOnlineAppointmentCardImpl,
   MomentImpl,
   CallRecordImpl,
   ChatHistoryImpl,
@@ -40,6 +41,7 @@ import {
   ChannelConstructor,
   ChannelCardConstructor,
   ConsultCardConstructor,
+  PremiumOnlineAppointmentCardConstructor,
   MomentConstructor,
   CallRecordConstructor,
   ChatHistoryConstructor,
@@ -62,49 +64,51 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
       super(...args)
     }
 
-    __wechatifiedContact?        : ContactConstructor
-    __wechatifiedContactSelf?    : ContactSelfConstructor
-    __wechatifiedDelay?          : DelayConstructor
-    __wechatifiedFriendship?     : FriendshipConstructor
-    __wechatifiedImage?          : ImageConstructor
-    __wechatifiedLocation?       : LocationConstructor
-    __wechatifiedMessage?        : MessageConstructor
-    __wechatifiedMiniProgram?    : MiniProgramConstructor
-    __wechatifiedPost?           : PostConstructor
-    __wechatifiedRoom?           : RoomConstructor
-    __wechatifiedRoomInvitation? : RoomInvitationConstructor
-    __wechatifiedTag?            : TagConstructor
-    __wechatifiedTagGroup?       : TagGroupConstructor
-    __wechatifiedUrlLink?        : UrlLinkConstructor
-    __wechatifiedChannel?        : ChannelConstructor
-    __wechatifiedChannelCard?    : ChannelCardConstructor
-    __wechatifiedConsultCard?    : ConsultCardConstructor
-    __wechatifiedMoment?         : MomentConstructor
-    __wechatifiedCallRecord?     : CallRecordConstructor
-    __wechatifiedChatHistory?    : ChatHistoryConstructor
-    __wechatifiedWecom?          : WecomConstructor
+    __wechatifiedContact?                      : ContactConstructor
+    __wechatifiedContactSelf?                  : ContactSelfConstructor
+    __wechatifiedDelay?                        : DelayConstructor
+    __wechatifiedFriendship?                   : FriendshipConstructor
+    __wechatifiedImage?                        : ImageConstructor
+    __wechatifiedLocation?                     : LocationConstructor
+    __wechatifiedMessage?                      : MessageConstructor
+    __wechatifiedMiniProgram?                  : MiniProgramConstructor
+    __wechatifiedPost?                         : PostConstructor
+    __wechatifiedRoom?                         : RoomConstructor
+    __wechatifiedRoomInvitation?               : RoomInvitationConstructor
+    __wechatifiedTag?                          : TagConstructor
+    __wechatifiedTagGroup?                     : TagGroupConstructor
+    __wechatifiedUrlLink?                      : UrlLinkConstructor
+    __wechatifiedChannel?                      : ChannelConstructor
+    __wechatifiedChannelCard?                  : ChannelCardConstructor
+    __wechatifiedConsultCard?                  : ConsultCardConstructor
+    __wechatifiedPremiumOnlineAppointmentCard? : PremiumOnlineAppointmentCardConstructor
+    __wechatifiedMoment?                       : MomentConstructor
+    __wechatifiedCallRecord?                   : CallRecordConstructor
+    __wechatifiedChatHistory?                  : ChatHistoryConstructor
+    __wechatifiedWecom?                        : WecomConstructor
 
-    get Contact ()        : ContactConstructor        { return guardWechatify(this.__wechatifiedContact)        }
-    get ContactSelf ()    : ContactSelfConstructor    { return guardWechatify(this.__wechatifiedContactSelf)    }
-    get Delay ()          : DelayConstructor          { return guardWechatify(this.__wechatifiedDelay)          }
-    get Friendship ()     : FriendshipConstructor     { return guardWechatify(this.__wechatifiedFriendship)     }
-    get Image ()          : ImageConstructor          { return guardWechatify(this.__wechatifiedImage)          }
-    get Location ()       : LocationConstructor       { return guardWechatify(this.__wechatifiedLocation)       }
-    get Message ()        : MessageConstructor        { return guardWechatify(this.__wechatifiedMessage)        }
-    get MiniProgram ()    : MiniProgramConstructor    { return guardWechatify(this.__wechatifiedMiniProgram)    }
-    get Post ()           : PostConstructor           { return guardWechatify(this.__wechatifiedPost)           }
-    get Room ()           : RoomConstructor           { return guardWechatify(this.__wechatifiedRoom)           }
-    get RoomInvitation () : RoomInvitationConstructor { return guardWechatify(this.__wechatifiedRoomInvitation) }
-    get Tag ()            : TagConstructor            { return guardWechatify(this.__wechatifiedTag)            }
-    get TagGroup ()       : TagGroupConstructor       { return guardWechatify(this.__wechatifiedTagGroup)       }
-    get UrlLink ()        : UrlLinkConstructor        { return guardWechatify(this.__wechatifiedUrlLink)        }
-    get Channel ()        : ChannelConstructor        { return guardWechatify(this.__wechatifiedChannel)        }
-    get ChannelCard ()    : ChannelCardConstructor    { return guardWechatify(this.__wechatifiedChannelCard)    }
-    get ConsultCard ()    : ConsultCardConstructor    { return guardWechatify(this.__wechatifiedConsultCard)    }
-    get Moment ()         : MomentConstructor         { return guardWechatify(this.__wechatifiedMoment)         }
-    get CallRecord ()     : CallRecordConstructor     { return guardWechatify(this.__wechatifiedCallRecord)     }
-    get ChatHistory ()    : ChatHistoryConstructor    { return guardWechatify(this.__wechatifiedChatHistory)    }
-    get Wecom ()          : WecomConstructor          { return guardWechatify(this.__wechatifiedWecom)          }
+    get Contact ()                      : ContactConstructor                      { return guardWechatify(this.__wechatifiedContact)        }
+    get ContactSelf ()                  : ContactSelfConstructor                  { return guardWechatify(this.__wechatifiedContactSelf)    }
+    get Delay ()                        : DelayConstructor                        { return guardWechatify(this.__wechatifiedDelay)          }
+    get Friendship ()                   : FriendshipConstructor                   { return guardWechatify(this.__wechatifiedFriendship)     }
+    get Image ()                        : ImageConstructor                        { return guardWechatify(this.__wechatifiedImage)          }
+    get Location ()                     : LocationConstructor                     { return guardWechatify(this.__wechatifiedLocation)       }
+    get Message ()                      : MessageConstructor                      { return guardWechatify(this.__wechatifiedMessage)        }
+    get MiniProgram ()                  : MiniProgramConstructor                  { return guardWechatify(this.__wechatifiedMiniProgram)    }
+    get Post ()                         : PostConstructor                         { return guardWechatify(this.__wechatifiedPost)           }
+    get Room ()                         : RoomConstructor                         { return guardWechatify(this.__wechatifiedRoom)           }
+    get RoomInvitation ()               : RoomInvitationConstructor               { return guardWechatify(this.__wechatifiedRoomInvitation) }
+    get Tag ()                          : TagConstructor                          { return guardWechatify(this.__wechatifiedTag)            }
+    get TagGroup ()                     : TagGroupConstructor                     { return guardWechatify(this.__wechatifiedTagGroup)       }
+    get UrlLink ()                      : UrlLinkConstructor                      { return guardWechatify(this.__wechatifiedUrlLink)        }
+    get Channel ()                      : ChannelConstructor                      { return guardWechatify(this.__wechatifiedChannel)        }
+    get ChannelCard ()                  : ChannelCardConstructor                  { return guardWechatify(this.__wechatifiedChannelCard)    }
+    get ConsultCard ()                  : ConsultCardConstructor                  { return guardWechatify(this.__wechatifiedConsultCard)    }
+    get PremiumOnlineAppointmentCard () : PremiumOnlineAppointmentCardConstructor { return guardWechatify(this.__wechatifiedPremiumOnlineAppointmentCard) }
+    get Moment ()                       : MomentConstructor                       { return guardWechatify(this.__wechatifiedMoment)         }
+    get CallRecord ()                   : CallRecordConstructor                   { return guardWechatify(this.__wechatifiedCallRecord)     }
+    get ChatHistory ()                  : ChatHistoryConstructor                  { return guardWechatify(this.__wechatifiedChatHistory)    }
+    get Wecom ()                        : WecomConstructor                        { return guardWechatify(this.__wechatifiedWecom)          }
 
     override async init (): Promise<void> {
       log.verbose('WechatifyUserModuleMixin', 'init()')
@@ -126,27 +130,28 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
        *
        * Huan(202110): FIXME: remove any
        */
-      this.__wechatifiedContact        = wechatifyUserModule(ContactImpl)(this as any)
-      this.__wechatifiedContactSelf    = wechatifyUserModule(ContactSelfImpl)(this as any)
-      this.__wechatifiedDelay          = wechatifyUserModule(DelayImpl)(this as any)
-      this.__wechatifiedFriendship     = wechatifyUserModule(FriendshipImpl)(this as any)
-      this.__wechatifiedImage          = wechatifyUserModule(ImageImpl)(this as any)
-      this.__wechatifiedLocation       = wechatifyUserModule(LocationImpl)(this as any)
-      this.__wechatifiedMessage        = wechatifyUserModule(MessageImpl)(this as any)
-      this.__wechatifiedMiniProgram    = wechatifyUserModule(MiniProgramImpl)(this as any)
-      this.__wechatifiedPost           = wechatifyUserModule(PostImpl)(this as any)
-      this.__wechatifiedRoom           = wechatifyUserModule(RoomImpl)(this as any)
-      this.__wechatifiedRoomInvitation = wechatifyUserModule(RoomInvitationImpl)(this as any)
-      this.__wechatifiedTag            = wechatifyUserModule(TagImpl)(this as any)
-      this.__wechatifiedTagGroup       = wechatifyUserModule(TagGroupImpl)(this as any)
-      this.__wechatifiedUrlLink        = wechatifyUserModule(UrlLinkImpl)(this as any)
-      this.__wechatifiedChannel        = wechatifyUserModule(ChannelImpl)(this as any)
-      this.__wechatifiedChannelCard    = wechatifyUserModule(ChannelCardImpl)(this as any)
-      this.__wechatifiedConsultCard    = wechatifyUserModule(ConsultCardImpl)(this as any)
-      this.__wechatifiedMoment         = wechatifyUserModule(MomentImpl)(this as any)
-      this.__wechatifiedCallRecord     = wechatifyUserModule(CallRecordImpl)(this as any)
-      this.__wechatifiedChatHistory    = wechatifyUserModule(ChatHistoryImpl)(this as any)
-      this.__wechatifiedWecom          = wechatifyUserModule(WecomImpl)(this as any)
+      this.__wechatifiedContact                      = wechatifyUserModule(ContactImpl)(this as any)
+      this.__wechatifiedContactSelf                  = wechatifyUserModule(ContactSelfImpl)(this as any)
+      this.__wechatifiedDelay                        = wechatifyUserModule(DelayImpl)(this as any)
+      this.__wechatifiedFriendship                   = wechatifyUserModule(FriendshipImpl)(this as any)
+      this.__wechatifiedImage                        = wechatifyUserModule(ImageImpl)(this as any)
+      this.__wechatifiedLocation                     = wechatifyUserModule(LocationImpl)(this as any)
+      this.__wechatifiedMessage                      = wechatifyUserModule(MessageImpl)(this as any)
+      this.__wechatifiedMiniProgram                  = wechatifyUserModule(MiniProgramImpl)(this as any)
+      this.__wechatifiedPost                         = wechatifyUserModule(PostImpl)(this as any)
+      this.__wechatifiedRoom                         = wechatifyUserModule(RoomImpl)(this as any)
+      this.__wechatifiedRoomInvitation               = wechatifyUserModule(RoomInvitationImpl)(this as any)
+      this.__wechatifiedTag                          = wechatifyUserModule(TagImpl)(this as any)
+      this.__wechatifiedTagGroup                     = wechatifyUserModule(TagGroupImpl)(this as any)
+      this.__wechatifiedUrlLink                      = wechatifyUserModule(UrlLinkImpl)(this as any)
+      this.__wechatifiedChannel                      = wechatifyUserModule(ChannelImpl)(this as any)
+      this.__wechatifiedChannelCard                  = wechatifyUserModule(ChannelCardImpl)(this as any)
+      this.__wechatifiedConsultCard                  = wechatifyUserModule(ConsultCardImpl)(this as any)
+      this.__wechatifiedPremiumOnlineAppointmentCard = wechatifyUserModule(PremiumOnlineAppointmentCardImpl)(this as any)
+      this.__wechatifiedMoment                       = wechatifyUserModule(MomentImpl)(this as any)
+      this.__wechatifiedCallRecord                   = wechatifyUserModule(CallRecordImpl)(this as any)
+      this.__wechatifiedChatHistory                  = wechatifyUserModule(ChatHistoryImpl)(this as any)
+      this.__wechatifiedWecom                        = wechatifyUserModule(WecomImpl)(this as any)
 
       log.verbose('WechatifyUserModuleMixin', 'init() initializing Wechaty User Module (WUM) ... done')
     }
@@ -185,6 +190,7 @@ type ProtectedPropertyWechatifyUserModuleMixin =
   | '__wechatifiedChannel'
   | '__wechatifiedChannelCard'
   | '__wechatifiedConsultCard'
+  | '__wechatifiedPremiumOnlineAppointmentCard'
   | '__wechatifiedMoment'
   | '__wechatifiedCallRecord'
   | '__wechatifiedChatHistory'

@@ -34,6 +34,7 @@ import {
   MessageImpl,
   ChannelCardInterface,
   ConsultCardInterface,
+  PremiumOnlineAppointmentCardInterface,
 }                           from '../user-modules/mod.js'
 
 import type {
@@ -54,6 +55,7 @@ type Sayable =
   | ChannelInterface
   | ChannelCardInterface
   | ConsultCardInterface
+  | PremiumOnlineAppointmentCardInterface
 
 interface SayableSayer {
   id      : string,

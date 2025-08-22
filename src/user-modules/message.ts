@@ -77,6 +77,9 @@ import type {
 import type {
   ConsultCardInterface,
 }                       from './consult-card.js'
+import type {
+  PremiumOnlineAppointmentCardInterface,
+}                       from './premium-online-appointment-card.js'
 
 import { validationMixin } from '../user-mixins/validation.js'
 import type { ContactSelfImpl } from './contact-self.js'
@@ -1422,6 +1425,21 @@ class MessageMixin extends MixinBase implements SayableSayer {
 
     const consultCardPayload = await this.wechaty.puppet.messageConsultCard(this.id)
     return new this.wechaty.ConsultCard(consultCardPayload)
+  }
+
+  public async toPremiumOnlineAppointmentCard (): Promise<PremiumOnlineAppointmentCardInterface> {
+    log.verbose('Message', 'toPremiumOnlineAppointmentCard()')
+
+    if (!this.payload) {
+      throw new Error('no payload')
+    }
+
+    if (this.type() !== PUPPET.types.Message.PremiumOnlineAppointmentCard) {
+      throw new Error('message not a PremiumOnlineAppointmentCard')
+    }
+
+    const premiumOnlineAppointmentCardPayload = await this.wechaty.puppet.messagePremiumOnlineAppointmentCard(this.id)
+    return new this.wechaty.PremiumOnlineAppointmentCard(premiumOnlineAppointmentCardPayload)
   }
 
   public async toCallRecord (): Promise<CallRecordInterface> {

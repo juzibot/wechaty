@@ -1,4 +1,4 @@
-import type * as PUPPET from '@juzi/wechaty-puppet'
+import * as PUPPET from '@juzi/wechaty-puppet'
 import { FileBox } from 'file-box'
 
 import {
@@ -11,7 +11,7 @@ import {
   LocationImpl,
   ChannelImpl,
   ChannelCardImpl,
-  ConsultCardImpl,
+  PremiumOnlineAppointmentCardImpl,
 }                     from '../user-modules/mod.js'
 
 import type { Sayable, SayOptionsObject } from './types.js'
@@ -112,10 +112,14 @@ const deliverSayableConversationPuppet = (puppet: PUPPET.impls.PuppetInterface) 
       conversationId,
       sayable.payload,
     )
-  } else if (ConsultCardImpl.validInstance(sayable)) {
-    msgId = await puppet.messageSendConsultCard(
+  } else if (PremiumOnlineAppointmentCardImpl.validInstance(sayable)) {
+    msgId = await puppet.messageSendPremiumOnlineAppointmentCard(
       conversationId,
-      sayable.payload,
+      {
+        msgType: PUPPET.types.ConsultCardMsgType.PremiumOnlineAppointmentCard,
+        componentType: PUPPET.types.ConsultCardComponentType.PremiumOnlineAppointmentCard,
+        componentId: sayable.componentId(),
+      },
     )
   } else {
     throw new Error('unsupported arg: ' + sayable)
