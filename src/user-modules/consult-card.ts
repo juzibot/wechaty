@@ -9,6 +9,7 @@ import { validationMixin } from '../user-mixins/validation.js'
 import {
   wechatifyMixinBase,
 } from '../user-mixins/wechatify.js'
+import { ConsultCardStatus, ConsultCardType } from '@juzi/wechaty-puppet/types'
 
 class ConsultCardMixin extends wechatifyMixinBase() {
 
@@ -21,8 +22,8 @@ class ConsultCardMixin extends wechatifyMixinBase() {
 
   static async findAll (query: {
     cardType: number,
-    status?: number,
-    ids?: number[],
+    status?: ConsultCardStatus,
+    ids?: string[],
     page?: number,
     pageSize?: number
   }): Promise<ConsultCardInterface[]> {
@@ -51,7 +52,7 @@ class ConsultCardMixin extends wechatifyMixinBase() {
 
   static async find (query: {
     cardType: number,
-    id: number
+    id: string
   }): Promise<ConsultCardInterface | undefined> {
     log.verbose('ConsultCard', 'find(%s)', JSON.stringify(query))
 
@@ -65,11 +66,11 @@ class ConsultCardMixin extends wechatifyMixinBase() {
     return consultCardList.length > 0 ? consultCardList[0] : undefined
   }
 
-  id (): number | undefined {
+  id (): string | undefined {
     return this.payload.id
   }
 
-  cardType (): number | undefined {
+  cardType (): ConsultCardType | undefined {
     return this.payload.cardType
   }
 
@@ -81,11 +82,11 @@ class ConsultCardMixin extends wechatifyMixinBase() {
     return this.payload.content
   }
 
-  status (): number | undefined {
+  status (): ConsultCardStatus | undefined {
     return this.payload.status
   }
 
-  statusMsg (): number | undefined {
+  statusMsg (): string | undefined {
     return this.payload.statusMsg
   }
 
