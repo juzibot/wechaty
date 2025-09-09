@@ -9,7 +9,7 @@ import { validationMixin } from '../user-mixins/validation.js'
 import {
   wechatifyMixinBase,
 } from '../user-mixins/wechatify.js'
-import { ConsultCardStatus, ConsultCardType } from '@juzi/wechaty-puppet/types'
+import type { ConsultCardStatus, ConsultCardType } from '@juzi/wechaty-puppet/types'
 
 class ConsultCardMixin extends wechatifyMixinBase() {
 
