@@ -14,6 +14,7 @@ import {
   ChannelCardImpl,
   ConsultCardImpl,
   PremiumOnlineAppointmentCardImpl,
+  DouyinOneClickPhoneCollectionImpl,
 }                       from '../user-modules/mod.js'
 
 import type {

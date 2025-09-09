@@ -54,6 +54,7 @@ export {
   ChannelCardImpl,
   ConsultCardImpl,
   PremiumOnlineAppointmentCardImpl,
+  DouyinOneClickPhoneCollectionImpl,
 }                             from '../user-modules/mod.js'
 
 // export {
@@ -99,6 +100,7 @@ export type {
   ChannelCardInterface,
   ConsultCardInterface,
   PremiumOnlineAppointmentCardInterface,
+  DouyinOneClickPhoneCollectionInterface,
 }                               from '../user-modules/mod.js'
 
 export type {
@@ -124,6 +126,7 @@ export type {
   ChannelCardConstructor,
   ConsultCardConstructor,
   PremiumOnlineAppointmentCardConstructor,
+  DouyinOneClickPhoneCollectionConstructor,
 }                               from '../user-modules/mod.js'
 
 export {

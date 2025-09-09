@@ -13,6 +13,7 @@ import {
   ChannelCardImpl,
   PremiumOnlineAppointmentCardImpl,
   ConsultCardImpl,
+  DouyinOneClickPhoneCollectionImpl,
 }                     from '../user-modules/mod.js'
 
 import type { Sayable, SayOptionsObject } from './types.js'
@@ -127,6 +128,13 @@ const deliverSayableConversationPuppet = (puppet: PUPPET.impls.PuppetInterface) 
         componentId: sayable.componentId(),
       },
     )
+  } else if (DouyinOneClickPhoneCollectionImpl.validInstance(sayable)) {
+    msgId = await puppet.messageSendDouyinOneClickPhoneCollection(
+      conversationId,
+      {},
+    )
+  } else {
+
   } else {
     throw new Error('unsupported arg: ' + sayable)
   }

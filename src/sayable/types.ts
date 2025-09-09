@@ -35,6 +35,7 @@ import {
   ChannelCardInterface,
   ConsultCardInterface,
   PremiumOnlineAppointmentCardInterface,
+  DouyinOneClickPhoneCollectionInterface,
 }                           from '../user-modules/mod.js'
 
 import type {
@@ -56,6 +57,7 @@ type Sayable =
   | ChannelCardInterface
   | ConsultCardInterface
   | PremiumOnlineAppointmentCardInterface
+  | DouyinOneClickPhoneCollectionInterface
 
 interface SayableSayer {
   id      : string,
