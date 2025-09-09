@@ -134,8 +134,6 @@ const deliverSayableConversationPuppet = (puppet: PUPPET.impls.PuppetInterface) 
       {},
     )
   } else {
-
-  } else {
     throw new Error('unsupported arg: ' + sayable)
   }
 
