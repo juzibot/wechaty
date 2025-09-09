@@ -28,6 +28,7 @@ import type {
   CallRecordConstructor,
   ChatHistoryConstructor,
   WecomConstructor,
+  DouyinOneClickPhoneCollectionConstructor,
 }                             from '../user-modules/mod.js'
 
 import {
@@ -41,28 +42,29 @@ import {
 test('Wechaty interface', async t => {
   abstract class WechatyImplementation extends WechatyEventEmitter implements WechatyInterface {
 
-    Contact                      : ContactConstructor
-    ContactSelf                  : ContactSelfConstructor
-    Delay                        : DelayConstructor
-    Friendship                   : FriendshipConstructor
-    Image                        : ImageConstructor
-    Location                     : LocationConstructor
-    Message                      : MessageConstructor
-    MiniProgram                  : MiniProgramConstructor
-    Post                         : PostConstructor
-    Room                         : RoomConstructor
-    RoomInvitation               : RoomInvitationConstructor
-    Tag                          : TagConstructor
-    TagGroup                     : TagGroupConstructor
-    UrlLink                      : UrlLinkConstructor
-    Channel                      : ChannelConstructor
-    ChannelCard                  : ChannelCardConstructor
-    ConsultCard                  : ConsultCardConstructor
-    PremiumOnlineAppointmentCard : PremiumOnlineAppointmentCardConstructor
-    Moment                       : MomentConstructor
-    CallRecord                   : CallRecordConstructor
-    ChatHistory                  : ChatHistoryConstructor
-    Wecom                        : WecomConstructor
+    Contact                       : ContactConstructor
+    ContactSelf                   : ContactSelfConstructor
+    Delay                         : DelayConstructor
+    Friendship                    : FriendshipConstructor
+    Image                         : ImageConstructor
+    Location                      : LocationConstructor
+    Message                       : MessageConstructor
+    MiniProgram                   : MiniProgramConstructor
+    Post                          : PostConstructor
+    Room                          : RoomConstructor
+    RoomInvitation                : RoomInvitationConstructor
+    Tag                           : TagConstructor
+    TagGroup                      : TagGroupConstructor
+    UrlLink                       : UrlLinkConstructor
+    Channel                       : ChannelConstructor
+    ChannelCard                   : ChannelCardConstructor
+    ConsultCard                   : ConsultCardConstructor
+    PremiumOnlineAppointmentCard  : PremiumOnlineAppointmentCardConstructor
+    Moment                        : MomentConstructor
+    CallRecord                    : CallRecordConstructor
+    ChatHistory                   : ChatHistoryConstructor
+    Wecom                         : WecomConstructor
+    DouyinOneClickPhoneCollection : DouyinOneClickPhoneCollectionConstructor
 
     constructor () {
       super()
@@ -89,6 +91,7 @@ test('Wechaty interface', async t => {
         = this.CallRecord
         = this.ChatHistory
         = this.Wecom
+        = this.DouyinOneClickPhoneCollection
         = {} as any
     }
 
