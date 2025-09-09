@@ -47,7 +47,7 @@ class PremiumOnlineAppointmentCardMixin extends wechatifyMixinBase() {
   }
 
   static async find (query: {
-    componentId: number
+    componentId: string
   }): Promise<PremiumOnlineAppointmentCardInterface | undefined> {
     log.verbose('PremiumOnlineAppointmentCard', 'find(%s)', JSON.stringify(query))
 
@@ -61,7 +61,7 @@ class PremiumOnlineAppointmentCardMixin extends wechatifyMixinBase() {
     return cardList.find(card => card.componentId() === query.componentId)
   }
 
-  componentId (): number {
+  componentId (): string {
     return this.payload.componentId
   }
 
