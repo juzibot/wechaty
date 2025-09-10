@@ -763,9 +763,15 @@ class RoomMixin extends MixinBase implements SayableSayer {
    *   }
    * }
    */
-  async add (contact: ContactInterface, quoteIds?: string[]): Promise<void> {
+  async add (contact: ContactInterface | ContactInterface[], quoteIds?: string[]): Promise<void> {
     log.verbose('Room', 'add(%s)', contact)
-    await this.wechaty.puppet.roomAdd(this.id, contact.id, false, quoteIds)
+    let contactIds: string[]
+    if (Array.isArray(contact)) {
+      contactIds = contact.map(c => c.id)
+    } else {
+      contactIds = [ contact.id ]
+    }
+    await this.wechaty.puppet.roomAdd(this.id, contactIds, false, quoteIds)
   }
 
   /**
