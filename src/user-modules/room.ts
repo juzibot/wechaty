@@ -774,6 +774,23 @@ class RoomMixin extends MixinBase implements SayableSayer {
     await this.wechaty.puppet.roomAdd(this.id, contactIds, false, quoteIds)
   }
 
+  async addV2 (contacts: ContactInterface[], quoteIds?: string[]): Promise<{
+    successList: ContactInterface[],
+    failList: ContactInterface[],
+    failReasonList: string[],
+  }> {
+    log.verbose('Room', 'addV2(%s)', contacts)
+    const contactIds = contacts.map(c => c.id)
+    const result = await this.wechaty.puppet.roomAddV2(this.id, contactIds, false, quoteIds)
+    const successList = await (this.wechaty.Contact as any as typeof ContactImpl).batchLoadContacts(result.successList)
+    const failList = await (this.wechaty.Contact as any as typeof ContactImpl).batchLoadContacts(result.failList)
+    return {
+      successList,
+      failList,
+      failReasonList: result.failReasonList,
+    }
+  }
+
   /**
    * Remove a contact from the room
    * It works only when the bot is the owner of the room
@@ -810,6 +827,23 @@ class RoomMixin extends MixinBase implements SayableSayer {
     }
     await this.wechaty.puppet.roomDel(this.id, contactIds)
     // this.delLocal(contact)
+  }
+
+  async removeV2 (contacts: ContactInterface[]): Promise<{
+    successList: ContactInterface[],
+    failList: ContactInterface[],
+    failReasonList: string[],
+  }> {
+    log.verbose('Room', 'addV2(%s)', contacts)
+    const contactIds = contacts.map(c => c.id)
+    const result = await this.wechaty.puppet.roomDelV2(this.id, contactIds)
+    const successList = await (this.wechaty.Contact as any as typeof ContactImpl).batchLoadContacts(result.successList)
+    const failList = await (this.wechaty.Contact as any as typeof ContactImpl).batchLoadContacts(result.failList)
+    return {
+      successList,
+      failList,
+      failReasonList: result.failReasonList,
+    }
   }
 
   /**
