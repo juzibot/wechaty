@@ -781,13 +781,37 @@ class RoomMixin extends MixinBase implements SayableSayer {
   }> {
     log.verbose('Room', 'addV2(%s)', contacts)
     const contactIds = contacts.map(c => c.id)
-    const result = await this.wechaty.puppet.roomAddV2(this.id, contactIds, false, quoteIds)
-    const successList = await (this.wechaty.Contact as any as typeof ContactImpl).batchLoadContacts(result.successList)
-    const failList = await (this.wechaty.Contact as any as typeof ContactImpl).batchLoadContacts(result.failList)
-    return {
-      successList,
-      failList,
-      failReasonList: result.failReasonList,
+    try {
+      const result = await this.wechaty.puppet.roomAddV2(this.id, contactIds, false, quoteIds)
+      const successList = await (this.wechaty.Contact as any as typeof ContactImpl).batchLoadContacts(result.successList)
+      const failList = await (this.wechaty.Contact as any as typeof ContactImpl).batchLoadContacts(result.failList)
+      return {
+        successList,
+        failList,
+        failReasonList: result.failReasonList,
+      }
+    } catch (e) {
+      if ([ 'The server does not implement the method', 'is not a function' ].some(s => (e as Error).message.includes(s))) {
+        // 兼容旧版本
+        const successList: ContactInterface[] = []
+        const failList: ContactInterface[] = []
+        const failReasonList: string[] = []
+        for (const contact of contacts) {
+          try {
+            await this.wechaty.puppet.roomAdd(this.id, contact.id, false, quoteIds)
+            successList.push(contact)
+          } catch (e) {
+            failList.push(contact)
+            failReasonList.push((e as Error).message)
+          }
+        }
+        return {
+          successList,
+          failList,
+          failReasonList,
+        }
+      }
+      throw e
     }
   }
 
@@ -836,13 +860,37 @@ class RoomMixin extends MixinBase implements SayableSayer {
   }> {
     log.verbose('Room', 'addV2(%s)', contacts)
     const contactIds = contacts.map(c => c.id)
-    const result = await this.wechaty.puppet.roomDelV2(this.id, contactIds)
-    const successList = await (this.wechaty.Contact as any as typeof ContactImpl).batchLoadContacts(result.successList)
-    const failList = await (this.wechaty.Contact as any as typeof ContactImpl).batchLoadContacts(result.failList)
-    return {
-      successList,
-      failList,
-      failReasonList: result.failReasonList,
+    try {
+      const result = await this.wechaty.puppet.roomDelV2(this.id, contactIds)
+      const successList = await (this.wechaty.Contact as any as typeof ContactImpl).batchLoadContacts(result.successList)
+      const failList = await (this.wechaty.Contact as any as typeof ContactImpl).batchLoadContacts(result.failList)
+      return {
+        successList,
+        failList,
+        failReasonList: result.failReasonList,
+      }
+    } catch (e) {
+      if ([ 'The server does not implement the method', 'is not a function' ].some(s => (e as Error).message.includes(s))) {
+        // 兼容旧版本
+        const successList: ContactInterface[] = []
+        const failList: ContactInterface[] = []
+        const failReasonList: string[] = []
+        for (const contact of contacts) {
+          try {
+            await this.wechaty.puppet.roomDel(this.id, contact.id)
+            successList.push(contact)
+          } catch (e) {
+            failList.push(contact)
+            failReasonList.push((e as Error).message)
+          }
+        }
+        return {
+          successList,
+          failList,
+          failReasonList,
+        }
+      }
+      throw e
     }
   }
 
