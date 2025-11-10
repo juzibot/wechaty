@@ -18,14 +18,14 @@ class PremiumOnlineAppointmentCardMixin extends wechatifyMixinBase() {
   }
 
   static async findAll (query: {
-    type?: string,
+    cardType?: string,
     page?: number,
     pageSize?: number
   }): Promise<PremiumOnlineAppointmentCardInterface[]> {
     log.verbose('PremiumOnlineAppointmentCard', 'findAll(%s)', JSON.stringify(query))
 
     const params = {
-      type: query.type || 'card',
+      cardType: query.cardType || 'card',
       page: query.page || 1,
       pageSize: query.pageSize || 50,
     }
