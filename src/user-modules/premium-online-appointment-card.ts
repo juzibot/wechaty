@@ -8,9 +8,6 @@ import { validationMixin } from '../user-mixins/validation.js'
 import {
   wechatifyMixinBase,
 } from '../user-mixins/wechatify.js'
-
-const PREMIUM_ONLINE_APPOINTMENT_CARD_LINK_TYPE = 45
-
 class PremiumOnlineAppointmentCardMixin extends wechatifyMixinBase() {
 
   constructor (
@@ -21,14 +18,14 @@ class PremiumOnlineAppointmentCardMixin extends wechatifyMixinBase() {
   }
 
   static async findAll (query: {
-    linkTypes?: number[],
+    type?: string,
     page?: number,
     pageSize?: number
   }): Promise<PremiumOnlineAppointmentCardInterface[]> {
     log.verbose('PremiumOnlineAppointmentCard', 'findAll(%s)', JSON.stringify(query))
 
     const params = {
-      linkTypes: query.linkTypes || [ PREMIUM_ONLINE_APPOINTMENT_CARD_LINK_TYPE ],
+      type: query.type || 'card',
       page: query.page || 1,
       pageSize: query.pageSize || 50,
     }
@@ -44,21 +41,6 @@ class PremiumOnlineAppointmentCardMixin extends wechatifyMixinBase() {
     })
 
     return cardList
-  }
-
-  static async find (query: {
-    componentId: string
-  }): Promise<PremiumOnlineAppointmentCardInterface | undefined> {
-    log.verbose('PremiumOnlineAppointmentCard', 'find(%s)', JSON.stringify(query))
-
-    const linkTypes = [ PREMIUM_ONLINE_APPOINTMENT_CARD_LINK_TYPE ]
-    const cardList = await this.findAll({
-      linkTypes,
-      page: 1,
-      pageSize: 50,
-    })
-
-    return cardList.find(card => card.componentId() === query.componentId)
   }
 
   componentId (): string {
