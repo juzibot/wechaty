@@ -123,8 +123,7 @@ const deliverSayableConversationPuppet = (puppet: PUPPET.impls.PuppetInterface) 
     msgId = await puppet.messageSendPremiumOnlineAppointmentCard(
       conversationId,
       {
-        msgType: PUPPET.types.ConsultCardMsgType.PremiumOnlineAppointmentCard,
-        componentType: PUPPET.types.ConsultCardComponentType.PremiumOnlineAppointmentCard,
+        cardType: sayable.payload.cardType,
         componentId: sayable.componentId(),
       },
     )
