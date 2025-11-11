@@ -72,6 +72,7 @@ type WechatyEventListenerPostTap            = (post: PostInterface, contact: Con
 type WechatyEventListenerVerifyCode         = (id: string, message: string, scene: PUPPET.types.VerifyCodeScene, status: PUPPET.types.VerifyCodeStatus) => void | Promise<void>
 type WechatyEventListenerDirty              = (id: string, type: PUPPET.types.Dirty) => void | Promise<void>
 type WechatyEventListenerLoginUrl           = (url: string) => void | Promise<void>
+type WechatyEventListenerIntentComment      = (payload: PUPPET.payloads.IntentComment) => void | Promise<void>
 
 /**
  * @desc       Wechaty Class Event Type
@@ -261,6 +262,7 @@ interface WechatyEventListeners {
   'verify-code'        : WechatyEventListenerVerifyCode
   'dirty'              : WechatyEventListenerDirty
   'login-url'          : WechatyEventListenerLoginUrl
+  'intent-comment'     : WechatyEventListenerIntentComment
 }
 
 const WechatyEventEmitter = EventEmitter as any as new () => TypedEventEmitter<
@@ -303,6 +305,7 @@ export type {
   WechatyEventListenerVerifyCode,
   WechatyEventListenerDirty,
   WechatyEventListenerLoginUrl,
+  WechatyEventListenerIntentComment,
 }
 export {
   WechatyEventEmitter,

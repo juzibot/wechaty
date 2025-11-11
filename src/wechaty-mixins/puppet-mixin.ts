@@ -712,6 +712,13 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
             })
             break
 
+          case 'intent-comment':
+            puppet.on('intent-comment', async ({ intentCommentId: id }) => {
+              const payload = await this.puppet.intentCommentPayload(id)
+              this.emit('intent-comment', payload)
+            })
+            break
+
           default:
             /**
              * Check: The eventName here should have the type `never`

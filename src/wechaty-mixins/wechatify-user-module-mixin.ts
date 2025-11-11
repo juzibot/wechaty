@@ -24,6 +24,7 @@ import {
   ChatHistoryImpl,
   WecomImpl,
   DouyinOneClickPhoneCollectionImpl,
+  ImSpecificImpl,
 
   ContactConstructor,
   ContactSelfConstructor,
@@ -48,6 +49,7 @@ import {
   ChatHistoryConstructor,
   WecomConstructor,
   DouyinOneClickPhoneCollectionConstructor,
+  ImSpecificConstructor,
   wechatifyUserModule,
 }                       from '../user-modules/mod.js'
 
@@ -88,6 +90,7 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
     __wechatifiedChatHistory?                   : ChatHistoryConstructor
     __wechatifiedWecom?                         : WecomConstructor
     __wechatifiedDouyinOneClickPhoneCollection? : DouyinOneClickPhoneCollectionConstructor
+    __wechatifiedImSpecific?                    : ImSpecificConstructor
 
     get Contact ()                      : ContactConstructor                        { return guardWechatify(this.__wechatifiedContact)        }
     get ContactSelf ()                  : ContactSelfConstructor                    { return guardWechatify(this.__wechatifiedContactSelf)    }
@@ -112,6 +115,7 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
     get ChatHistory ()                  : ChatHistoryConstructor                    { return guardWechatify(this.__wechatifiedChatHistory)    }
     get Wecom ()                        : WecomConstructor                          { return guardWechatify(this.__wechatifiedWecom)          }
     get DouyinOneClickPhoneCollection () : DouyinOneClickPhoneCollectionConstructor { return guardWechatify(this.__wechatifiedDouyinOneClickPhoneCollection) }
+    get ImSpecific ()                    : ImSpecificConstructor                    { return guardWechatify(this.__wechatifiedImSpecific)      }
 
     override async init (): Promise<void> {
       log.verbose('WechatifyUserModuleMixin', 'init()')
@@ -156,6 +160,7 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
       this.__wechatifiedChatHistory                  = wechatifyUserModule(ChatHistoryImpl)(this as any)
       this.__wechatifiedWecom                        = wechatifyUserModule(WecomImpl)(this as any)
       this.__wechatifiedDouyinOneClickPhoneCollection = wechatifyUserModule(DouyinOneClickPhoneCollectionImpl)(this as any)
+      this.__wechatifiedImSpecific                    = wechatifyUserModule(ImSpecificImpl)(this as any)
 
       log.verbose('WechatifyUserModuleMixin', 'init() initializing Wechaty User Module (WUM) ... done')
     }
@@ -199,6 +204,8 @@ type ProtectedPropertyWechatifyUserModuleMixin =
   | '__wechatifiedCallRecord'
   | '__wechatifiedChatHistory'
   | '__wechatifiedWecom'
+  | '__wechatifiedDouyinOneClickPhoneCollection'
+  | '__wechatifiedImSpecific'
 
 export type {
   WechatifyUserModuleMixin,

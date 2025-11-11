@@ -49,4 +49,5 @@ export type {
   ConsultCardInterface                   as ConsultCard,
   PremiumOnlineAppointmentCardInterface  as PremiumOnlineAppointmentCard,
   DouyinOneClickPhoneCollectionInterface as DouyinOneClickPhoneCollection,
+  ImSpecificInterface                    as ImSpecific,
 }                                               from '../user-modules/mod.js'

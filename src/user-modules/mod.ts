@@ -142,6 +142,11 @@ import {
   DouyinOneClickPhoneCollectionInterface,
   DouyinOneClickPhoneCollectionConstructor,
 }                           from './douyin-one-click-phone-collection.js'
+import {
+  ImSpecificImpl,
+  ImSpecificInterface,
+  ImSpecificConstructor,
+}                           from './im-specific.js'
 
 import { wechatifyUserModule } from '../user-mixins/wechatify.js'
 
@@ -171,6 +176,7 @@ export type {
   ChatHistoryInterface,
   WecomInterface,
   DouyinOneClickPhoneCollectionInterface,
+  ImSpecificInterface,
 }
 
 export type {
@@ -199,6 +205,7 @@ export type {
   ChatHistoryConstructor,
   WecomConstructor,
   DouyinOneClickPhoneCollectionConstructor,
+  ImSpecificConstructor,
 }
 
 export {
@@ -229,4 +236,5 @@ export {
   ChatHistoryImpl,
   WecomImpl,
   DouyinOneClickPhoneCollectionImpl,
+  ImSpecificImpl,
 }

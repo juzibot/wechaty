@@ -29,6 +29,7 @@ import type {
   ChatHistoryConstructor,
   WecomConstructor,
   DouyinOneClickPhoneCollectionConstructor,
+  ImSpecificConstructor,
 }                             from '../user-modules/mod.js'
 
 import {
@@ -65,6 +66,7 @@ test('Wechaty interface', async t => {
     ChatHistory                   : ChatHistoryConstructor
     Wecom                         : WecomConstructor
     DouyinOneClickPhoneCollection : DouyinOneClickPhoneCollectionConstructor
+    ImSpecific                    : ImSpecificConstructor
 
     constructor () {
       super()
@@ -92,6 +94,7 @@ test('Wechaty interface', async t => {
         = this.ChatHistory
         = this.Wecom
         = this.DouyinOneClickPhoneCollection
+        = this.ImSpecific
         = {} as any
     }
 

@@ -55,6 +55,7 @@ export {
   ConsultCardImpl,
   PremiumOnlineAppointmentCardImpl,
   DouyinOneClickPhoneCollectionImpl,
+  ImSpecificImpl,
 }                             from '../user-modules/mod.js'
 
 // export {
@@ -101,6 +102,7 @@ export type {
   ConsultCardInterface,
   PremiumOnlineAppointmentCardInterface,
   DouyinOneClickPhoneCollectionInterface,
+  ImSpecificInterface,
 }                               from '../user-modules/mod.js'
 
 export type {
@@ -127,6 +129,7 @@ export type {
   ConsultCardConstructor,
   PremiumOnlineAppointmentCardConstructor,
   DouyinOneClickPhoneCollectionConstructor,
+  ImSpecificConstructor,
 }                               from '../user-modules/mod.js'
 
 export {
