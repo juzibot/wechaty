@@ -646,6 +646,12 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
             })
             break
 
+          case 'verify-slide':
+            puppet.on('verify-slide', (payload) => {
+              this.emit('verify-slide', payload.scene || PUPPET.types.VerifySlideScene.UNKNOWN, payload.status || PUPPET.types.VerifySlideStatus.UNKNOWN, payload.sliderExeUrl || '', payload.sliderVerifyEncrypt || '')
+            })
+            break
+
           case 'reset':
             // Do not propagation `reset` event from puppet
             break
