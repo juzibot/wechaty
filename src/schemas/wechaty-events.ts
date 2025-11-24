@@ -58,6 +58,8 @@ type WechatyEventListenerVerifySlide        = (scene: PUPPET.types.VerifySlideSc
 type WechatyEventListenerDirty              = (id: string, type: PUPPET.types.Dirty) => void | Promise<void>
 type WechatyEventListenerLoginUrl           = (url: string) => void | Promise<void>
 type WechatyEventListenerIntentComment      = (payload: PUPPET.payloads.IntentComment) => void | Promise<void>
+type WechatyEventListenerContactEnterConversation = (contact: ContactInterface) => void | Promise<void>
+type WechatyEventListenerContactLeadFilled = (contact: ContactInterface, leads: { name: string, value: string }[]) => void | Promise<void>
 
 /**
  * @desc       Wechaty Class Event Type
@@ -241,6 +243,8 @@ interface WechatyEventListeners {
   'login-url'          : WechatyEventListenerLoginUrl
   'intent-comment'     : WechatyEventListenerIntentComment
   'verify-slide'       : WechatyEventListenerVerifySlide
+  'contact-enter-conversation' : WechatyEventListenerContactEnterConversation
+  'contact-lead-filled' : WechatyEventListenerContactLeadFilled
 }
 
 const WechatyEventEmitter = EventEmitter as any as new () => TypedEventEmitter<
@@ -277,6 +281,8 @@ export type {
   WechatyEventListenerDirty,
   WechatyEventListenerLoginUrl,
   WechatyEventListenerIntentComment,
+  WechatyEventListenerContactEnterConversation,
+  WechatyEventListenerContactLeadFilled,
 }
 export {
   WechatyEventEmitter,

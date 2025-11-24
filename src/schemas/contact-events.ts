@@ -17,6 +17,8 @@ type ContactEventListenerDescription = (newDescription: string, oldDescription: 
 type ContactEventListenerCorporation = (newCorporation: string, oldCorporation: string) => void | Promise<void>
 type ContactEventListenerPhone = (newPhoneList: string[], oldPhoneList: string[]) => void | Promise<void>
 type ContactEventListenerAlias = (newAlias: string, oldAlias: string) => void | Promise<void>
+type ContactEventListenerEnterConversation = () => void | Promise<void>
+type ContactEventLeadFilled = (leads: { name: string, value: string }[] ) => void | Promise<void>
 
 interface ContactEventListeners {
   friendship  : ContactEventListenerFriendship,
@@ -28,6 +30,8 @@ interface ContactEventListeners {
   corporation : ContactEventListenerCorporation,
   phone       : ContactEventListenerPhone,
   alias       : ContactEventListenerAlias,
+  'enter-conversation' : ContactEventListenerEnterConversation,
+  'lead-filled'        : ContactEventLeadFilled,
 }
 
 const ContactEventEmitter = EventEmitter as any as new () => TypedEventEmitter<
@@ -45,6 +49,7 @@ export type {
   ContactEventListenerCorporation,
   ContactEventListenerPhone,
   ContactEventListenerAlias,
+  ContactEventListenerEnterConversation,
 }
 export {
   ContactEventEmitter,

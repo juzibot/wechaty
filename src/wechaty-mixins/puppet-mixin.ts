@@ -653,9 +653,33 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
             break
 
           case 'contact-enter-conversation':
-            co
-            puppet.on('contact-enter-conversation', (payload) => {
-              this.emit('contact-enter-conversation', payload.contactId, payload.roomId, payload.date)
+            puppet.on('contact-enter-conversation', async (payload) => {
+              const contact = await this.Contact.find({ id: payload.contactId })
+              if (contact) {
+                this.emit('contact-enter-conversation', contact)
+                contact.emit('enter-conversation')
+              } else {
+                log.verbose('PuppetMixin',
+                  '__setupPuppetEvents() contact-enter-conversation event contact not found for id: %s',
+                  payload.contactId,
+                )
+              }
+            })
+            break
+
+          case 'contact-lead-filled':
+            puppet.on('contact-lead-filled', async (payload) => {
+              const contact = await this.Contact.find({ id: payload.contactId })
+              if (contact) {
+                const leads = payload.leads
+                this.emit('contact-lead-filled', contact, leads)
+                contact.emit('lead-filled', leads)
+              } else {
+                log.verbose('PuppetMixin',
+                  '__setupPuppetEvents() contact-lead-filled event contact not found for id: %s',
+                  payload.contactId,
+                )
+              }
             })
             break
 
