@@ -17,8 +17,8 @@ type ContactEventListenerDescription = (newDescription: string, oldDescription: 
 type ContactEventListenerCorporation = (newCorporation: string, oldCorporation: string) => void | Promise<void>
 type ContactEventListenerPhone = (newPhoneList: string[], oldPhoneList: string[]) => void | Promise<void>
 type ContactEventListenerAlias = (newAlias: string, oldAlias: string) => void | Promise<void>
-type ContactEventListenerEnterConversation = () => void | Promise<void>
-type ContactEventLeadFilled = (leads: { name: string, value: string }[]) => void | Promise<void>
+type ContactEventListenerEnterConversation = (date?: Date) => void | Promise<void>
+type ContactEventLeadFilled = (leads: { name: string, value: string }[], date?: Date) => void | Promise<void>
 
 interface ContactEventListeners {
   friendship  : ContactEventListenerFriendship,
