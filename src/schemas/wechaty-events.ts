@@ -25,14 +25,6 @@ const WECHATY_EVENT_DICT = {
   ready                : 'All underlined data source are ready for use.',
   start                : 'Will be emitted after the Wechaty had been started.',
   stop                 : 'Will be emitted after the Wechaty had been stopped.',
-  'contact-tag-add'    : 'Will be emitted when contact has new tags.',
-  'contact-tag-remove' : 'Will be emitted when contact has some tags removed.',
-  'contact-name'       : 'Will be emitted when contact name has been changed.',
-  'contact-alias'      : 'Will be emitted when contact alias has been changed.',
-  'contact-phone'      : 'Will be emitted when contact phone has been changed.',
-  'contact-description': 'Will be emitted when contact description has been changed.',
-  'contact-corporation': 'Will be emitted when contact corporation has been changed.',
-  'room-owner'         : 'Will be emitted when room owner has been changed.',
 } as const
 
 type WechatyEventName  = keyof typeof WECHATY_EVENT_DICT
@@ -55,16 +47,8 @@ type WechatyEventListenerRoomJoin           = (room: RoomInterface, inviteeList:
 type WechatyEventListenerRoomLeave          = (room: RoomInterface, leaverList: ContactInterface[], remover?: ContactInterface, date?: Date) => void | Promise<void>
 type WechatyEventListenerRoomTopic          = (room: RoomInterface, newTopic: string, oldTopic: string, changer: ContactInterface, date?: Date) => void | Promise<void>
 type WechatyEventListenerRoomAnnounce       = (room: RoomInterface, newAnnounce: string, changer?: ContactInterface, oldAnnounce?: string, date?: Date) => void | Promise<void>
-type WechatyEventListenerRoomOwner          = (room: RoomInterface, newOwner: ContactInterface, oldOwner: ContactInterface) => void | Promise<void>
 type WechatyEventListenerScan               = (qrcode: string, status: PUPPET.types.ScanStatus, data: string, type: PUPPET.types.ScanType, createDate: Date, expireDate?: Date) => void | Promise<void>
 type WechatyEventListenerStartStop          = () => void | Promise<void>
-type WechatyEventListenerContactTagAdd      = (contact: ContactInterface, tagList: TagInterface[]) => void | Promise<void>
-type WechatyEventListenerContactTagRemove   = (contact: ContactInterface, tagList: TagInterface[]) => void | Promise<void>
-type WechatyEventListenerContactName        = (contact: ContactInterface, newName: string, oldName: string) => void | Promise<void>
-type WechatyEventListenerContactPhone       = (contact: ContactInterface, newPhoneList: string[], oldPhoneList: []) => void | Promise<void>
-type WechatyEventListenerContactAlias       = (contact: ContactInterface, newAlias: string, oldAlias: string) => void | Promise<void>
-type WechatyEventListenerContactDescription = (contact: ContactInterface, newDescription: string, oldDescription: string) => void | Promise<void>
-type WechatyEventListenerContactCorporation = (contact: ContactInterface, newCorporation: string, oldCorporation: string) => void | Promise<void>
 type WechatyEventListenerTag                = (type: PUPPET.types.TagEvent, list: TagInterface[], date?: Date) => void | Promise<void>
 type WechatyEventListenerTagGroup           = (type: PUPPET.types.TagGroupEvent, list: TagGroupInterface[], date?: Date) => void | Promise<void>
 type WechatyEventListenerPostComment        = (comment: PostInterface, post: PostInterface) => void | Promise<void>
@@ -248,14 +232,6 @@ interface WechatyEventListeners {
   scan                 : WechatyEventListenerScan
   start                : WechatyEventListenerStartStop
   stop                 : WechatyEventListenerStartStop
-  'contact-tag-add'    : WechatyEventListenerContactTagAdd
-  'contact-tag-remove' : WechatyEventListenerContactTagRemove
-  'contact-name'       : WechatyEventListenerContactName
-  'contact-alias'      : WechatyEventListenerContactAlias
-  'contact-phone'      : WechatyEventListenerContactPhone
-  'contact-description': WechatyEventListenerContactDescription
-  'contact-corporation': WechatyEventListenerContactCorporation
-  'room-owner'         : WechatyEventListenerRoomOwner
   'tag'                : WechatyEventListenerTag
   'tag-group'          : WechatyEventListenerTagGroup
   'post-comment'       : WechatyEventListenerPostComment
@@ -289,17 +265,9 @@ export type {
   WechatyEventListenerRoomJoin,
   WechatyEventListenerRoomLeave,
   WechatyEventListenerRoomTopic,
-  WechatyEventListenerRoomOwner,
   WechatyEventListenerRoomAnnounce,
   WechatyEventListenerScan,
   WechatyEventListenerStartStop,
-  WechatyEventListenerContactTagAdd,
-  WechatyEventListenerContactTagRemove,
-  WechatyEventListenerContactName,
-  WechatyEventListenerContactAlias,
-  WechatyEventListenerContactPhone,
-  WechatyEventListenerContactDescription,
-  WechatyEventListenerContactCorporation,
   WechatyEventListenerTag,
   WechatyEventListenerTagGroup,
   WechatyEventListenerPostComment,

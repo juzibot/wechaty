@@ -652,6 +652,13 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
             })
             break
 
+          case 'contact-enter-conversation':
+            co
+            puppet.on('contact-enter-conversation', (payload) => {
+              this.emit('contact-enter-conversation', payload.contactId, payload.roomId, payload.date)
+            })
+            break
+
           case 'reset':
             // Do not propagation `reset` event from puppet
             break
