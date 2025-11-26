@@ -554,7 +554,11 @@ class RoomMixin extends MixinBase implements SayableSayer {
         ))
         const mentionText = mentionAlias.join(AT_SEPARATOR)
 
-        text = mentionText + ' ' + sayable
+        if (!mentionText) {
+          text = sayable
+        } else {
+          text = mentionText + ' ' + sayable
+        }
       } else {
         text = sayable
       }
