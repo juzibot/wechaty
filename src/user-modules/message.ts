@@ -1377,7 +1377,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
       throw new Error('message type not a Post')
     }
 
-    const post = PostImpl.load(this.id)
+    const post = this.wechaty.Post.load(this.id)
     await post.ready()
     return post
   }
