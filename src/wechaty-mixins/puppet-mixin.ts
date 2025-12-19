@@ -757,7 +757,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
               this.emit('intent-comment', payload)
             })
             break
-          
+
           case 'wxxd-shop':
             puppet.on('wxxd-shop', async () => {
               const payload = await this.ImSpecific.getWxxdShop()
@@ -769,7 +769,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
             puppet.on('wxxd-product', async ({ productId: id }) => {
               const payload = await this.WxxdProduct.find({ id })
               this.emit('wxxd-product', payload)
-            })  
+            })
             break
 
           case 'wxxd-order':

@@ -32,7 +32,7 @@ class WxxdProductMixin extends MixinBase {
   /**
    * List all products
    */
-  static async list(query: PaginationRequest) {
+  static async list (query: PaginationRequest) {
     log.verbose('WxxdProduct', 'list(%s)', JSON.stringify(query))
 
     return await this.wechaty.puppet.listWxxdProducts(query)
@@ -41,7 +41,7 @@ class WxxdProductMixin extends MixinBase {
   /**
    * Find product by id or filter
    */
-  static async find(
+  static async find (
     query: string | { id: string },
   ): Promise<WxxdProductInterface | undefined> {
     log.verbose('WxxdProduct', 'find(%s)', JSON.stringify(query))
@@ -64,11 +64,11 @@ class WxxdProductMixin extends MixinBase {
     return product
   }
 
-  isReady(): boolean {
+  isReady (): boolean {
     return !!(this.payload && this.payload.productId)
   }
 
-  async ready(forceSync = false): Promise<void> {
+  async ready (forceSync = false): Promise<void> {
     log.silly('WxxdProduct', 'ready() @ %s with id="%s"', this.wechaty.puppet, this.id)
 
     if (!forceSync && this.isReady()) {
@@ -91,43 +91,44 @@ class WxxdProductMixin extends MixinBase {
   /**
    * Get product title
    */
-  title(): string {
+  title (): string {
     return this.payload?.title || ''
   }
 
   /**
    * Get product short title
    */
-  shortTitle(): string {
+  shortTitle (): string {
     return this.payload?.shortTitle || ''
   }
 
   /**
    * Get product status
    */
-  status(): PUPPET.types.WxxdProductStatus {
+  status (): PUPPET.types.WxxdProductStatus {
     return this.payload?.status || PUPPET.types.WxxdProductStatus.NotExist
   }
 
   /**
    * Get product min price
    */
-  minPrice(): number {
+  minPrice (): number {
     return this.payload?.minPrice || 0
   }
 
   /**
    * Get product total sold number
    */
-  totalSoldNum(): number {
+  totalSoldNum (): number {
     return this.payload?.totalSoldNum || 0
   }
 
   /**
    * Get product SKUs
    */
-  skus(): PUPPET.payloads.WxxdProductSku[] {
+  skus (): PUPPET.payloads.WxxdProductSku[] {
     return this.payload?.skus || []
+
   }
 }
 
@@ -151,4 +152,3 @@ export type {
 export {
   WxxdProductImpl,
 }
-

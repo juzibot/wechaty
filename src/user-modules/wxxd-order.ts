@@ -22,7 +22,7 @@ class WxxdOrderMixin extends MixinBase {
   /**
    * @hideconstructor
    */
-  constructor(
+  constructor (
     public readonly id: string,
   ) {
     super()
@@ -32,7 +32,7 @@ class WxxdOrderMixin extends MixinBase {
   /**
    * List all orders
    */
-  static async list(query: PaginationRequest) {
+  static async list (query: PaginationRequest) {
     log.verbose('WxxdOrder', 'list(%s)', JSON.stringify(query))
 
     return await this.wechaty.puppet.listWxxdOrders(query)
@@ -41,7 +41,7 @@ class WxxdOrderMixin extends MixinBase {
   /**
    * Find order by id or filter
    */
-  static async find(
+  static async find (
     query: string | { id: string },
   ): Promise<WxxdOrderInterface | undefined> {
     log.verbose('WxxdOrder', 'find(%s)', JSON.stringify(query))
@@ -64,11 +64,11 @@ class WxxdOrderMixin extends MixinBase {
     return order
   }
 
-  isReady(): boolean {
+  isReady (): boolean {
     return !!(this.payload && this.payload.orderId)
   }
 
-  async ready(forceSync = false): Promise<void> {
+  async ready (forceSync = false): Promise<void> {
     log.silly('WxxdOrder', 'ready() @ %s with id="%s"', this.wechaty.puppet, this.id)
 
     if (!forceSync && this.isReady()) {
@@ -91,50 +91,51 @@ class WxxdOrderMixin extends MixinBase {
   /**
    * Get order ID
    */
-  orderId(): string {
+  orderId (): string {
     return this.payload?.orderId || this.id
   }
 
   /**
    * Get order open ID
    */
-  openId(): string {
+  openId (): string {
     return this.payload?.openId || ''
   }
 
   /**
    * Get order status
    */
-  status(): PUPPET.types.WxxdOrderStatus {
+  status (): PUPPET.types.WxxdOrderStatus {
     return this.payload?.status || PUPPET.types.WxxdOrderStatus.Unpaid
   }
 
   /**
    * Get order create time
    */
-  createTime(): number {
+  createTime (): number {
     return this.payload?.createTime || 0
   }
 
   /**
    * Get order update time
    */
-  updateTime(): number {
+  updateTime (): number {
     return this.payload?.updateTime || 0
   }
 
   /**
    * Get order products
    */
-  products(): PUPPET.payloads.WxxdOrderProduct[] {
+  products (): PUPPET.payloads.WxxdOrderProduct[] {
     return this.payload?.products || []
   }
 
   /**
    * Get order ext info
    */
-  extInfo(): PUPPET.payloads.WxxdOrderExtInfo | undefined {
+  extInfo (): PUPPET.payloads.WxxdOrderExtInfo | undefined {
     return this.payload?.extInfo
+
   }
 }
 
@@ -158,4 +159,3 @@ export type {
 export {
   WxxdOrderImpl,
 }
-
