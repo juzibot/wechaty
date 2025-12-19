@@ -30,6 +30,8 @@ import type {
   WecomConstructor,
   DouyinOneClickPhoneCollectionConstructor,
   ImSpecificConstructor,
+  WxxdProductConstructor,
+  WxxdOrderConstructor,
 }                             from '../user-modules/mod.js'
 
 import {
@@ -67,6 +69,8 @@ test('Wechaty interface', async t => {
     Wecom                         : WecomConstructor
     DouyinOneClickPhoneCollection : DouyinOneClickPhoneCollectionConstructor
     ImSpecific                    : ImSpecificConstructor
+    WxxdProduct                   : WxxdProductConstructor
+    WxxdOrder                     : WxxdOrderConstructor
 
     constructor () {
       super()
@@ -95,6 +99,8 @@ test('Wechaty interface', async t => {
         = this.Wecom
         = this.DouyinOneClickPhoneCollection
         = this.ImSpecific
+        = this.WxxdProduct
+        = this.WxxdOrder
         = {} as any
     }
 
