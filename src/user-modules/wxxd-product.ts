@@ -128,7 +128,6 @@ class WxxdProductMixin extends MixinBase {
    */
   skus (): PUPPET.payloads.WxxdProductSku[] {
     return this.payload?.skus || []
-
   }
 }
 
