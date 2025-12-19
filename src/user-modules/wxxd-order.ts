@@ -136,6 +136,7 @@ class WxxdOrderMixin extends MixinBase {
   extInfo (): PUPPET.payloads.WxxdOrderExtInfo | undefined {
     return this.payload?.extInfo
   }
+
 }
 
 class WxxdOrderImplBase extends validationMixin(WxxdOrderMixin)<WxxdOrderImplInterface>() { }

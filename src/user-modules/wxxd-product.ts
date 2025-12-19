@@ -129,6 +129,7 @@ class WxxdProductMixin extends MixinBase {
   skus (): PUPPET.payloads.WxxdProductSku[] {
     return this.payload?.skus || []
   }
+
 }
 
 class WxxdProductImplBase extends validationMixin(WxxdProductMixin)<WxxdProductImplInterface>() { }
