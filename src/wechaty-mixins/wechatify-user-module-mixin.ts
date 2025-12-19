@@ -25,6 +25,8 @@ import {
   WecomImpl,
   DouyinOneClickPhoneCollectionImpl,
   ImSpecificImpl,
+  WxxdProductImpl,
+  WxxdOrderImpl,
 
   ContactConstructor,
   ContactSelfConstructor,
@@ -50,6 +52,8 @@ import {
   WecomConstructor,
   DouyinOneClickPhoneCollectionConstructor,
   ImSpecificConstructor,
+  WxxdProductConstructor,
+  WxxdOrderConstructor,
   wechatifyUserModule,
 }                       from '../user-modules/mod.js'
 
@@ -91,6 +95,8 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
     __wechatifiedWecom?                         : WecomConstructor
     __wechatifiedDouyinOneClickPhoneCollection? : DouyinOneClickPhoneCollectionConstructor
     __wechatifiedImSpecific?                    : ImSpecificConstructor
+    __wechatifiedWxxdProduct?                   : WxxdProductConstructor
+    __wechatifiedWxxdOrder?                     : WxxdOrderConstructor
 
     get Contact ()                      : ContactConstructor                        { return guardWechatify(this.__wechatifiedContact)        }
     get ContactSelf ()                  : ContactSelfConstructor                    { return guardWechatify(this.__wechatifiedContactSelf)    }
@@ -116,6 +122,8 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
     get Wecom ()                        : WecomConstructor                          { return guardWechatify(this.__wechatifiedWecom)          }
     get DouyinOneClickPhoneCollection () : DouyinOneClickPhoneCollectionConstructor { return guardWechatify(this.__wechatifiedDouyinOneClickPhoneCollection) }
     get ImSpecific ()                    : ImSpecificConstructor                    { return guardWechatify(this.__wechatifiedImSpecific)      }
+    get WxxdProduct ()                   : WxxdProductConstructor                   { return guardWechatify(this.__wechatifiedWxxdProduct)     }
+    get WxxdOrder ()                     : WxxdOrderConstructor                     { return guardWechatify(this.__wechatifiedWxxdOrder)       }
 
     override async init (): Promise<void> {
       log.verbose('WechatifyUserModuleMixin', 'init()')
@@ -161,6 +169,8 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
       this.__wechatifiedWecom                        = wechatifyUserModule(WecomImpl)(this as any)
       this.__wechatifiedDouyinOneClickPhoneCollection = wechatifyUserModule(DouyinOneClickPhoneCollectionImpl)(this as any)
       this.__wechatifiedImSpecific                    = wechatifyUserModule(ImSpecificImpl)(this as any)
+      this.__wechatifiedWxxdProduct                   = wechatifyUserModule(WxxdProductImpl)(this as any)
+      this.__wechatifiedWxxdOrder                     = wechatifyUserModule(WxxdOrderImpl)(this as any)
 
       log.verbose('WechatifyUserModuleMixin', 'init() initializing Wechaty User Module (WUM) ... done')
     }
@@ -206,6 +216,8 @@ type ProtectedPropertyWechatifyUserModuleMixin =
   | '__wechatifiedWecom'
   | '__wechatifiedDouyinOneClickPhoneCollection'
   | '__wechatifiedImSpecific'
+  | '__wechatifiedWxxdProduct'
+  | '__wechatifiedWxxdOrder'
 
 export type {
   WechatifyUserModuleMixin,

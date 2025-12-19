@@ -22,6 +22,11 @@ class ImSpecificMixin extends wechatifyMixinBase() {
     return this.wechaty.puppet.intentCommentPayload(id)
   }
 
+  // 微信小店
+  static async getWxxdShop () {
+    return this.wechaty.puppet.wxxdShopPayload()
+  }
+
   /*
    * @hideconstructor
    */

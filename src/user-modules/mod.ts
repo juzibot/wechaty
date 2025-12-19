@@ -147,6 +147,16 @@ import {
   ImSpecificInterface,
   ImSpecificConstructor,
 }                           from './im-specific.js'
+import {
+  WxxdProductImpl,
+  WxxdProductInterface,
+  WxxdProductConstructor,
+}                           from './wxxd-product.js'
+import {
+  WxxdOrderImpl,
+  WxxdOrderInterface,
+  WxxdOrderConstructor,
+}                           from './wxxd-order.js'
 
 import { wechatifyUserModule } from '../user-mixins/wechatify.js'
 
@@ -177,6 +187,8 @@ export type {
   WecomInterface,
   DouyinOneClickPhoneCollectionInterface,
   ImSpecificInterface,
+  WxxdProductInterface,
+  WxxdOrderInterface,
 }
 
 export type {
@@ -206,6 +218,8 @@ export type {
   WecomConstructor,
   DouyinOneClickPhoneCollectionConstructor,
   ImSpecificConstructor,
+  WxxdProductConstructor,
+  WxxdOrderConstructor,
 }
 
 export {
@@ -237,4 +251,6 @@ export {
   WecomImpl,
   DouyinOneClickPhoneCollectionImpl,
   ImSpecificImpl,
+  WxxdProductImpl,
+  WxxdOrderImpl,
 }
