@@ -14,6 +14,8 @@ import {
   PremiumOnlineAppointmentCardImpl,
   ConsultCardImpl,
   DouyinOneClickPhoneCollectionImpl,
+  WxxdProductImpl,
+  WxxdOrderImpl,
 }                     from '../user-modules/mod.js'
 
 import type { Sayable, SayOptionsObject } from './types.js'
@@ -131,6 +133,16 @@ const deliverSayableConversationPuppet = (puppet: PUPPET.impls.PuppetInterface) 
     msgId = await puppet.messageSendDouyinOneClickPhoneCollection(
       conversationId,
       {},
+    )
+  } else if (WxxdProductImpl.validInstance(sayable)) {
+    msgId = await puppet.messageSendWxxdProduct(
+      conversationId,
+      sayable.id,
+    )
+  } else if (WxxdOrderImpl.validInstance(sayable)) {
+    msgId = await puppet.messageSendWxxdOrder(
+      conversationId,
+      sayable.id,
     )
   } else {
     throw new Error('unsupported arg: ' + sayable)
