@@ -50,4 +50,6 @@ export type {
   PremiumOnlineAppointmentCardInterface  as PremiumOnlineAppointmentCard,
   DouyinOneClickPhoneCollectionInterface as DouyinOneClickPhoneCollection,
   ImSpecificInterface                    as ImSpecific,
+  WxxdProductInterface                   as WxxdProduct,
+  WxxdOrderInterface                     as WxxdOrder,
 }                                               from '../user-modules/mod.js'
