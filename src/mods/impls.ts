@@ -56,6 +56,8 @@ export {
   PremiumOnlineAppointmentCardImpl,
   DouyinOneClickPhoneCollectionImpl,
   ImSpecificImpl,
+  WxxdProductImpl,
+  WxxdOrderImpl,
 }                             from '../user-modules/mod.js'
 
 // export {
@@ -103,6 +105,8 @@ export type {
   PremiumOnlineAppointmentCardInterface,
   DouyinOneClickPhoneCollectionInterface,
   ImSpecificInterface,
+  WxxdProductInterface,
+  WxxdOrderInterface,
 }                               from '../user-modules/mod.js'
 
 export type {
@@ -130,6 +134,8 @@ export type {
   PremiumOnlineAppointmentCardConstructor,
   DouyinOneClickPhoneCollectionConstructor,
   ImSpecificConstructor,
+  WxxdProductConstructor,
+  WxxdOrderConstructor,
 }                               from '../user-modules/mod.js'
 
 export {
