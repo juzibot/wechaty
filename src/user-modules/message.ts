@@ -1485,7 +1485,9 @@ class MessageMixin extends MixinBase implements SayableSayer {
     }
 
     const wxxdProductPayload = await this.wechaty.puppet.messageWxxdProduct(this.id)
-    return new this.wechaty.WxxdProduct(wxxdProductPayload)
+    const product = new this.wechaty.WxxdProduct(wxxdProductPayload.productId)
+    await product.ready()
+    return product
   }
 
   public async toWxxdOrder (): Promise<WxxdOrderInterface> {
@@ -1500,7 +1502,9 @@ class MessageMixin extends MixinBase implements SayableSayer {
     }
 
     const wxxdOrderPayload = await this.wechaty.puppet.messageWxxdOrder(this.id)
-    return new this.wechaty.WxxdOrder(wxxdOrderPayload)
+    const order = new this.wechaty.WxxdOrder(wxxdOrderPayload.orderId)
+    await order.ready()
+    return order
   }
 
   async toSayable (): Promise<undefined | Sayable> {
