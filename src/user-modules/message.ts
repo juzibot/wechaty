@@ -85,6 +85,8 @@ import type { ContactSelfImpl } from './contact-self.js'
 import { concurrencyExecuter } from 'rx-queue'
 import type { CallRecordInterface } from './call.js'
 import type { ChatHistoryInterface } from './chat-history.js'
+import type { WxxdProductInterface } from './wxxd-product.js'
+import type { WxxdOrderInterface } from './wxxd-order.js'
 
 const MixinBase = wechatifyMixin(
   EventEmitter,
@@ -1469,6 +1471,36 @@ class MessageMixin extends MixinBase implements SayableSayer {
 
     const chatHistoryPayload = await this.wechaty.puppet.messageChatHistory(this.id)
     return new this.wechaty.ChatHistory(chatHistoryPayload)
+  }
+
+  public async toWxxdProduct (): Promise<WxxdProductInterface> {
+    log.verbose('Message', 'toWxxdProduct()')
+
+    if (!this.payload) {
+      throw new Error('no payload')
+    }
+
+    if (this.type() !== PUPPET.types.Message.WxxdProduct) {
+      throw new Error('message not a WxxdProduct')
+    }
+
+    const wxxdProductPayload = await this.wechaty.puppet.messageWxxdProduct(this.id)
+    return new this.wechaty.WxxdProduct(wxxdProductPayload)
+  }
+
+  public async toWxxdOrder (): Promise<WxxdOrderInterface> {
+    log.verbose('Message', 'toWxxdOrder()')
+
+    if (!this.payload) {
+      throw new Error('no payload')
+    }
+
+    if (this.type() !== PUPPET.types.Message.WxxdOrder) {
+      throw new Error('message not a WxxdOrder')
+    }
+
+    const wxxdOrderPayload = await this.wechaty.puppet.messageWxxdOrder(this.id)
+    return new this.wechaty.WxxdOrder(wxxdOrderPayload)
   }
 
   async toSayable (): Promise<undefined | Sayable> {
