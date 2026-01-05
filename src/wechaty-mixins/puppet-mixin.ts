@@ -21,6 +21,8 @@ import type {
   RoomImpl,
   TagGroupInterface,
   TagInterface,
+  WxxdOrderImpl,
+  WxxdProductImpl,
 }                               from '../user-modules/mod.js'
 
 import type {
@@ -733,6 +735,16 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                     break
                   case PUPPET.types.Payload.Post:
                     break
+                  case PUPPET.types.Payload.WxxdProduct: {
+                    const product = await this.WxxdProduct.find({ id: payloadId }) as unknown as undefined | WxxdProductImpl
+                    await product?.ready(true)
+                    break
+                  }
+                  case PUPPET.types.Payload.WxxdOrder: {
+                    const order = await this.WxxdOrder.find({ id: payloadId }) as unknown as undefined | WxxdOrderImpl
+                    await order?.ready(true)
+                    break
+                  }
 
                   case PUPPET.types.Payload.Unspecified:
                   default:
@@ -768,14 +780,14 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
           case 'wxxd-product':
             puppet.on('wxxd-product', async ({ productId: id }) => {
               const payload = await this.WxxdProduct.find({ id })
-              this.emit('wxxd-product', payload)
+              this.emit('wxxd-product', payload?.payload)
             })
             break
 
           case 'wxxd-order':
             puppet.on('wxxd-order', async ({ orderId: id }) => {
               const payload = await this.WxxdOrder.find({ id })
-              this.emit('wxxd-order', payload)
+              this.emit('wxxd-order', payload?.payload)
             })
             break
 
