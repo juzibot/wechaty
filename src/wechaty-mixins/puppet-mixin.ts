@@ -735,14 +735,16 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                     break
                   case PUPPET.types.Payload.Post:
                     break
-                  case PUPPET.types.Payload.WxxdProduct:
+                  case PUPPET.types.Payload.WxxdProduct: {
                     const product = await this.WxxdProduct.find({ id: payloadId }) as unknown as undefined | WxxdProductImpl
                     await product?.ready(true)
                     break
-                  case PUPPET.types.Payload.WxxdOrder:
+                  }
+                  case PUPPET.types.Payload.WxxdOrder: {
                     const order = await this.WxxdOrder.find({ id: payloadId }) as unknown as undefined | WxxdOrderImpl
                     await order?.ready(true)
                     break
+                  }
 
                   case PUPPET.types.Payload.Unspecified:
                   default:
