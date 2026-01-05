@@ -21,6 +21,8 @@ import type {
   RoomImpl,
   TagGroupInterface,
   TagInterface,
+  WxxdOrderImpl,
+  WxxdProductImpl,
 }                               from '../user-modules/mod.js'
 
 import type {
@@ -732,6 +734,14 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                   case PUPPET.types.Payload.TagGroup:
                     break
                   case PUPPET.types.Payload.Post:
+                    break
+                  case PUPPET.types.Payload.WxxdProduct:
+                    const product = await this.WxxdProduct.find({ id: payloadId }) as unknown as undefined | WxxdProductImpl
+                    await product?.ready(true)
+                    break
+                  case PUPPET.types.Payload.WxxdOrder:
+                    const order = await this.WxxdOrder.find({ id: payloadId }) as unknown as undefined | WxxdOrderImpl
+                    await order?.ready(true)
                     break
 
                   case PUPPET.types.Payload.Unspecified:
