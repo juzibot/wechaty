@@ -289,6 +289,9 @@ export type {
   WechatyEventListenerIntentComment,
   WechatyEventListenerContactEnterConversation,
   WechatyEventListenerContactLeadFilled,
+  WechatyEventListenerWxxdShop,
+  WechatyEventListenerWxxdProduct,
+  WechatyEventListenerWxxdOrder,
 }
 export {
   WechatyEventEmitter,
