@@ -768,14 +768,14 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
           case 'wxxd-product':
             puppet.on('wxxd-product', async ({ productId: id }) => {
               const payload = await this.WxxdProduct.find({ id })
-              this.emit('wxxd-product', payload)
+              this.emit('wxxd-product', payload?.payload)
             })
             break
 
           case 'wxxd-order':
             puppet.on('wxxd-order', async ({ orderId: id }) => {
               const payload = await this.WxxdOrder.find({ id })
-              this.emit('wxxd-order', payload)
+              this.emit('wxxd-order', payload?.payload)
             })
             break
 
