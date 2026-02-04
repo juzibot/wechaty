@@ -64,6 +64,30 @@ class WxxdOrderMixin extends MixinBase {
     return order
   }
 
+  /**
+   * Send delivery for an order
+   */
+  static async deliverySend(orderId: string, deliveryId: string, waybillId: string) {
+    log.verbose('WxxdOrder', 'deliverySend(%s, %s, %s)', orderId, deliveryId, waybillId)
+    return this.wechaty.puppet.wxxdOrderDeliverySend({orderId, deliveryId, waybillId})
+  }
+
+  /**
+   * Generate after sale order
+   */
+  static async genAfterSaleOrder(orderId: string, reason: string) {
+    log.verbose('WxxdOrder', 'genAfterSaleOrder(%s, %s)', orderId, reason)
+    return this.wechaty.puppet.wxxdOrderGenAfterSaleOrder({orderId, reason})
+  }
+
+  /**
+   * Update order merchant notes
+   */
+  static async updateWxxdMerchantnotes(orderId: string, merchantNotes: string) {
+    log.verbose('WxxdOrder', 'updateWxxdMerchantnotes(%s, %s)', orderId, merchantNotes)
+    return this.wechaty.puppet.updateWxxdMerchantnotes(orderId, merchantNotes)
+  }
+
   isReady (): boolean {
     return !!(this.payload && this.payload.orderId)
   }
