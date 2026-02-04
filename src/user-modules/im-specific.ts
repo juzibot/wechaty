@@ -27,6 +27,10 @@ class ImSpecificMixin extends wechatifyMixinBase() {
     return this.wechaty.puppet.wxxdShopPayload()
   }
 
+  static async getWxxdOrderDeliveryCompanyList () {
+    return this.wechaty.puppet.getWxxdOrderDeliveryCompanyList()
+  }
+
   /*
    * @hideconstructor
    */
