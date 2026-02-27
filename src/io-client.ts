@@ -27,6 +27,7 @@ import type { MessageInterface }  from './user-modules/mod.js'
 import type { WechatyInterface }  from './wechaty/mod.js'
 
 import {
+  DISABLE_IO_WS,
   log,
 }                       from './config.js'
 import { Io }           from './io.js'
@@ -122,7 +123,9 @@ export class IoClient {
     try {
       await this.hookWechaty(this.options.wechaty)
 
-      await this.startIo()
+      if (!DISABLE_IO_WS) {
+        await this.startIo()
+      }
 
       await this.options.wechaty.start()
 
@@ -222,7 +225,9 @@ export class IoClient {
 
     this.state.inactive('pending')
 
-    await this.stopIo()
+    if (!DISABLE_IO_WS) {
+      await this.stopIo()
+    }
     await this.stopPuppetServer()
     await this.options.wechaty.stop()
 
