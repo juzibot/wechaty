@@ -659,8 +659,8 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
               const contact = await this.Contact.find({ id: payload.contactId })
               if (contact) {
                 const date = payload.timestamp ? timestampToDate(payload.timestamp) : undefined
-                this.emit('contact-enter-conversation', contact, date)
-                contact.emit('enter-conversation', date)
+                this.emit('contact-enter-conversation', contact, date, payload.scene)
+                contact.emit('enter-conversation', date, payload.scene)
               } else {
                 log.verbose('PuppetMixin',
                   '__setupPuppetEvents() contact-enter-conversation event contact not found for id: %s',
