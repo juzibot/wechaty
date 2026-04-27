@@ -851,6 +851,15 @@ class ContactMixin extends MixinBase implements SayableSayer {
     }
   }
 
+  async endConversation (): Promise<void> {
+    try {
+      await this.wechaty.puppet.endConversation(this.id)
+    } catch (e) {
+      this.wechaty.emitError(e)
+      log.error('Contact', 'endConversation() exception: %s', (e as Error).message)
+    }
+  }
+
   /**
    * @ignore
    */
