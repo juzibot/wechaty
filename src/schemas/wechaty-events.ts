@@ -59,7 +59,7 @@ type WechatyEventListenerDirty              = (id: string, type: PUPPET.types.Di
 type WechatyEventListenerLoginUrl           = (url: string) => void | Promise<void>
 type WechatyEventListenerIntentComment      = (payload: PUPPET.payloads.IntentComment) => void | Promise<void>
 type WechatyEventListenerContactEnterConversation = (contact: ContactInterface, date?: Date, scene?: string) => void | Promise<void>
-type WechatyEventListenerContactLeadFilled = (contact: ContactInterface, leads: { name: string, value: string }[], date?: Date) => void | Promise<void>
+type WechatyEventListenerContactLeadFilled = (contact: ContactInterface, leads: { name: string, value: string, scene?: string }[], date?: Date) => void | Promise<void>
 type WechatyEventListenerWxxdShop         = (payload: PUPPET.payloads.WxxdShop) => void | Promise<void>
 type WechatyEventListenerWxxdProduct      = (payload: PUPPET.payloads.WxxdProduct) => void | Promise<void>
 type WechatyEventListenerWxxdOrder        = (payload: PUPPET.payloads.WxxdOrder) => void | Promise<void>
