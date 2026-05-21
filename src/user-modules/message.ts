@@ -304,6 +304,23 @@ class MessageMixin extends MixinBase implements SayableSayer {
     }
   }
 
+  static async createBroadcastWithBatch (targets: (ContactInterface | RoomInterface)[], post: PostInterface, sendBatchId: string): Promise<PostInterface | void> {
+    log.verbose('Message', 'static createBroadcastWithBatch()')
+
+    const targetIds = targets.map(target => target.id)
+    const type = post.payload.type || PUPPET.types.Post.Unspecified
+
+    if (type !== PUPPET.types.Post.Broadcast) {
+      throw new Error(`you cannot create broadcast with type ${PUPPET.types.Post[type]}`)
+    }
+
+    const postId = await (this.wechaty.puppet as any).createMessageBroadcastWithBatch(targetIds, post.payload, sendBatchId)
+
+    if (postId) {
+      return this.wechaty.Post.find({ id: postId })
+    }
+  }
+
   static async getBroadcastStatus (broadcast: PostInterface): Promise<{
     status: PUPPET.types.BroadcastStatus,
     detail: {

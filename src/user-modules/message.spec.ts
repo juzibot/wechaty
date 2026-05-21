@@ -122,3 +122,40 @@ test('ProtectedProperties', async t => {
   const noOneLeft: NotExistTest = true
   t.ok(noOneLeft, 'should match Wechaty properties for every protected property')
 })
+
+test('createBroadcastWithBatch()', async t => {
+  const EXPECTED_POST_ID = 'post-id-1'
+  const EXPECTED_BATCH_ID = 'batch-id-1'
+  const EXPECTED_TARGET_ID = 'contact-id-1'
+
+  const sandbox = sinon.createSandbox()
+
+  const puppet = new PuppetMock() as any
+  puppet.createMessageBroadcastWithBatch = async () => undefined
+
+  const wechaty = WechatyBuilder.build({ puppet })
+  await wechaty.start()
+
+  const createBroadcastWithBatchStub = sandbox.stub(puppet, 'createMessageBroadcastWithBatch').resolves(EXPECTED_POST_ID)
+  const expectedPost = { id: EXPECTED_POST_ID } as any
+  const findStub = sandbox.stub(wechaty.Post, 'find').resolves(expectedPost)
+
+  const result = await wechaty.Message.createBroadcastWithBatch(
+    [{ id: EXPECTED_TARGET_ID } as any],
+    { payload: { type: PUPPET.types.Post.Broadcast } } as any,
+    EXPECTED_BATCH_ID,
+  )
+
+  t.equal(createBroadcastWithBatchStub.callCount, 1, 'should call puppet batch-aware broadcast once')
+  t.same(createBroadcastWithBatchStub.firstCall?.args, [
+    [EXPECTED_TARGET_ID],
+    { type: PUPPET.types.Post.Broadcast },
+    EXPECTED_BATCH_ID,
+  ], 'should pass target ids, post payload, and send batch id to puppet')
+  t.equal(findStub.callCount, 1, 'should look up the created post by id')
+  t.same(findStub.firstCall?.args, [{ id: EXPECTED_POST_ID }], 'should resolve the created post by returned id')
+  t.equal(result, expectedPost, 'should return the resolved post')
+
+  sandbox.restore()
+  await wechaty.stop()
+})
