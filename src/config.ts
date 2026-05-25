@@ -143,6 +143,8 @@ export const AT_SEPARATOR_REGEX = /[\u2005\u0020]/
 export const PUPPET_PAYLOAD_SYNC_GAP = 3 * 1000
 export const PUPPET_PAYLOAD_SYNC_MAX_RETRY = 4
 
+export const DISABLE_IO_WS = process.env['WECHATY_DISABLE_IO_WS'] === 'true'
+
 export function qrcodeValueToImageUrl (qrcodeValue: string): string {
   return [
     'https://wechaty.js.org/qrcode/',

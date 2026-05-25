@@ -1142,6 +1142,15 @@ class RoomMixin extends MixinBase implements SayableSayer {
     }
   }
 
+  async endConversation (): Promise<void> {
+    try {
+      await this.wechaty.puppet.endConversation(this.id)
+    } catch (e) {
+      this.wechaty.emitError(e)
+      log.error('Room', 'endConversation() exception: %s', (e as Error).message)
+    }
+  }
+
   /**
    * Check if the room has member `contact`, the return is a Promise and must be `await`-ed
    *
