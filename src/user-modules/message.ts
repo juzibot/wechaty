@@ -19,8 +19,9 @@
  */
 import { EventEmitter }   from 'events'
 import * as PUPPET        from '@juzi/wechaty-puppet'
-import type {
-  FileBoxInterface,
+import {
+  FileBox,
+  type FileBoxInterface,
 }                         from 'file-box'
 
 import type { Constructor } from 'clone-class'
@@ -87,6 +88,43 @@ import type { CallRecordInterface } from './call.js'
 import type { ChatHistoryInterface } from './chat-history.js'
 import type { WxxdProductInterface } from './wxxd-product.js'
 import type { WxxdOrderInterface } from './wxxd-order.js'
+
+type BatchSendResult = {
+  conversationId?: string,
+  error?: string,
+  id?: string,
+}
+
+type BatchSendResponse = {
+  results?: BatchSendResult[],
+}
+
+type BatchSendPuppet = {
+  messageBatchForward(conversationIds: string[], messageId: string | string[], batchTaskId?: string): Promise<BatchSendResponse | undefined>,
+  messageBatchSendChannel(conversationIds: string[], channelPayload: PUPPET.payloads.Channel, batchTaskId?: string): Promise<BatchSendResponse | undefined>,
+  messageBatchSendChannelCard(conversationIds: string[], channelCardPayload: PUPPET.payloads.ChannelCard, batchTaskId?: string): Promise<BatchSendResponse | undefined>,
+  messageBatchSendContact(conversationIds: string[], contactId: string, batchTaskId?: string): Promise<BatchSendResponse | undefined>,
+  messageBatchSendFile(conversationIds: string[], file: FileBoxInterface, batchTaskId?: string): Promise<BatchSendResponse | undefined>,
+  messageBatchSendLocation(conversationIds: string[], locationPayload: PUPPET.payloads.Location, batchTaskId?: string): Promise<BatchSendResponse | undefined>,
+  messageBatchSendMiniProgram(conversationIds: string[], miniProgramPayload: PUPPET.payloads.MiniProgram, batchTaskId?: string): Promise<BatchSendResponse | undefined>,
+  messageBatchSendText(conversationIds: string[], text: string, batchTaskId?: string): Promise<BatchSendResponse | undefined>,
+  messageBatchSendUrl(conversationIds: string[], urlLinkPayload: PUPPET.payloads.UrlLink, batchTaskId?: string): Promise<BatchSendResponse | undefined>,
+}
+
+const fileBoxFromPayload = (filebox: string | FileBoxInterface): FileBoxInterface =>
+  typeof filebox === 'string'
+    ? FileBox.fromJSON(filebox)
+    : filebox
+
+const assertBatchSendResponse = (methodName: string, response?: BatchSendResponse): void => {
+  const failures = response?.results?.filter(result => result.error) || []
+  if (failures.length > 0) {
+    const detail = failures
+      .map(result => `${result.conversationId || '-'}:${result.error}`)
+      .join('; ')
+    throw new Error(`${methodName} failed: ${detail}`)
+  }
+}
 
 const MixinBase = wechatifyMixin(
   EventEmitter,
@@ -314,10 +352,98 @@ class MessageMixin extends MixinBase implements SayableSayer {
       throw new Error(`you cannot create broadcast with type ${PUPPET.types.Post[type]}`)
     }
 
-    const postId = await (this.wechaty.puppet as any).createMessageBroadcastWithBatch(targetIds, post.payload, sendBatchId)
+    if (!PUPPET.payloads.isPostClient(post.payload)) {
+      throw new Error('you cannot create stable broadcast with a server post payload')
+    }
 
-    if (postId) {
-      return this.wechaty.Post.find({ id: postId })
+    const puppet = this.wechaty.puppet as typeof this.wechaty.puppet & BatchSendPuppet
+
+    for (const sayable of post.payload.sayableList) {
+      let methodName = ''
+      let response: BatchSendResponse | undefined
+
+      switch (sayable.type) {
+        case PUPPET.types.Sayable.Text:
+          methodName = 'messageBatchSendText'
+          response = await puppet.messageBatchSendText(
+            targetIds,
+            sayable.payload.text,
+            sendBatchId,
+          )
+          break
+
+        case PUPPET.types.Sayable.Attachment:
+        case PUPPET.types.Sayable.Audio:
+        case PUPPET.types.Sayable.Emoticon:
+        case PUPPET.types.Sayable.Image:
+        case PUPPET.types.Sayable.Video:
+          methodName = 'messageBatchSendFile'
+          response = await puppet.messageBatchSendFile(
+            targetIds,
+            fileBoxFromPayload(sayable.payload.filebox),
+            sendBatchId,
+          )
+          break
+
+        case PUPPET.types.Sayable.Contact:
+          methodName = 'messageBatchSendContact'
+          response = await puppet.messageBatchSendContact(
+            targetIds,
+            sayable.payload.contactId,
+            sendBatchId,
+          )
+          break
+
+        case PUPPET.types.Sayable.Url:
+          methodName = 'messageBatchSendUrl'
+          response = await puppet.messageBatchSendUrl(
+            targetIds,
+            sayable.payload,
+            sendBatchId,
+          )
+          break
+
+        case PUPPET.types.Sayable.MiniProgram:
+          methodName = 'messageBatchSendMiniProgram'
+          response = await puppet.messageBatchSendMiniProgram(
+            targetIds,
+            sayable.payload,
+            sendBatchId,
+          )
+          break
+
+        case PUPPET.types.Sayable.Location:
+          methodName = 'messageBatchSendLocation'
+          response = await puppet.messageBatchSendLocation(
+            targetIds,
+            sayable.payload,
+            sendBatchId,
+          )
+          break
+
+        case PUPPET.types.Sayable.Channel:
+          methodName = 'messageBatchSendChannel'
+          response = await puppet.messageBatchSendChannel(
+            targetIds,
+            sayable.payload,
+            sendBatchId,
+          )
+          break
+
+        case PUPPET.types.Sayable.ChannelCard:
+          methodName = 'messageBatchSendChannelCard'
+          response = await puppet.messageBatchSendChannelCard(
+            targetIds,
+            sayable.payload,
+            sendBatchId,
+          )
+          break
+
+        default:
+          throw new Error(`stable broadcast does not support sayable type ${PUPPET.types.Sayable[sayable.type]}`)
+      }
+
+      assertBatchSendResponse(methodName, response)
     }
   }
 
