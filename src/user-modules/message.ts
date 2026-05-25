@@ -99,18 +99,6 @@ type BatchSendResponse = {
   results?: BatchSendResult[],
 }
 
-type BatchSendPuppet = {
-  messageBatchForward(conversationIds: string[], messageId: string | string[], batchTaskId?: string): Promise<BatchSendResponse | undefined>,
-  messageBatchSendChannel(conversationIds: string[], channelPayload: PUPPET.payloads.Channel, batchTaskId?: string): Promise<BatchSendResponse | undefined>,
-  messageBatchSendChannelCard(conversationIds: string[], channelCardPayload: PUPPET.payloads.ChannelCard, batchTaskId?: string): Promise<BatchSendResponse | undefined>,
-  messageBatchSendContact(conversationIds: string[], contactId: string, batchTaskId?: string): Promise<BatchSendResponse | undefined>,
-  messageBatchSendFile(conversationIds: string[], file: FileBoxInterface, batchTaskId?: string): Promise<BatchSendResponse | undefined>,
-  messageBatchSendLocation(conversationIds: string[], locationPayload: PUPPET.payloads.Location, batchTaskId?: string): Promise<BatchSendResponse | undefined>,
-  messageBatchSendMiniProgram(conversationIds: string[], miniProgramPayload: PUPPET.payloads.MiniProgram, batchTaskId?: string): Promise<BatchSendResponse | undefined>,
-  messageBatchSendText(conversationIds: string[], text: string, batchTaskId?: string): Promise<BatchSendResponse | undefined>,
-  messageBatchSendUrl(conversationIds: string[], urlLinkPayload: PUPPET.payloads.UrlLink, batchTaskId?: string): Promise<BatchSendResponse | undefined>,
-}
-
 const fileBoxFromPayload = (filebox: string | FileBoxInterface): FileBoxInterface =>
   typeof filebox === 'string'
     ? FileBox.fromJSON(filebox)
@@ -356,7 +344,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
       throw new Error('you cannot create stable broadcast with a server post payload')
     }
 
-    const puppet = this.wechaty.puppet as typeof this.wechaty.puppet & BatchSendPuppet
+    const puppet = this.wechaty.puppet
 
     for (const sayable of post.payload.sayableList) {
       let methodName = ''
