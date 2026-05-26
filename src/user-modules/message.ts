@@ -336,14 +336,9 @@ class MessageMixin extends MixinBase implements SayableSayer {
     log.verbose('Message', 'static batchSendMessage()')
 
     const targetIds = targets.map(target => target.id)
-    const type = post.payload.type || PUPPET.types.Post.Unspecified
-
-    if (type !== PUPPET.types.Post.Broadcast) {
-      throw new Error(`you cannot create broadcast with type ${PUPPET.types.Post[type]}`)
-    }
 
     if (!PUPPET.payloads.isPostClient(post.payload)) {
-      throw new Error('you cannot create stable broadcast with a server post payload')
+      throw new Error('you cannot batch send message with a server post payload')
     }
 
     const puppet = this.wechaty.puppet
@@ -432,7 +427,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
           break
 
         default:
-          throw new Error(`stable broadcast does not support sayable type ${PUPPET.types.Sayable[sayable.type]}`)
+          throw new Error(`batch send message does not support sayable type ${PUPPET.types.Sayable[sayable.type]}`)
       }
 
       batchSendResults.push(
