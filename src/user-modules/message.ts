@@ -19,8 +19,9 @@
  */
 import { EventEmitter }   from 'events'
 import * as PUPPET        from '@juzi/wechaty-puppet'
-import type {
-  FileBoxInterface,
+import {
+  FileBox,
+  type FileBoxInterface,
 }                         from 'file-box'
 
 import type { Constructor } from 'clone-class'
@@ -87,6 +88,33 @@ import type { CallRecordInterface } from './call.js'
 import type { ChatHistoryInterface } from './chat-history.js'
 import type { WxxdProductInterface } from './wxxd-product.js'
 import type { WxxdOrderInterface } from './wxxd-order.js'
+
+type BatchSendResult = {
+  conversationId?: string,
+  error?: string,
+  id?: string,
+}
+
+type BatchSendResponse = {
+  results?: BatchSendResult[],
+}
+
+type BatchSendMessageResult = BatchSendResult & {
+  sayableIndex: number,
+}
+
+const fileBoxFromPayload = (filebox: string | FileBoxInterface): FileBoxInterface =>
+  typeof filebox === 'string'
+    ? FileBox.fromJSON(filebox)
+    : filebox
+
+const getBatchSendResults = (methodName: string, response?: BatchSendResponse): BatchSendResult[] => {
+  const results = response?.results
+  if (!Array.isArray(results)) {
+    throw new Error(`${methodName} returned invalid batch send response`)
+  }
+  return results
+}
 
 const MixinBase = wechatifyMixin(
   EventEmitter,
@@ -302,6 +330,115 @@ class MessageMixin extends MixinBase implements SayableSayer {
     if (postId) {
       return this.wechaty.Post.find({ id: postId })
     }
+  }
+
+  static async batchSendMessage (targets: (ContactInterface | RoomInterface)[], post: PostInterface, sendBatchId: string): Promise<BatchSendMessageResult[]> {
+    log.verbose('Message', 'static batchSendMessage()')
+
+    const targetIds = targets.map(target => target.id)
+
+    if (!PUPPET.payloads.isPostClient(post.payload)) {
+      throw new Error('you cannot batch send message with a server post payload')
+    }
+
+    const puppet = this.wechaty.puppet
+
+    const batchSendResults: BatchSendMessageResult[] = []
+
+    for (const [ sayableIndex, sayable ] of post.payload.sayableList.entries()) {
+      let methodName = ''
+      let response: BatchSendResponse | undefined
+
+      switch (sayable.type) {
+        case PUPPET.types.Sayable.Text:
+          methodName = 'messageBatchSendText'
+          response = await puppet.messageBatchSendText(
+            targetIds,
+            sayable.payload.text,
+            sendBatchId,
+          )
+          break
+
+        case PUPPET.types.Sayable.Attachment:
+        case PUPPET.types.Sayable.Audio:
+        case PUPPET.types.Sayable.Emoticon:
+        case PUPPET.types.Sayable.Image:
+        case PUPPET.types.Sayable.Video:
+          methodName = 'messageBatchSendFile'
+          response = await puppet.messageBatchSendFile(
+            targetIds,
+            fileBoxFromPayload(sayable.payload.filebox),
+            sendBatchId,
+          )
+          break
+
+        case PUPPET.types.Sayable.Contact:
+          methodName = 'messageBatchSendContact'
+          response = await puppet.messageBatchSendContact(
+            targetIds,
+            sayable.payload.contactId,
+            sendBatchId,
+          )
+          break
+
+        case PUPPET.types.Sayable.Url:
+          methodName = 'messageBatchSendUrl'
+          response = await puppet.messageBatchSendUrl(
+            targetIds,
+            sayable.payload,
+            sendBatchId,
+          )
+          break
+
+        case PUPPET.types.Sayable.MiniProgram:
+          methodName = 'messageBatchSendMiniProgram'
+          response = await puppet.messageBatchSendMiniProgram(
+            targetIds,
+            sayable.payload,
+            sendBatchId,
+          )
+          break
+
+        case PUPPET.types.Sayable.Location:
+          methodName = 'messageBatchSendLocation'
+          response = await puppet.messageBatchSendLocation(
+            targetIds,
+            sayable.payload,
+            sendBatchId,
+          )
+          break
+
+        case PUPPET.types.Sayable.Channel:
+          methodName = 'messageBatchSendChannel'
+          response = await puppet.messageBatchSendChannel(
+            targetIds,
+            sayable.payload,
+            sendBatchId,
+          )
+          break
+
+        case PUPPET.types.Sayable.ChannelCard:
+          methodName = 'messageBatchSendChannelCard'
+          response = await puppet.messageBatchSendChannelCard(
+            targetIds,
+            sayable.payload,
+            sendBatchId,
+          )
+          break
+
+        default:
+          throw new Error(`batch send message does not support sayable type ${PUPPET.types.Sayable[sayable.type]}`)
+      }
+
+      batchSendResults.push(
+        ...getBatchSendResults(methodName, response).map(result => ({
+          ...result,
+          sayableIndex,
+        })),
+      )
+    }
+
+    return batchSendResults
   }
 
   static async getBroadcastStatus (broadcast: PostInterface): Promise<{
