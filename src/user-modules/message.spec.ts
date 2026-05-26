@@ -123,7 +123,7 @@ test('ProtectedProperties', async t => {
   t.ok(noOneLeft, 'should match Wechaty properties for every protected property')
 })
 
-test('createBroadcastWithBatch()', async t => {
+test('batchSendMessage()', async t => {
   const EXPECTED_BATCH_ID = 'batch-id-1'
   const EXPECTED_TARGET_ID = 'contact-id-1'
   const EXPECTED_TEXT = 'hello stable broadcast'
@@ -140,7 +140,7 @@ test('createBroadcastWithBatch()', async t => {
     results: [ { conversationId: EXPECTED_TARGET_ID, id: 'message-id-1' } ],
   })
 
-  const result = await wechaty.Message.createBroadcastWithBatch(
+  const result = await wechaty.Message.batchSendMessage(
     [ { id: EXPECTED_TARGET_ID } as any ],
     {
       payload: {
@@ -159,13 +159,19 @@ test('createBroadcastWithBatch()', async t => {
     EXPECTED_TEXT,
     EXPECTED_BATCH_ID,
   ], 'should pass target ids, text, and batch task id to puppet')
-  t.equal(result, undefined, 'new batch send grpc returns per-target results instead of a broadcast post')
+  t.same(result, [
+    {
+      conversationId: EXPECTED_TARGET_ID,
+      id: 'message-id-1',
+      sayableIndex: 0,
+    },
+  ], 'should return per-target batch send results')
 
   sandbox.restore()
   await wechaty.stop()
 })
 
-test('createBroadcastWithBatch() rejects per-target batch errors', async t => {
+test('batchSendMessage() returns per-target batch errors', async t => {
   const EXPECTED_BATCH_ID = 'batch-id-1'
   const EXPECTED_TARGET_ID = 'contact-id-1'
 
@@ -181,22 +187,26 @@ test('createBroadcastWithBatch() rejects per-target batch errors', async t => {
     results: [ { conversationId: EXPECTED_TARGET_ID, error: 'boom' } ],
   })
 
-  await t.rejects(
-    wechaty.Message.createBroadcastWithBatch(
-      [ { id: EXPECTED_TARGET_ID } as any ],
-      {
-        payload: {
-          sayableList: [
-            PUPPET.payloads.sayable.text('hello'),
-          ],
-          type: PUPPET.types.Post.Broadcast,
-        },
-      } as any,
-      EXPECTED_BATCH_ID,
-    ),
-    /messageBatchSendText failed: contact-id-1:boom/,
-    'should surface per-target batch send failures',
+  const result = await wechaty.Message.batchSendMessage(
+    [ { id: EXPECTED_TARGET_ID } as any ],
+    {
+      payload: {
+        sayableList: [
+          PUPPET.payloads.sayable.text('hello'),
+        ],
+        type: PUPPET.types.Post.Broadcast,
+      },
+    } as any,
+    EXPECTED_BATCH_ID,
   )
+
+  t.same(result, [
+    {
+      conversationId: EXPECTED_TARGET_ID,
+      error: 'boom',
+      sayableIndex: 0,
+    },
+  ], 'should return per-target batch send failures for callers to persist')
 
   sandbox.restore()
   await wechaty.stop()

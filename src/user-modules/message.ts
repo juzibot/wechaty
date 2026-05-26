@@ -99,19 +99,21 @@ type BatchSendResponse = {
   results?: BatchSendResult[],
 }
 
+type BatchSendMessageResult = BatchSendResult & {
+  sayableIndex: number,
+}
+
 const fileBoxFromPayload = (filebox: string | FileBoxInterface): FileBoxInterface =>
   typeof filebox === 'string'
     ? FileBox.fromJSON(filebox)
     : filebox
 
-const assertBatchSendResponse = (methodName: string, response?: BatchSendResponse): void => {
-  const failures = response?.results?.filter(result => result.error) || []
-  if (failures.length > 0) {
-    const detail = failures
-      .map(result => `${result.conversationId || '-'}:${result.error}`)
-      .join('; ')
-    throw new Error(`${methodName} failed: ${detail}`)
+const getBatchSendResults = (methodName: string, response?: BatchSendResponse): BatchSendResult[] => {
+  const results = response?.results
+  if (!Array.isArray(results)) {
+    throw new Error(`${methodName} returned invalid batch send response`)
   }
+  return results
 }
 
 const MixinBase = wechatifyMixin(
@@ -330,8 +332,8 @@ class MessageMixin extends MixinBase implements SayableSayer {
     }
   }
 
-  static async createBroadcastWithBatch (targets: (ContactInterface | RoomInterface)[], post: PostInterface, sendBatchId: string): Promise<PostInterface | void> {
-    log.verbose('Message', 'static createBroadcastWithBatch()')
+  static async batchSendMessage (targets: (ContactInterface | RoomInterface)[], post: PostInterface, sendBatchId: string): Promise<BatchSendMessageResult[]> {
+    log.verbose('Message', 'static batchSendMessage()')
 
     const targetIds = targets.map(target => target.id)
     const type = post.payload.type || PUPPET.types.Post.Unspecified
@@ -346,7 +348,9 @@ class MessageMixin extends MixinBase implements SayableSayer {
 
     const puppet = this.wechaty.puppet
 
-    for (const sayable of post.payload.sayableList) {
+    const batchSendResults: BatchSendMessageResult[] = []
+
+    for (const [ sayableIndex, sayable ] of post.payload.sayableList.entries()) {
       let methodName = ''
       let response: BatchSendResponse | undefined
 
@@ -431,8 +435,15 @@ class MessageMixin extends MixinBase implements SayableSayer {
           throw new Error(`stable broadcast does not support sayable type ${PUPPET.types.Sayable[sayable.type]}`)
       }
 
-      assertBatchSendResponse(methodName, response)
+      batchSendResults.push(
+        ...getBatchSendResults(methodName, response).map(result => ({
+          ...result,
+          sayableIndex,
+        })),
+      )
     }
+
+    return batchSendResults
   }
 
   static async getBroadcastStatus (broadcast: PostInterface): Promise<{
