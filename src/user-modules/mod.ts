@@ -130,10 +130,6 @@ import {
   CallRecordInterface,
   CallRecordConstructor,
 }                           from './call.js'
-export type {
-  CallStatus,
-  CallDirection,
-}                           from './call.js'
 import {
   ChatHistoryImpl,
   ChatHistoryInterface,
@@ -166,6 +162,11 @@ import {
 }                           from './wxxd-order.js'
 
 import { wechatifyUserModule } from '../user-mixins/wechatify.js'
+
+export type {
+  CallStatus,
+  CallDirection,
+}                           from './call.js'
 
 export type {
   CallInterface,

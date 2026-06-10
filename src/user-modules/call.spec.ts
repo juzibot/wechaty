@@ -12,6 +12,7 @@ import * as PUPPET    from '@juzi/wechaty-puppet'
 import { PuppetMock } from '@juzi/wechaty-puppet-mock'
 import { WechatyBuilder } from '../wechaty-builder.js'
 import type { CallInterface } from './call.js'
+import type { ContactImpl } from './contact.js'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -36,15 +37,7 @@ async function startAndLogin (puppet: any, wechaty: any, userId = 'bot-self') {
   await puppet.login(userId)
 }
 
-let sandbox: sinon.SinonSandbox
-
-test.before(() => {
-  sandbox = sinon.createSandbox()
-})
-
-test.after(() => {
-  sandbox.restore()
-})
+const sandbox = sinon.createSandbox()
 
 // ---------------------------------------------------------------------------
 // 1. contact.call() → returns Call with correct initial state
@@ -57,7 +50,7 @@ test('contact.call() returns an outgoing Call with status=calling and media=audi
   const callControlStub = sandbox.stub(puppet, 'callControl' as any).resolves(undefined)
 
   const PEER_ID = 'peer-contact-id'
-  const contact = wechaty.Contact.load(PEER_ID)
+  const contact = (wechaty.Contact as typeof ContactImpl).load(PEER_ID)
 
   const call: CallInterface = await contact.call()
 
@@ -121,7 +114,7 @@ test('outgoing call: ringing signal → status=ringing + emit ringing; accept si
   sandbox.stub(puppet, 'callControl' as any).resolves(undefined)
 
   const PEER_ID = 'peer-id-outgoing'
-  const contact = wechaty.Contact.load(PEER_ID)
+  const contact = (wechaty.Contact as typeof ContactImpl).load(PEER_ID)
   const call: CallInterface = await contact.call()
 
   const ringingEmitted = await new Promise<boolean>(resolve => {
@@ -202,7 +195,7 @@ test('outgoing call.accept() throws an error (invalid direction)', async t => {
 
   sandbox.stub(puppet, 'callControl' as any).resolves(undefined)
 
-  const contact = wechaty.Contact.load('some-peer')
+  const contact = (wechaty.Contact as typeof ContactImpl).load('some-peer')
   const call    = await contact.call()
 
   await t.rejects(
@@ -276,7 +269,7 @@ test('call.hangup() on connected call sends Hangup and transitions to ended', as
 
   const callControlStub = sandbox.stub(puppet, 'callControl' as any).resolves(undefined)
 
-  const contact = wechaty.Contact.load('peer-hangup-test')
+  const contact = (wechaty.Contact as typeof ContactImpl).load('peer-hangup-test')
   const call    = await contact.call()
 
   // Simulate peer accepting the call
