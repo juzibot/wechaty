@@ -52,6 +52,8 @@ import { stringifyFilter }            from '../helper-functions/stringify-filter
 import type { MessageInterface }  from './message.js'
 import type { TagInterface }      from './tag.js'
 import type { ContactSelfImpl }   from './contact-self.js'
+import type { CallImpl, CallInterface } from './call.js'
+import { generateCallId } from './call.js'
 
 const MixinBase = wechatifyMixin(
   poolifyMixin(
@@ -405,6 +407,52 @@ class ContactMixin extends MixinBase implements SayableSayer {
         return msg
       }
     }
+  }
+
+  /**
+   * Initiate an outgoing call to this contact.
+   *
+   * Returns a Call object immediately (status: 'calling') without blocking
+   * until the call is connected. Listen to call events for lifecycle updates.
+   *
+   * @example
+   * const call = await contact.call({ media: bot.PUPPET.types.CallMediaType.Video })
+   * call.on('accept', () => console.log('call connected'))
+   * call.on('hangup', reason => console.log('call ended', reason))
+   */
+  async call (options?: { media?: PUPPET.types.CallMediaType }): Promise<CallInterface> {
+    log.verbose('Contact', 'call(%s)', JSON.stringify(options) || '')
+
+    const callId = generateCallId()
+    const media  = options?.media ?? PUPPET.types.CallMediaType.Audio
+
+    const wechaty = this.wechaty as any
+
+    const call = new (this.wechaty.Call as any)({
+      id        : callId,
+      peerId    : this.id,
+      media,
+      direction : 'outgoing' as const,
+      onEnded   : (id: string) => { wechaty.__callPool?.delete(id) },
+    }) as CallImpl
+
+    // Register before sending Invite to avoid a race where the acknowledgement
+    // arrives before the await returns.
+    wechaty.__callPool?.set(callId, call)
+
+    try {
+      await this.wechaty.puppet.callControl({
+        callId,
+        signal : PUPPET.types.CallSignal.Invite,
+        peerId : this.id,
+        media,
+      })
+    } catch (e) {
+      wechaty.__callPool?.delete(callId)
+      throw e
+    }
+
+    return call as unknown as CallInterface
   }
 
   /**

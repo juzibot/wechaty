@@ -25,6 +25,7 @@
  */
 
 export type {
+  CallInterface                          as Call,
   ContactInterface                       as Contact,
   ContactSelfInterface                   as ContactSelf,
   DelayInterface                         as Delay,

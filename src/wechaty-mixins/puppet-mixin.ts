@@ -15,6 +15,7 @@ import {
 import { config, PUPPET_PAYLOAD_SYNC_GAP, PUPPET_PAYLOAD_SYNC_MAX_RETRY }               from '../config.js'
 import { timestampToDate }      from '../pure-functions/timestamp-to-date.js'
 import type {
+  CallImpl,
   ContactImpl,
   ContactInterface,
   MessageImpl,
@@ -50,6 +51,9 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
   abstract class PuppetMixin extends mixinBase {
 
     __puppet?: PUPPET.impls.PuppetInterface
+
+    /** Registry of active Call instances keyed by callId. */
+    __callPool: Map<string, CallImpl> = new Map()
 
     get puppet (): PUPPET.impls.PuppetInterface {
       if (!this.__puppet) {
@@ -791,6 +795,33 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
             })
             break
 
+          case 'call':
+            puppet.on('call', async payload => {
+              try {
+                if (payload.signal === PUPPET.types.CallSignal.Invite) {
+                  const call = new (this.Call as any)({
+                    id        : payload.callId,
+                    peerId    : payload.contactId,
+                    media     : payload.media ?? PUPPET.types.CallMediaType.Audio,
+                    direction : 'incoming' as const,
+                    onEnded   : (callId: string) => { this.__callPool.delete(callId) },
+                  }) as CallImpl
+                  this.__callPool.set(call.id, call)
+                  this.emit('call', call as any)
+                } else {
+                  const call = this.__callPool.get(payload.callId)
+                  if (!call) {
+                    this.emit('error', GError.from('call event for unknown callId: ' + payload.callId))
+                    return
+                  }
+                  call.__handleSignal(payload)
+                }
+              } catch (e) {
+                this.emit('error', GError.from(e))
+              }
+            })
+            break
+
           default:
             /**
              * Check: The eventName here should have the type `never`
@@ -812,6 +843,7 @@ type PuppetMixin = ReturnType<typeof puppetMixin>
 
 type ProtectedPropertyPuppetMixin =
   | '__puppet'
+  | '__callPool'
   | '__readyState'
   | '__setupPuppetEvents'
   | '__loginIndicator'

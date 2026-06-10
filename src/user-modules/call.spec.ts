@@ -1,0 +1,299 @@
+#!/usr/bin/env -S node --no-warnings --loader ts-node/esm
+/**
+ * Tests for the Call first-class object and its lifecycle state machine.
+ */
+
+import {
+  test,
+  sinon,
+}             from 'tstest'
+
+import * as PUPPET    from '@juzi/wechaty-puppet'
+import { PuppetMock } from '@juzi/wechaty-puppet-mock'
+import { WechatyBuilder } from '../wechaty-builder.js'
+import type { CallInterface } from './call.js'
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function buildWechaty () {
+  const puppet  = new PuppetMock() as any
+  const wechaty = WechatyBuilder.build({ puppet })
+  return { puppet, wechaty }
+}
+
+async function startAndLogin (puppet: any, wechaty: any, userId = 'bot-self') {
+  sandbox.stub(puppet, 'contactPayload').callsFake(async (id: string) => {
+    await new Promise(setImmediate)
+    return { id, name: id } as PUPPET.payloads.Contact
+  })
+  sandbox.stub(puppet, 'contactSearch').callsFake(async (...args: any[]) => {
+    await new Promise(setImmediate)
+    return [ args[0]?.id ?? userId ]
+  })
+  await wechaty.start()
+  await puppet.login(userId)
+}
+
+let sandbox: sinon.SinonSandbox
+
+test.before(() => {
+  sandbox = sinon.createSandbox()
+})
+
+test.after(() => {
+  sandbox.restore()
+})
+
+// ---------------------------------------------------------------------------
+// 1. contact.call() → returns Call with correct initial state
+// ---------------------------------------------------------------------------
+
+test('contact.call() returns an outgoing Call with status=calling and media=audio', async t => {
+  const { puppet, wechaty } = buildWechaty()
+  await startAndLogin(puppet, wechaty)
+
+  const callControlStub = sandbox.stub(puppet, 'callControl' as any).resolves(undefined)
+
+  const PEER_ID = 'peer-contact-id'
+  const contact = wechaty.Contact.load(PEER_ID)
+
+  const call: CallInterface = await contact.call()
+
+  t.equal(call.direction(), 'outgoing', 'should be outgoing')
+  t.equal(call.status(), 'calling', 'initial status should be calling')
+  t.equal(call.media(), PUPPET.types.CallMediaType.Audio, 'default media should be audio')
+  t.ok(call.id, 'callId should be non-empty')
+
+  t.ok(callControlStub.calledOnce, 'puppet.callControl should have been called once')
+  const [ controlPayload ] = callControlStub.firstCall.args
+  t.equal(controlPayload.signal, PUPPET.types.CallSignal.Invite, 'should send Invite signal')
+  t.equal(controlPayload.peerId, PEER_ID, 'peerId should match contact id')
+  t.equal(controlPayload.media, PUPPET.types.CallMediaType.Audio, 'media should match')
+
+  await wechaty.stop()
+})
+
+// ---------------------------------------------------------------------------
+// 2. incoming call via puppet 'call' event with signal=Invite
+// ---------------------------------------------------------------------------
+
+test('incoming call: puppet emit call/Invite → bot emits call event, direction=incoming, status=ringing', async t => {
+  const { puppet, wechaty } = buildWechaty()
+  await startAndLogin(puppet, wechaty)
+
+  const CALL_ID     = 'call-id-incoming'
+  const CALLER_ID   = 'caller-contact-id'
+
+  let receivedCall: CallInterface | undefined
+
+  wechaty.on('call', (call: CallInterface) => {
+    receivedCall = call
+  })
+
+  ;(puppet as any).emit('call', {
+    callId    : CALL_ID,
+    signal    : PUPPET.types.CallSignal.Invite,
+    contactId : CALLER_ID,
+    media     : PUPPET.types.CallMediaType.Video,
+  } as PUPPET.payloads.EventCall)
+
+  await new Promise(resolve => setImmediate(resolve))
+
+  t.ok(receivedCall, 'bot should emit call event')
+  t.equal(receivedCall!.id, CALL_ID, 'call.id should match')
+  t.equal(receivedCall!.direction(), 'incoming', 'should be incoming')
+  t.equal(receivedCall!.status(), 'ringing', 'initial status should be ringing')
+  t.equal(receivedCall!.contact().id, CALLER_ID, 'contact().id should match caller')
+
+  await wechaty.stop()
+})
+
+// ---------------------------------------------------------------------------
+// 3. outgoing call: ringing and accept signals cause status transitions + events
+// ---------------------------------------------------------------------------
+
+test('outgoing call: ringing signal → status=ringing + emit ringing; accept signal → status=connected + emit accept', async t => {
+  const { puppet, wechaty } = buildWechaty()
+  await startAndLogin(puppet, wechaty)
+
+  sandbox.stub(puppet, 'callControl' as any).resolves(undefined)
+
+  const PEER_ID = 'peer-id-outgoing'
+  const contact = wechaty.Contact.load(PEER_ID)
+  const call: CallInterface = await contact.call()
+
+  const ringingEmitted = await new Promise<boolean>(resolve => {
+    call.on('ringing', () => resolve(true))
+    ;(puppet as any).emit('call', {
+      callId    : call.id,
+      signal    : PUPPET.types.CallSignal.Ringing,
+      contactId : PEER_ID,
+    } as PUPPET.payloads.EventCall)
+    setTimeout(() => resolve(false), 100)
+  })
+
+  t.ok(ringingEmitted, 'call should emit ringing')
+  t.equal(call.status(), 'ringing', 'status should be ringing after Ringing signal')
+
+  const acceptEmitted = await new Promise<boolean>(resolve => {
+    call.on('accept', () => resolve(true))
+    ;(puppet as any).emit('call', {
+      callId    : call.id,
+      signal    : PUPPET.types.CallSignal.Accept,
+      contactId : PEER_ID,
+    } as PUPPET.payloads.EventCall)
+    setTimeout(() => resolve(false), 100)
+  })
+
+  t.ok(acceptEmitted, 'call should emit accept')
+  t.equal(call.status(), 'connected', 'status should be connected after Accept signal')
+
+  await wechaty.stop()
+})
+
+// ---------------------------------------------------------------------------
+// 4. incoming call.accept() → callControl receives Accept + status=connected
+//    illegal call.accept() on outgoing → rejects
+// ---------------------------------------------------------------------------
+
+test('incoming call.accept() sends Accept signal and transitions to connected', async t => {
+  const { puppet, wechaty } = buildWechaty()
+  await startAndLogin(puppet, wechaty)
+
+  const callControlStub = sandbox.stub(puppet, 'callControl' as any).resolves(undefined)
+
+  const CALL_ID   = 'call-id-accept-test'
+  const CALLER_ID = 'caller-id'
+
+  // Trigger incoming call
+  ;(puppet as any).emit('call', {
+    callId    : CALL_ID,
+    signal    : PUPPET.types.CallSignal.Invite,
+    contactId : CALLER_ID,
+  } as PUPPET.payloads.EventCall)
+  await new Promise(resolve => setImmediate(resolve))
+
+  let incomingCall: CallInterface | undefined
+  wechaty.on('call', (c: CallInterface) => { incomingCall = c })
+
+  // Re-emit to capture the reference
+  ;(puppet as any).emit('call', {
+    callId    : CALL_ID + '-2',
+    signal    : PUPPET.types.CallSignal.Invite,
+    contactId : CALLER_ID,
+  } as PUPPET.payloads.EventCall)
+  await new Promise(resolve => setImmediate(resolve))
+
+  t.ok(incomingCall, 'should have received an incoming call')
+  await incomingCall!.accept()
+
+  t.equal(incomingCall!.status(), 'connected', 'status should be connected after accept()')
+  const acceptCall = callControlStub.getCalls().find(c => c.args[0]?.signal === PUPPET.types.CallSignal.Accept)
+  t.ok(acceptCall, 'callControl should have been called with Accept')
+
+  await wechaty.stop()
+})
+
+test('outgoing call.accept() throws an error (invalid direction)', async t => {
+  const { puppet, wechaty } = buildWechaty()
+  await startAndLogin(puppet, wechaty)
+
+  sandbox.stub(puppet, 'callControl' as any).resolves(undefined)
+
+  const contact = wechaty.Contact.load('some-peer')
+  const call    = await contact.call()
+
+  await t.rejects(
+    call.accept(),
+    /invalid/i,
+    'accept() on outgoing call should throw',
+  )
+
+  await wechaty.stop()
+})
+
+// ---------------------------------------------------------------------------
+// 5. peer Cancel → callee call emits 'hangup' + status=ended + pool cleanup
+// ---------------------------------------------------------------------------
+
+test('outgoing Cancel signal received by callee → call emits hangup, status=ended, pool cleanup', async t => {
+  const { puppet, wechaty } = buildWechaty()
+  await startAndLogin(puppet, wechaty)
+
+  const CALL_ID   = 'call-id-cancel-test'
+  const CALLER_ID = 'caller-cancel'
+
+  let incomingCall: CallInterface | undefined
+  wechaty.on('call', (c: CallInterface) => { incomingCall = c })
+
+  ;(puppet as any).emit('call', {
+    callId    : CALL_ID,
+    signal    : PUPPET.types.CallSignal.Invite,
+    contactId : CALLER_ID,
+  } as PUPPET.payloads.EventCall)
+  await new Promise(resolve => setImmediate(resolve))
+
+  t.ok(incomingCall, 'should have received incoming call')
+
+  const hangupEmitted = await new Promise<boolean>(resolve => {
+    incomingCall!.on('hangup', () => resolve(true))
+    ;(puppet as any).emit('call', {
+      callId    : CALL_ID,
+      signal    : PUPPET.types.CallSignal.Cancel,
+      contactId : CALLER_ID,
+    } as PUPPET.payloads.EventCall)
+    setTimeout(() => resolve(false), 100)
+  })
+
+  t.ok(hangupEmitted, "Cancel from peer should emit 'hangup' on callee's call")
+  t.equal(incomingCall!.status(), 'ended', 'status should be ended')
+
+  // After ended, a subsequent signal for the same callId should emit an error
+  let errorEmitted = false
+  wechaty.on('error', () => { errorEmitted = true })
+
+  ;(puppet as any).emit('call', {
+    callId    : CALL_ID,
+    signal    : PUPPET.types.CallSignal.Hangup,
+    contactId : CALLER_ID,
+  } as PUPPET.payloads.EventCall)
+  await new Promise(resolve => setImmediate(resolve))
+
+  t.ok(errorEmitted, 'bot should emit error for unknown callId after pool cleanup')
+
+  await wechaty.stop()
+})
+
+// ---------------------------------------------------------------------------
+// 6. call.hangup() on connected call
+// ---------------------------------------------------------------------------
+
+test('call.hangup() on connected call sends Hangup and transitions to ended', async t => {
+  const { puppet, wechaty } = buildWechaty()
+  await startAndLogin(puppet, wechaty)
+
+  const callControlStub = sandbox.stub(puppet, 'callControl' as any).resolves(undefined)
+
+  const contact = wechaty.Contact.load('peer-hangup-test')
+  const call    = await contact.call()
+
+  // Simulate peer accepting the call
+  ;(puppet as any).emit('call', {
+    callId    : call.id,
+    signal    : PUPPET.types.CallSignal.Accept,
+    contactId : 'peer-hangup-test',
+  } as PUPPET.payloads.EventCall)
+  await new Promise(resolve => setImmediate(resolve))
+
+  t.equal(call.status(), 'connected', 'status should be connected')
+
+  await call.hangup()
+
+  t.equal(call.status(), 'ended', 'status should be ended after hangup()')
+  const hangupCall = callControlStub.getCalls().find(c => c.args[0]?.signal === PUPPET.types.CallSignal.Hangup)
+  t.ok(hangupCall, 'callControl should have been called with Hangup signal')
+
+  await wechaty.stop()
+})

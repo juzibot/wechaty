@@ -31,6 +31,7 @@
  */
 
 export {
+  CallImpl,
   ContactImpl,
   ContactSelfImpl,
   FavoriteImpl,
@@ -80,6 +81,7 @@ export {
 // }                                         from '../user-modules/mod.js'
 
 export type {
+  CallInterface,
   ContactInterface,
   ContactSelfInterface,
   DelayInterface,

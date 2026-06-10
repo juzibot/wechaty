@@ -14,6 +14,7 @@ import type {
   PostInterface,
   TagInterface,
   TagGroupInterface,
+  CallInterface,
 }                       from '../user-modules/mod.js'
 
 const WECHATY_EVENT_DICT = {
@@ -63,6 +64,7 @@ type WechatyEventListenerContactLeadFilled = (contact: ContactInterface, leads: 
 type WechatyEventListenerWxxdShop         = (payload: PUPPET.payloads.WxxdShop) => void | Promise<void>
 type WechatyEventListenerWxxdProduct      = (payload: PUPPET.payloads.WxxdProduct) => void | Promise<void>
 type WechatyEventListenerWxxdOrder        = (payload: PUPPET.payloads.WxxdOrder) => void | Promise<void>
+type WechatyEventListenerCall             = (call: CallInterface) => void | Promise<void>
 
 /**
  * @desc       Wechaty Class Event Type
@@ -251,6 +253,7 @@ interface WechatyEventListeners {
   'wxxd-shop'           : WechatyEventListenerWxxdShop
   'wxxd-product'        : WechatyEventListenerWxxdProduct
   'wxxd-order'          : WechatyEventListenerWxxdOrder
+  call                  : WechatyEventListenerCall
 }
 
 const WechatyEventEmitter = EventEmitter as any as new () => TypedEventEmitter<
@@ -292,6 +295,7 @@ export type {
   WechatyEventListenerWxxdShop,
   WechatyEventListenerWxxdProduct,
   WechatyEventListenerWxxdOrder,
+  WechatyEventListenerCall,
 }
 export {
   WechatyEventEmitter,
