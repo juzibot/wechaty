@@ -801,6 +801,10 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
             puppet.on('call', async payload => {
               try {
                 if (payload.signal === PUPPET.types.CallSignal.Invite) {
+                  if (this.__callPool.has(payload.callId)) {
+                    log.warn('WechatyPuppetMixin', '__setupPuppetEvents() duplicate Invite for callId=%s, ignoring', payload.callId)
+                    return
+                  }
                   const call = new (this.Call as any)({
                     id        : payload.callId,
                     peerId    : payload.contactId,

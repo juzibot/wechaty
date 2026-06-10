@@ -297,8 +297,14 @@ class CallMixin extends CallMixinBase {
 
 }
 
-class CallImpl extends validationMixin(CallMixin)<CallInterface>() {}
-interface CallInterface extends CallImpl {}
+class CallImplBase extends validationMixin(CallMixin)<CallImplInterface>() {}
+interface CallImplInterface extends CallImplBase {}
+
+type CallProtectedProperty =
+  | '__handleSignal'
+
+type CallInterface = Omit<CallImplInterface, CallProtectedProperty>
+class CallImpl extends validationMixin(CallImplBase)<CallInterface>() {}
 
 type CallConstructor = Constructor<
   CallInterface,
@@ -308,6 +314,7 @@ type CallConstructor = Constructor<
 export type {
   CallConstructor,
   CallInterface,
+  CallProtectedProperty,
 }
 export {
   CallImpl,

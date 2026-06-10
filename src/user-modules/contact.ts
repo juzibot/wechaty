@@ -416,12 +416,13 @@ class ContactMixin extends MixinBase implements SayableSayer {
    * until the call is connected. Listen to call events for lifecycle updates.
    *
    * @example
-   * const call = await contact.call({ media: bot.PUPPET.types.CallMediaType.Video })
+   * import * as PUPPET from '@juzi/wechaty-puppet'
+   * const call = await contact.call({ media: PUPPET.types.CallMediaType.Video })
    * call.on('accept', () => console.log('call connected'))
    * call.on('hangup', reason => console.log('call ended', reason))
    */
   async call (options?: { media?: PUPPET.types.CallMediaType }): Promise<CallInterface> {
-    log.verbose('Contact', 'call(%s)', JSON.stringify(options) || '')
+    log.verbose('Contact', 'call(%s)', JSON.stringify(options ?? {}))
 
     const callId = generateCallId()
     const media  = options?.media ?? PUPPET.types.CallMediaType.Audio

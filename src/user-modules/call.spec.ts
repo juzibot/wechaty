@@ -160,20 +160,11 @@ test('incoming call.accept() sends Accept signal and transitions to connected', 
   const CALL_ID   = 'call-id-accept-test'
   const CALLER_ID = 'caller-id'
 
-  // Trigger incoming call
-  ;(puppet as any).emit('call', {
-    callId    : CALL_ID,
-    signal    : PUPPET.types.CallSignal.Invite,
-    contactId : CALLER_ID,
-  } as PUPPET.payloads.EventCall)
-  await new Promise(resolve => setImmediate(resolve))
-
   let incomingCall: CallInterface | undefined
   wechaty.on('call', (c: CallInterface) => { incomingCall = c })
 
-  // Re-emit to capture the reference
   ;(puppet as any).emit('call', {
-    callId    : CALL_ID + '-2',
+    callId    : CALL_ID,
     signal    : PUPPET.types.CallSignal.Invite,
     contactId : CALLER_ID,
   } as PUPPET.payloads.EventCall)
@@ -185,6 +176,72 @@ test('incoming call.accept() sends Accept signal and transitions to connected', 
   t.equal(incomingCall!.status(), 'connected', 'status should be connected after accept()')
   const acceptCall = callControlStub.getCalls().find(c => c.args[0]?.signal === PUPPET.types.CallSignal.Accept)
   t.ok(acceptCall, 'callControl should have been called with Accept')
+
+  await wechaty.stop()
+})
+
+// ---------------------------------------------------------------------------
+// 4b. duplicate Invite for same callId is silently dropped (M1 guard)
+// ---------------------------------------------------------------------------
+
+test('duplicate Invite for same callId is ignored: call event fires once, original call survives', async t => {
+  const { puppet, wechaty } = buildWechaty()
+  await startAndLogin(puppet, wechaty)
+
+  const CALL_ID   = 'call-id-dup-invite'
+  const CALLER_ID = 'caller-dup'
+
+  let callEventCount = 0
+  let firstCall: CallInterface | undefined
+
+  wechaty.on('call', (c: CallInterface) => {
+    callEventCount++
+    if (!firstCall) {
+      firstCall = c
+    }
+  })
+
+  // First Invite — should create a call and emit 'call'
+  ;(puppet as any).emit('call', {
+    callId    : CALL_ID,
+    signal    : PUPPET.types.CallSignal.Invite,
+    contactId : CALLER_ID,
+    media     : PUPPET.types.CallMediaType.Audio,
+  } as PUPPET.payloads.EventCall)
+  await new Promise(resolve => setImmediate(resolve))
+
+  t.equal(callEventCount, 1, "'call' event should fire exactly once after first Invite")
+  t.ok(firstCall, 'first Call instance should be captured')
+  t.equal(firstCall!.status(), 'ringing', 'first call should be in ringing state')
+
+  // Second Invite with the same callId — guard should drop it silently
+  let errorEmitted = false
+  wechaty.on('error', () => { errorEmitted = true })
+
+  ;(puppet as any).emit('call', {
+    callId    : CALL_ID,
+    signal    : PUPPET.types.CallSignal.Invite,
+    contactId : CALLER_ID,
+    media     : PUPPET.types.CallMediaType.Audio,
+  } as PUPPET.payloads.EventCall)
+  await new Promise(resolve => setImmediate(resolve))
+
+  t.equal(callEventCount, 1, "'call' event must not fire again for duplicate Invite")
+  t.notOk(errorEmitted, 'no error event should be emitted for a duplicate Invite')
+
+  // The original call instance must still be alive and responsive to subsequent signals
+  const hangupEmitted = await new Promise<boolean>(resolve => {
+    firstCall!.on('hangup', () => resolve(true))
+    ;(puppet as any).emit('call', {
+      callId    : CALL_ID,
+      signal    : PUPPET.types.CallSignal.Cancel,
+      contactId : CALLER_ID,
+    } as PUPPET.payloads.EventCall)
+    setTimeout(() => resolve(false), 100)
+  })
+
+  t.ok(hangupEmitted, 'original Call instance should still handle subsequent signals after duplicate was dropped')
+  t.equal(firstCall!.status(), 'ended', 'original call should reach ended state after Cancel signal')
 
   await wechaty.stop()
 })
