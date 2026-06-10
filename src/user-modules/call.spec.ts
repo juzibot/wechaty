@@ -47,7 +47,9 @@ test('contact.call() returns an outgoing Call with status=calling and media=audi
   const { puppet, wechaty } = buildWechaty()
   await startAndLogin(puppet, wechaty)
 
-  const callControlStub = sandbox.stub(puppet, 'callControl' as any).resolves(undefined)
+  const callControlStub = sandbox.stub().resolves(undefined)
+
+  ;(puppet as any).callControl = callControlStub
 
   const PEER_ID = 'peer-contact-id'
   const contact = (wechaty.Contact as typeof ContactImpl).load(PEER_ID)
@@ -111,7 +113,7 @@ test('outgoing call: ringing signal → status=ringing + emit ringing; accept si
   const { puppet, wechaty } = buildWechaty()
   await startAndLogin(puppet, wechaty)
 
-  sandbox.stub(puppet, 'callControl' as any).resolves(undefined)
+  ;(puppet as any).callControl = sandbox.stub().resolves(undefined)
 
   const PEER_ID = 'peer-id-outgoing'
   const contact = (wechaty.Contact as typeof ContactImpl).load(PEER_ID)
@@ -155,7 +157,9 @@ test('incoming call.accept() sends Accept signal and transitions to connected', 
   const { puppet, wechaty } = buildWechaty()
   await startAndLogin(puppet, wechaty)
 
-  const callControlStub = sandbox.stub(puppet, 'callControl' as any).resolves(undefined)
+  const callControlStub = sandbox.stub().resolves(undefined)
+
+  ;(puppet as any).callControl = callControlStub
 
   const CALL_ID   = 'call-id-accept-test'
   const CALLER_ID = 'caller-id'
@@ -250,7 +254,7 @@ test('outgoing call.accept() throws an error (invalid direction)', async t => {
   const { puppet, wechaty } = buildWechaty()
   await startAndLogin(puppet, wechaty)
 
-  sandbox.stub(puppet, 'callControl' as any).resolves(undefined)
+  ;(puppet as any).callControl = sandbox.stub().resolves(undefined)
 
   const contact = (wechaty.Contact as typeof ContactImpl).load('some-peer')
   const call    = await contact.call()
@@ -324,7 +328,9 @@ test('call.hangup() on connected call sends Hangup and transitions to ended', as
   const { puppet, wechaty } = buildWechaty()
   await startAndLogin(puppet, wechaty)
 
-  const callControlStub = sandbox.stub(puppet, 'callControl' as any).resolves(undefined)
+  const callControlStub = sandbox.stub().resolves(undefined)
+
+  ;(puppet as any).callControl = callControlStub
 
   const contact = (wechaty.Contact as typeof ContactImpl).load('peer-hangup-test')
   const call    = await contact.call()
@@ -356,7 +362,9 @@ test('call.hangup() rejects when callControl fails but status transitions to end
   const { puppet, wechaty } = buildWechaty()
   await startAndLogin(puppet, wechaty)
 
-  const callControlStub = sandbox.stub(puppet, 'callControl' as any)
+  const callControlStub = sandbox.stub()
+
+  ;(puppet as any).callControl = callControlStub
 
   const contact = (wechaty.Contact as typeof ContactImpl).load('peer-hangup-fail')
   // First call is the Invite – let it succeed.
@@ -409,7 +417,7 @@ test('wechaty.stop() clears the call pool', async t => {
   const { puppet, wechaty } = buildWechaty()
   await startAndLogin(puppet, wechaty)
 
-  sandbox.stub(puppet, 'callControl' as any).resolves(undefined)
+  ;(puppet as any).callControl = sandbox.stub().resolves(undefined)
 
   const contact = (wechaty.Contact as typeof ContactImpl).load('peer-stop-test')
   // Place an outgoing call that is never answered.
@@ -436,7 +444,7 @@ test('Call TTL force-ends an unanswered outgoing call and emits error', async t 
     const { puppet, wechaty } = buildWechaty()
     await startAndLogin(puppet, wechaty, 'bot-ttl-test')
 
-    sandbox.stub(puppet, 'callControl' as any).resolves(undefined)
+    ;(puppet as any).callControl = sandbox.stub().resolves(undefined)
 
     const contact = (wechaty.Contact as typeof ContactImpl).load('peer-ttl-test')
     const call    = await contact.call()
@@ -473,7 +481,7 @@ test('Call TTL reaps an ignored call without error listeners and without throwin
     const { puppet, wechaty } = buildWechaty()
     await startAndLogin(puppet, wechaty, 'bot-ttl-no-listener')
 
-    sandbox.stub(puppet, 'callControl' as any).resolves(undefined)
+    ;(puppet as any).callControl = sandbox.stub().resolves(undefined)
 
     const contact = (wechaty.Contact as typeof ContactImpl).load('peer-ttl-no-listener')
     const call    = await contact.call()
