@@ -87,7 +87,12 @@ class CallMixin extends CallMixinBase {
     this.__ttlTimer = setTimeout(() => {
       if (this.__status !== 'connected' && this.__status !== 'ended') {
         log.warn('Call', '%s ttl expired in status=%s, force ending', this.id, this.__status)
-        this.emit('error', new Error(`Call ${this.id} timed out in ${this.__status} state`))
+        // Node throws synchronously on 'error' emit without listeners, which would
+        // crash the process from this timer callback. Reaping must never depend on
+        // user code having subscribed to 'error'.
+        if (this.listenerCount('error') > 0) {
+          this.emit('error', new Error(`Call ${this.id} timed out in ${this.__status} state`))
+        }
         this.__transitionTo('ended')
       }
     }, CALL_RINGING_TTL_MS)

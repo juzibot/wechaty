@@ -402,3 +402,36 @@ test('Call TTL force-ends an unanswered outgoing call and emits error', async t 
     clock.restore()
   }
 })
+
+// ---------------------------------------------------------------------------
+// 8. TTL expiry must not crash the process when nobody listens for 'error'
+//    (Node throws synchronously on unhandled 'error' emit inside the timer
+//    callback, which would take down the whole bot process).
+// ---------------------------------------------------------------------------
+
+test('Call TTL reaps an ignored call without error listeners and without throwing', async t => {
+  const clock = sinon.useFakeTimers({ toFake: [ 'setTimeout' ] })
+
+  try {
+    const { puppet, wechaty } = buildWechaty()
+    await startAndLogin(puppet, wechaty, 'bot-ttl-no-listener')
+
+    sandbox.stub(puppet, 'callControl' as any).resolves(undefined)
+
+    const contact = (wechaty.Contact as typeof ContactImpl).load('peer-ttl-no-listener')
+    const call    = await contact.call()
+    // Deliberately NO call.on('error') here: this is the default user path.
+
+    t.doesNotThrow(
+      () => clock.tick(60_001),
+      'TTL expiry must not throw when no error listener is attached',
+    )
+    await new Promise(resolve => setImmediate(resolve))
+
+    t.equal(call.status(), 'ended', 'status should still be ended after TTL expiry')
+
+    await wechaty.stop()
+  } finally {
+    clock.restore()
+  }
+})
