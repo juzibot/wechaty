@@ -290,3 +290,115 @@ test('call.hangup() on connected call sends Hangup and transitions to ended', as
 
   await wechaty.stop()
 })
+
+// ---------------------------------------------------------------------------
+// 7. termination methods fail → local status is still ended (H1)
+// ---------------------------------------------------------------------------
+
+test('call.hangup() rejects when callControl fails but status transitions to ended', async t => {
+  const { puppet, wechaty } = buildWechaty()
+  await startAndLogin(puppet, wechaty)
+
+  const callControlStub = sandbox.stub(puppet, 'callControl' as any)
+
+  const contact = (wechaty.Contact as typeof ContactImpl).load('peer-hangup-fail')
+  // First call is the Invite – let it succeed.
+  callControlStub.onFirstCall().resolves(undefined)
+  const call = await contact.call()
+
+  // Simulate acceptance so hangup() is valid.
+  ;(puppet as any).emit('call', {
+    callId    : call.id,
+    signal    : PUPPET.types.CallSignal.Accept,
+    contactId : 'peer-hangup-fail',
+  } as PUPPET.payloads.EventCall)
+  await new Promise(resolve => setImmediate(resolve))
+  t.equal(call.status(), 'connected', 'prerequisite: status should be connected')
+
+  // Second call is the Hangup signal – make it fail.
+  callControlStub.onSecondCall().rejects(new Error('network error'))
+
+  await t.rejects(
+    call.hangup(),
+    /network error/,
+    'hangup() should re-throw the callControl error',
+  )
+
+  // Despite the network failure the local state must be ended.
+  t.equal(call.status(), 'ended', 'status should be ended even after callControl failure')
+
+  // A subsequent signal for the same callId should emit a bot-level error
+  // (pool has been cleaned up by the onEnded callback).
+  let errorEmitted = false
+  wechaty.on('error', () => { errorEmitted = true })
+
+  ;(puppet as any).emit('call', {
+    callId    : call.id,
+    signal    : PUPPET.types.CallSignal.Hangup,
+    contactId : 'peer-hangup-fail',
+  } as PUPPET.payloads.EventCall)
+  await new Promise(resolve => setImmediate(resolve))
+
+  t.ok(errorEmitted, 'bot should emit error for unknown callId after pool cleanup')
+
+  await wechaty.stop()
+})
+
+// ---------------------------------------------------------------------------
+// 8. stop() drains the call pool (C1.1)
+// ---------------------------------------------------------------------------
+
+test('wechaty.stop() clears the call pool', async t => {
+  const { puppet, wechaty } = buildWechaty()
+  await startAndLogin(puppet, wechaty)
+
+  sandbox.stub(puppet, 'callControl' as any).resolves(undefined)
+
+  const contact = (wechaty.Contact as typeof ContactImpl).load('peer-stop-test')
+  // Place an outgoing call that is never answered.
+  await contact.call()
+
+  // Pool must be non-empty before stop.
+  t.ok((wechaty as any).__callPool.size > 0, 'pool should be non-empty before stop()')
+
+  await wechaty.stop()
+
+  t.equal((wechaty as any).__callPool.size, 0, 'pool should be empty after stop()')
+})
+
+// ---------------------------------------------------------------------------
+// 9. TTL reclaims unanswered calls (C1.2)
+// ---------------------------------------------------------------------------
+
+test('Call TTL force-ends an unanswered outgoing call and emits error', async t => {
+  // Use fake timers scoped only to setTimeout to avoid disrupting wechaty's
+  // internal scheduling (setInterval, process timers, etc.).
+  const clock = sinon.useFakeTimers({ toFake: [ 'setTimeout' ] })
+
+  try {
+    const { puppet, wechaty } = buildWechaty()
+    await startAndLogin(puppet, wechaty, 'bot-ttl-test')
+
+    sandbox.stub(puppet, 'callControl' as any).resolves(undefined)
+
+    const contact = (wechaty.Contact as typeof ContactImpl).load('peer-ttl-test')
+    const call    = await contact.call()
+
+    t.equal(call.status(), 'calling', 'prerequisite: status should be calling')
+
+    let errorEmitted = false
+    call.on('error', () => { errorEmitted = true })
+
+    // Advance past the 60-second ringing TTL.
+    clock.tick(60_001)
+    // Allow any microtask / setImmediate callbacks to flush.
+    await new Promise(resolve => setImmediate(resolve))
+
+    t.ok(errorEmitted, 'call should emit error when TTL expires')
+    t.equal(call.status(), 'ended', 'status should be ended after TTL expiry')
+
+    await wechaty.stop()
+  } finally {
+    clock.restore()
+  }
+})

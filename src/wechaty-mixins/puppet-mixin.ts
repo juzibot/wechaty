@@ -152,6 +152,8 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
       log.verbose('WechatyPuppetMixin', 'stop() super.stop() ...')
       await super.stop()
       log.verbose('WechatyPuppetMixin', 'stop() super.stop() ... done')
+
+      this.__callPool.clear()
     }
 
     async ready (): Promise<void> {
@@ -802,7 +804,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                   const call = new (this.Call as any)({
                     id        : payload.callId,
                     peerId    : payload.contactId,
-                    media     : payload.media ?? PUPPET.types.CallMediaType.Audio,
+                    media     : payload.media,
                     direction : 'incoming' as const,
                     onEnded   : (callId: string) => { this.__callPool.delete(callId) },
                   }) as CallImpl

@@ -23,6 +23,13 @@ import type { ContactImpl, ContactInterface } from './contact.js'
 export type CallStatus    = 'calling' | 'ringing' | 'connected' | 'ended'
 export type CallDirection = 'outgoing' | 'incoming'
 
+/**
+ * How long a call may stay in a non-terminal, pre-connected state before
+ * being force-ended. Applies to 'calling' and 'ringing' only; connected
+ * calls may legitimately last hours and are not subject to this TTL.
+ */
+const CALL_RINGING_TTL_MS = 60 * 1000
+
 interface CallConstructorOptions {
   readonly id        : string
   readonly peerId    : string
@@ -55,6 +62,7 @@ class CallMixin extends CallMixinBase {
   private __status    : CallStatus
   private __direction : CallDirection
   private __onEnded   : (callId: string) => void
+  private __ttlTimer  : ReturnType<typeof setTimeout> | undefined
 
   constructor (options: CallConstructorOptions) {
     super()
@@ -73,6 +81,17 @@ class CallMixin extends CallMixinBase {
     }
 
     log.verbose('Call', 'constructor(%s, dir=%s, media=%s)', this.id, this.__direction, this.__media)
+
+    // Guard pre-connected states against abandoned or unanswered calls.
+    // 'connected' is intentionally excluded: calls can legitimately last hours.
+    this.__ttlTimer = setTimeout(() => {
+      if (this.__status !== 'connected' && this.__status !== 'ended') {
+        log.warn('Call', '%s ttl expired in status=%s, force ending', this.id, this.__status)
+        this.emit('error', new Error(`Call ${this.id} timed out in ${this.__status} state`))
+        this.__transitionTo('ended')
+      }
+    }, CALL_RINGING_TTL_MS)
+    this.__ttlTimer.unref()
   }
 
   /** The remote party: callee when outgoing, caller when incoming. */
@@ -130,14 +149,18 @@ class CallMixin extends CallMixinBase {
       )
     }
 
-    await this.wechaty.puppet.callControl({
-      callId : this.id,
-      signal : PUPPET.types.CallSignal.Reject,
-      peerId : this.__peerId,
-      reason,
-    })
-
-    this.__transitionTo('ended')
+    try {
+      await this.wechaty.puppet.callControl({
+        callId : this.id,
+        signal : PUPPET.types.CallSignal.Reject,
+        peerId : this.__peerId,
+        media  : this.__media,
+        reason,
+      })
+    } finally {
+      // local side has decided to abandon; terminate locally even if the signal failed to send
+      this.__transitionTo('ended')
+    }
   }
 
   /**
@@ -152,14 +175,18 @@ class CallMixin extends CallMixinBase {
       )
     }
 
-    await this.wechaty.puppet.callControl({
-      callId : this.id,
-      signal : PUPPET.types.CallSignal.Hangup,
-      peerId : this.__peerId,
-      reason,
-    })
-
-    this.__transitionTo('ended')
+    try {
+      await this.wechaty.puppet.callControl({
+        callId : this.id,
+        signal : PUPPET.types.CallSignal.Hangup,
+        peerId : this.__peerId,
+        media  : this.__media,
+        reason,
+      })
+    } finally {
+      // local side has decided to abandon; terminate locally even if the signal failed to send
+      this.__transitionTo('ended')
+    }
   }
 
   /**
@@ -180,13 +207,17 @@ class CallMixin extends CallMixinBase {
       )
     }
 
-    await this.wechaty.puppet.callControl({
-      callId : this.id,
-      signal : PUPPET.types.CallSignal.Cancel,
-      peerId : this.__peerId,
-    })
-
-    this.__transitionTo('ended')
+    try {
+      await this.wechaty.puppet.callControl({
+        callId : this.id,
+        signal : PUPPET.types.CallSignal.Cancel,
+        peerId : this.__peerId,
+        media  : this.__media,
+      })
+    } finally {
+      // local side has decided to abandon; terminate locally even if the signal failed to send
+      this.__transitionTo('ended')
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -212,7 +243,7 @@ class CallMixin extends CallMixinBase {
         break
 
       case PUPPET.types.CallSignal.Accept:
-        if (this.__status === 'calling' || this.__status === 'ringing') {
+        if (this.__direction === 'outgoing' && (this.__status === 'calling' || this.__status === 'ringing')) {
           this.__transitionTo('connected')
           this.emit('accept')
         }
@@ -248,6 +279,12 @@ class CallMixin extends CallMixinBase {
   private __transitionTo (nextStatus: CallStatus): void {
     log.verbose('Call', '__transitionTo(%s) from %s', nextStatus, this.__status)
     this.__status = nextStatus
+    if (nextStatus === 'connected' || nextStatus === 'ended') {
+      if (this.__ttlTimer) {
+        clearTimeout(this.__ttlTimer)
+        this.__ttlTimer = undefined
+      }
+    }
     if (nextStatus === 'ended') {
       this.__onEnded(this.id)
     }
