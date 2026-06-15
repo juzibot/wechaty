@@ -1,31 +1,34 @@
-import { EventEmitter }  from 'events'
+import { EventEmitter }       from 'events'
 import type TypedEventEmitter from 'typed-emitter'
 
+import type { ContactInterface } from '../user-modules/contact.js'
+
 type CallEventListenerRinging = () => void | Promise<void>
-type CallEventListenerAccept  = () => void | Promise<void>
-type CallEventListenerReject  = (reason?: string) => void | Promise<void>
-type CallEventListenerHangup  = (reason?: string) => void | Promise<void>
-type CallEventListenerError   = (error: Error) => void | Promise<void>
+type CallEventListenerAccept  = (actor: ContactInterface) => void | Promise<void>
+type CallEventListenerReject  = (actor: ContactInterface, reason?: string) => void | Promise<void>
+type CallEventListenerCancel  = (reason?: string) => void | Promise<void>
+type CallEventListenerHangup  = (actor: ContactInterface, reason?: string) => void | Promise<void>
+type CallEventListenerEnded   = () => void | Promise<void>
 
 interface CallEventListeners {
   ringing : CallEventListenerRinging
   accept  : CallEventListenerAccept
   reject  : CallEventListenerReject
+  cancel  : CallEventListenerCancel
   hangup  : CallEventListenerHangup
-  error   : CallEventListenerError
+  ended   : CallEventListenerEnded
 }
 
-const CallEventEmitter = EventEmitter as any as new () => TypedEventEmitter<
-  CallEventListeners
->
+const CallEventEmitter = EventEmitter as any as new () => TypedEventEmitter<CallEventListeners>
 
 export type {
   CallEventListeners,
   CallEventListenerRinging,
   CallEventListenerAccept,
   CallEventListenerReject,
+  CallEventListenerCancel,
   CallEventListenerHangup,
-  CallEventListenerError,
+  CallEventListenerEnded,
 }
 export {
   CallEventEmitter,

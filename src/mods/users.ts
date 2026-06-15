@@ -54,3 +54,8 @@ export type {
   WxxdProductInterface                   as WxxdProduct,
   WxxdOrderInterface                     as WxxdOrder,
 }                                               from '../user-modules/mod.js'
+
+export type {
+  CallStatus,
+  CallDirection,
+}                                               from '../user-modules/mod.js'

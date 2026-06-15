@@ -52,7 +52,9 @@ import type {
 import type {
   WechatyOptions,
 }                             from '../schemas/wechaty-options.js'
-import type { PostInterface } from '../user-modules/post.js'
+import type { PostInterface }            from '../user-modules/post.js'
+import type { CallImpl, CallInterface }  from '../user-modules/call.js'
+import type { ContactInterface }         from '../user-modules/contact.js'
 
 const mixinBase = FP.pipe(
   WechatySkeleton,
@@ -273,6 +275,43 @@ class WechatyBase extends mixinBase implements SayableSayer {
   ): Promise<void> {
     log.verbose('Wechaty', 'say(%s)', sayable)
     await this.currentUser.say(sayable)
+  }
+
+  /**
+   * Initiate an outgoing call to one or more contacts.
+   *
+   * Mints a protocol-side callId via `puppet.callInvite`, hydrates the Call
+   * payload, and registers the Call in the in-process pool. Returns immediately
+   * (status: 'calling'); listen to call events for lifecycle updates.
+   *
+   * @example
+   * import * as PUPPET from '@juzi/wechaty-puppet'
+   * const call = await bot.call([contactA, contactB], { media: PUPPET.types.CallMediaType.Video })
+   * call.on('accept', actor => console.log('accepted by', actor.name()))
+   * call.on('ended',  () => console.log('call session ended'))
+   */
+  async call (
+    contacts: ContactInterface[],
+    options?: { media?: PUPPET.types.CallMediaType },
+  ): Promise<CallInterface> {
+    log.verbose('Wechaty', 'call(%d contacts, %s)', contacts.length, JSON.stringify(options ?? {}))
+
+    if (contacts.length === 0) {
+      throw new Error('Wechaty.call() requires at least one contact')
+    }
+
+    const media  = options?.media ?? PUPPET.types.CallMediaType.Audio
+    const callId = await this.puppet.callInvite(contacts.map(c => c.id), media)
+
+    const call = new (this.Call as any)({
+      id        : callId,
+      direction : 'outgoing' as const,
+    }) as CallImpl
+
+    await call.ready()
+    ;(this as any).__callPool.set(callId, call)
+
+    return call as unknown as CallInterface
   }
 
   async publish (

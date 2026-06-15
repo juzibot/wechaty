@@ -26,6 +26,12 @@ const WECHATY_EVENT_DICT = {
   ready                : 'All underlined data source are ready for use.',
   start                : 'Will be emitted after the Wechaty had been started.',
   stop                 : 'Will be emitted after the Wechaty had been stopped.',
+  'call-ringing'       : 'Emit when an outgoing call is ringing on the peer side.',
+  'call-accept'        : 'Emit when a participant accepts the call.',
+  'call-reject'        : 'Emit when a participant rejects the call.',
+  'call-cancel'        : 'Emit when the caller cancels an outgoing call before it connects.',
+  'call-hangup'        : 'Emit when a participant hangs up a connected call.',
+  'call-ended'         : 'Emit when the call session is determined to be ended.',
 } as const
 
 type WechatyEventName  = keyof typeof WECHATY_EVENT_DICT
@@ -65,6 +71,12 @@ type WechatyEventListenerWxxdShop         = (payload: PUPPET.payloads.WxxdShop) 
 type WechatyEventListenerWxxdProduct      = (payload: PUPPET.payloads.WxxdProduct) => void | Promise<void>
 type WechatyEventListenerWxxdOrder        = (payload: PUPPET.payloads.WxxdOrder) => void | Promise<void>
 type WechatyEventListenerCall             = (call: CallInterface) => void | Promise<void>
+type WechatyEventListenerCallRinging      = (call: CallInterface) => void | Promise<void>
+type WechatyEventListenerCallAccept       = (call: CallInterface, actor: ContactInterface) => void | Promise<void>
+type WechatyEventListenerCallReject       = (call: CallInterface, actor: ContactInterface, reason?: string) => void | Promise<void>
+type WechatyEventListenerCallCancel       = (call: CallInterface, reason?: string) => void | Promise<void>
+type WechatyEventListenerCallHangup       = (call: CallInterface, actor: ContactInterface, reason?: string) => void | Promise<void>
+type WechatyEventListenerCallEnded        = (call: CallInterface) => void | Promise<void>
 
 /**
  * @desc       Wechaty Class Event Type
@@ -254,6 +266,12 @@ interface WechatyEventListeners {
   'wxxd-product'        : WechatyEventListenerWxxdProduct
   'wxxd-order'          : WechatyEventListenerWxxdOrder
   call                  : WechatyEventListenerCall
+  'call-ringing'        : WechatyEventListenerCallRinging
+  'call-accept'         : WechatyEventListenerCallAccept
+  'call-reject'         : WechatyEventListenerCallReject
+  'call-cancel'         : WechatyEventListenerCallCancel
+  'call-hangup'         : WechatyEventListenerCallHangup
+  'call-ended'          : WechatyEventListenerCallEnded
 }
 
 const WechatyEventEmitter = EventEmitter as any as new () => TypedEventEmitter<
@@ -296,6 +314,12 @@ export type {
   WechatyEventListenerWxxdProduct,
   WechatyEventListenerWxxdOrder,
   WechatyEventListenerCall,
+  WechatyEventListenerCallRinging,
+  WechatyEventListenerCallAccept,
+  WechatyEventListenerCallReject,
+  WechatyEventListenerCallCancel,
+  WechatyEventListenerCallHangup,
+  WechatyEventListenerCallEnded,
 }
 export {
   WechatyEventEmitter,

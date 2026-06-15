@@ -123,6 +123,7 @@ test('Wechaty interface', async t => {
     abstract ready           : WechatyInterface['ready']
     abstract reset           : WechatyInterface['reset']
     abstract say             : WechatyInterface['say']
+    abstract call            : WechatyInterface['call']
     abstract sleep           : WechatyInterface['sleep']
     abstract start           : WechatyInterface['start']
     abstract state           : WechatyInterface['state']
