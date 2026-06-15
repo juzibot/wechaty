@@ -123,6 +123,9 @@ import {
   PremiumOnlineAppointmentCardConstructor,
 }                           from './premium-online-appointment-card.js'
 import {
+  CallImpl,
+  CallInterface,
+  CallConstructor,
   CallRecordImpl,
   CallRecordInterface,
   CallRecordConstructor,
@@ -161,6 +164,12 @@ import {
 import { wechatifyUserModule } from '../user-mixins/wechatify.js'
 
 export type {
+  CallStatus,
+  CallDirection,
+}                           from './call.js'
+
+export type {
+  CallInterface,
   ContactInterface,
   ContactSelfInterface,
   FavoriteInterface,
@@ -192,6 +201,7 @@ export type {
 }
 
 export type {
+  CallConstructor,
   ContactConstructor,
   ContactSelfConstructor,
   FavoriteConstructor,
@@ -225,6 +235,7 @@ export type {
 export {
   wechatifyUserModule,
 
+  CallImpl,
   ContactImpl,
   ContactSelfImpl,
   FavoriteImpl,

@@ -1,6 +1,7 @@
 import { log }          from '@juzi/wechaty-puppet'
 
 import {
+  CallImpl,
   ContactImpl,
   ContactSelfImpl,
   DelayImpl,
@@ -28,6 +29,7 @@ import {
   WxxdProductImpl,
   WxxdOrderImpl,
 
+  CallConstructor,
   ContactConstructor,
   ContactSelfConstructor,
   DelayConstructor,
@@ -71,6 +73,7 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
       super(...args)
     }
 
+    __wechatifiedCall?                          : CallConstructor
     __wechatifiedContact?                       : ContactConstructor
     __wechatifiedContactSelf?                   : ContactSelfConstructor
     __wechatifiedDelay?                         : DelayConstructor
@@ -98,6 +101,7 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
     __wechatifiedWxxdProduct?                   : WxxdProductConstructor
     __wechatifiedWxxdOrder?                     : WxxdOrderConstructor
 
+    get Call ()                         : CallConstructor                           { return guardWechatify(this.__wechatifiedCall)           }
     get Contact ()                      : ContactConstructor                        { return guardWechatify(this.__wechatifiedContact)        }
     get ContactSelf ()                  : ContactSelfConstructor                    { return guardWechatify(this.__wechatifiedContactSelf)    }
     get Delay ()                        : DelayConstructor                          { return guardWechatify(this.__wechatifiedDelay)          }
@@ -145,6 +149,7 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
        *
        * Huan(202110): FIXME: remove any
        */
+      this.__wechatifiedCall                         = wechatifyUserModule(CallImpl)(this as any)
       this.__wechatifiedContact                      = wechatifyUserModule(ContactImpl)(this as any)
       this.__wechatifiedContactSelf                  = wechatifyUserModule(ContactSelfImpl)(this as any)
       this.__wechatifiedDelay                        = wechatifyUserModule(DelayImpl)(this as any)
@@ -193,6 +198,7 @@ function guardWechatify<T extends Function> (userModule?: T): T {
 type WechatifyUserModuleMixin = ReturnType<typeof wechatifyUserModuleMixin>
 
 type ProtectedPropertyWechatifyUserModuleMixin =
+  | '__wechatifiedCall'
   | '__wechatifiedContact'
   | '__wechatifiedContactSelf'
   | '__wechatifiedDelay'

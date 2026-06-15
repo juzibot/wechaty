@@ -52,6 +52,7 @@ import { stringifyFilter }            from '../helper-functions/stringify-filter
 import type { MessageInterface }  from './message.js'
 import type { TagInterface }      from './tag.js'
 import type { ContactSelfImpl }   from './contact-self.js'
+import type { CallInterface } from './call.js'
 
 const MixinBase = wechatifyMixin(
   poolifyMixin(
@@ -405,6 +406,23 @@ class ContactMixin extends MixinBase implements SayableSayer {
         return msg
       }
     }
+  }
+
+  /**
+   * Initiate an outgoing 1-on-1 call to this contact.
+   *
+   * Syntactic sugar over `bot.call([this], options)`. Returns a Call object
+   * immediately (status: 'calling'); listen to call events for lifecycle updates.
+   *
+   * @example
+   * import * as PUPPET from '@juzi/wechaty-puppet'
+   * const call = await contact.call({ media: PUPPET.types.CallMediaType.Video })
+   * call.on('accept', actor => console.log('connected with', actor.name()))
+   * call.on('ended', () => console.log('call ended'))
+   */
+  async call (options?: { media?: PUPPET.types.CallMediaType }): Promise<CallInterface> {
+    log.verbose('Contact', 'call(%s)', JSON.stringify(options ?? {}))
+    return (this.wechaty as any).call([ this as unknown as ContactInterface ], options)
   }
 
   /**

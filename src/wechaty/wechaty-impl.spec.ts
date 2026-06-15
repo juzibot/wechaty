@@ -25,6 +25,7 @@ import type {
   ConsultCardConstructor,
   PremiumOnlineAppointmentCardConstructor,
   MomentConstructor,
+  CallConstructor,
   CallRecordConstructor,
   ChatHistoryConstructor,
   WecomConstructor,
@@ -64,6 +65,7 @@ test('Wechaty interface', async t => {
     ConsultCard                   : ConsultCardConstructor
     PremiumOnlineAppointmentCard  : PremiumOnlineAppointmentCardConstructor
     Moment                        : MomentConstructor
+    Call                          : CallConstructor
     CallRecord                    : CallRecordConstructor
     ChatHistory                   : ChatHistoryConstructor
     Wecom                         : WecomConstructor
@@ -94,6 +96,7 @@ test('Wechaty interface', async t => {
         = this.ConsultCard
         = this.PremiumOnlineAppointmentCard
         = this.Moment
+        = this.Call
         = this.CallRecord
         = this.ChatHistory
         = this.Wecom
@@ -120,6 +123,7 @@ test('Wechaty interface', async t => {
     abstract ready           : WechatyInterface['ready']
     abstract reset           : WechatyInterface['reset']
     abstract say             : WechatyInterface['say']
+    abstract call            : WechatyInterface['call']
     abstract sleep           : WechatyInterface['sleep']
     abstract start           : WechatyInterface['start']
     abstract state           : WechatyInterface['state']

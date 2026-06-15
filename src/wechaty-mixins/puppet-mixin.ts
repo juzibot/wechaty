@@ -15,6 +15,7 @@ import {
 import { config, PUPPET_PAYLOAD_SYNC_GAP, PUPPET_PAYLOAD_SYNC_MAX_RETRY }               from '../config.js'
 import { timestampToDate }      from '../pure-functions/timestamp-to-date.js'
 import type {
+  CallImpl,
   ContactImpl,
   ContactInterface,
   MessageImpl,
@@ -50,6 +51,9 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
   abstract class PuppetMixin extends mixinBase {
 
     __puppet?: PUPPET.impls.PuppetInterface
+
+    /** Registry of active Call instances keyed by callId. */
+    __callPool: Map<string, CallImpl> = new Map()
 
     get puppet (): PUPPET.impls.PuppetInterface {
       if (!this.__puppet) {
@@ -148,6 +152,8 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
       log.verbose('WechatyPuppetMixin', 'stop() super.stop() ...')
       await super.stop()
       log.verbose('WechatyPuppetMixin', 'stop() super.stop() ... done')
+
+      this.__callPool.clear()
     }
 
     async ready (): Promise<void> {
@@ -745,6 +751,33 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                     await order?.ready(true)
                     break
                   }
+                  case PUPPET.types.Payload.Call: {
+                    /**
+                     * Invalidate the puppet-side cache so the next callPayload()
+                     * pull reflects the latest server state, then refresh the
+                     * user-layer Call payload so getters (media / participants /
+                     * endTime) reflect the new view immediately. Whether the
+                     * call is still alive is still decided by the call-event
+                     * handler via __finalizeIfEnded; we do not touch the pool
+                     * here, and we do not emit a synthetic user event — the
+                     * UI is expected to read getters when it needs the value.
+                     */
+                    await this.puppet.callPayloadDirty(payloadId)
+                    const call = this.__callPool.get(payloadId)
+                    if (call) {
+                      try {
+                        await call.ready(true)
+                      } catch (e) {
+                        log.warn(
+                          'WechatyPuppetMixin',
+                          'dirty(Call) ready failed for callId=%s: %s',
+                          payloadId,
+                          (e as Error).message,
+                        )
+                      }
+                    }
+                    break
+                  }
 
                   case PUPPET.types.Payload.Unspecified:
                   default:
@@ -791,6 +824,72 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
             })
             break
 
+          case 'call':
+            puppet.on('call', async payload => {
+              try {
+                if (payload.signal === PUPPET.types.CallSignal.Invite) {
+                  if (this.__callPool.has(payload.callId)) {
+                    log.warn('WechatyPuppetMixin', '__setupPuppetEvents() duplicate Invite for callId=%s, ignoring', payload.callId)
+                    return
+                  }
+                  const call = new (this.Call as any)({
+                    id        : payload.callId,
+                    direction : 'incoming' as const,
+                  }) as CallImpl
+                  await call.ready()
+                  this.__callPool.set(call.id, call)
+                  this.emit('call', call as any)
+                  return
+                }
+
+                const call = this.__callPool.get(payload.callId)
+                if (!call) {
+                  // Under the protocol-mints-id model, signals for an unknown callId
+                  // are expected within race windows (e.g. a Ringing ack arriving
+                  // before callInvite returns) or after the Call has been finalized
+                  // and removed from the pool. Drop silently — log.warn, not error.
+                  log.warn('WechatyPuppetMixin', '__setupPuppetEvents() call event for unknown callId=%s, dropping', payload.callId)
+                  return
+                }
+
+                const actor = await (this.Contact as typeof ContactImpl).find({ id: payload.contactId })
+                if (!actor) {
+                  log.warn('WechatyPuppetMixin', '__setupPuppetEvents() actor contact not found for callId=%s contactId=%s, dropping', payload.callId, payload.contactId)
+                  return
+                }
+
+                call.__handleSignal(payload.signal, actor, payload.reason)
+
+                switch (payload.signal) {
+                  case PUPPET.types.CallSignal.Ringing:
+                    this.emit('call-ringing', call as any)
+                    break
+                  case PUPPET.types.CallSignal.Accept:
+                    this.emit('call-accept', call as any, actor as any)
+                    break
+                  case PUPPET.types.CallSignal.Reject:
+                    this.emit('call-reject', call as any, actor as any, payload.reason)
+                    await this.__finalizeIfEnded(call)
+                    break
+                  case PUPPET.types.CallSignal.Cancel:
+                    this.emit('call-cancel', call as any, payload.reason)
+                    // Cancel is a peer-side terminal action on the receiving side:
+                    // the caller has withdrawn, so the local call necessarily ends.
+                    await this.__finalizeIfEnded(call, /* force */ true)
+                    break
+                  case PUPPET.types.CallSignal.Hangup:
+                    this.emit('call-hangup', call as any, actor as any, payload.reason)
+                    await this.__finalizeIfEnded(call)
+                    break
+                  default:
+                    break
+                }
+              } catch (e) {
+                this.emit('error', GError.from(e))
+              }
+            })
+            break
+
           default:
             /**
              * Check: The eventName here should have the type `never`
@@ -803,6 +902,89 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
       log.verbose('WechatyPuppetMixin', '__setupPuppetEvents() ... done')
     }
 
+    /**
+     * Decide whether a call has reached its terminal state and, if so, drive
+     * the local lifecycle to ended by invoking {@link CallImpl.__markEnded},
+     * which routes through __finalize and is responsible for emitting both
+     * the object 'ended' and the bot 'call-ended' lifecycle events as well
+     * as evicting the call from the pool. This method does NOT emit
+     * 'call-ended' directly — that would risk a double-emit if a local
+     * control path (reject/cancel/hangup) finalizes the call before the
+     * puppet echo reaches here. The `__endedEmitted` sentinel inside
+     * __finalize makes the joint behavior idempotent.
+     *
+     * Strategy:
+     *   - `force=true` short-circuits when the caller already knows the call is
+     *     over (Cancel from the receiver's perspective).
+     *   - Otherwise, refresh the payload via dirty + ready and check
+     *     `endTime`, with a short retry budget so transient puppet hiccups do
+     *     not strand a Call in the pool.
+     *   - As a last-resort heuristic, an ended-leaning signal (Reject / Hangup)
+     *     on a strict 1v1 call (participants.length === 2: the starter plus
+     *     exactly one invitee) is treated as terminal even if sync never
+     *     recovered: in 1v1 the protocol has no other peer to keep the
+     *     session alive. Other roster shapes (length 0/1/3+) fall through
+     *     and wait for the next dirty signal — length<=1 is a stranded-but-
+     *     recoverable shape (empty roster from a sync hiccup, or a multi-
+     *     party call whose other members already left).
+     */
+    async __finalizeIfEnded (call: CallImpl, force = false): Promise<void> {
+      let ended = force
+
+      if (!ended) {
+        for (let attempt = 0; attempt < 3 && !ended; attempt++) {
+          try {
+            await call.sync()
+            ended = !!call.endTime()
+          } catch (e) {
+            log.warn(
+              'WechatyPuppetMixin',
+              '__finalizeIfEnded() sync attempt %d failed for callId=%s: %s',
+              attempt + 1,
+              call.id,
+              (e as Error).message,
+            )
+          }
+          if (!ended && attempt < 2) {
+            await new Promise(resolve => setTimeout(resolve, 500))
+          }
+        }
+      }
+
+      if (!ended) {
+        try {
+          const participants = await call.participants()
+          if (participants.length === 2) {
+            log.warn(
+              'WechatyPuppetMixin',
+              '__finalizeIfEnded() 1v1 fallback after sync failure for callId=%s (rosterLength=%d)',
+              call.id,
+              participants.length,
+            )
+            ended = true
+          } else {
+            log.error(
+              'WechatyPuppetMixin',
+              '__finalizeIfEnded() sync failed, leaving callId=%s in pool for next dirty signal (rosterLength=%d)',
+              call.id,
+              participants.length,
+            )
+          }
+        } catch (e) {
+          log.error(
+            'WechatyPuppetMixin',
+            '__finalizeIfEnded() participants lookup failed for callId=%s: %s',
+            call.id,
+            (e as Error).message,
+          )
+        }
+      }
+
+      if (ended) {
+        call.__markEnded()
+      }
+    }
+
   }
 
   return PuppetMixin
@@ -812,8 +994,10 @@ type PuppetMixin = ReturnType<typeof puppetMixin>
 
 type ProtectedPropertyPuppetMixin =
   | '__puppet'
+  | '__callPool'
   | '__readyState'
   | '__setupPuppetEvents'
+  | '__finalizeIfEnded'
   | '__loginIndicator'
 
 export type {

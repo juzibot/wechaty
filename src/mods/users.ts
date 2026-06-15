@@ -25,6 +25,7 @@
  */
 
 export type {
+  CallInterface                          as Call,
   ContactInterface                       as Contact,
   ContactSelfInterface                   as ContactSelf,
   DelayInterface                         as Delay,
@@ -52,4 +53,9 @@ export type {
   ImSpecificInterface                    as ImSpecific,
   WxxdProductInterface                   as WxxdProduct,
   WxxdOrderInterface                     as WxxdOrder,
+}                                               from '../user-modules/mod.js'
+
+export type {
+  CallStatus,
+  CallDirection,
 }                                               from '../user-modules/mod.js'

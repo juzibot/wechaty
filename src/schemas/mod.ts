@@ -1,4 +1,8 @@
 import {
+  CallEventEmitter,
+  CallEventListeners,
+}                           from './call-events.js'
+import {
   ContactEventEmitter,
   ContactEventListeners,
 }                           from './contact-events.js'
@@ -17,12 +21,14 @@ import type {
 
 export type {
   Accepter,
+  CallEventListeners,
   ContactEventListeners,
   RoomEventListeners,
   WechatyEventListeners,
   WechatyEventName,
 }
 export {
+  CallEventEmitter,
   ContactEventEmitter,
   RoomEventEmitter,
   WechatyEventEmitter,
