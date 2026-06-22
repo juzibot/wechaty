@@ -84,6 +84,29 @@ class ChannelMixin extends wechatifyMixinBase() {
     return this.payload.objectNonceId
   }
 
+  /**
+   * 个微转发视频号所需补充字段
+   */
+  username (): undefined | string {
+    return this.payload.username
+  }
+
+  authIconType (): undefined | number {
+    return this.payload.authIconType
+  }
+
+  authIconUrl (): undefined | string {
+    return this.payload.authIconUrl
+  }
+
+  fromUserName (): undefined | string {
+    return this.payload.fromUserName
+  }
+
+  mediaList (): undefined | PUPPET.payloads.ChannelMedia[] {
+    return this.payload.mediaList
+  }
+
 }
 
 class ChannelImpl extends validationMixin(ChannelMixin)<ChannelInterface>() { }
