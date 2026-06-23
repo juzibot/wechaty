@@ -63,6 +63,9 @@ import type {
   ImageInterface,
 }                       from './image.js'
 import type {
+  VoiceInterface,
+}                       from './voice.js'
+import type {
   PostInterface,
 }                       from './post.js'
 import type {
@@ -1417,6 +1420,27 @@ class MessageMixin extends MixinBase implements SayableSayer {
       throw new Error(`not a image type message. type: ${this.type()}`)
     }
     return this.wechaty.Image.create(this.id)
+  }
+
+  /**
+   * Extract the Voice from the Message, so that we can asynchronously fetch the
+   * voice file and the voice-to-text (ASR) result via second requests.
+   * > Tips:
+   * This function is depending on the Puppet Implementation, see [puppet-compatible-table](https://github.com/wechaty/wechaty/wiki/Puppet#3-puppet-compatible-table)
+   *
+   * @returns {VoiceInterface}
+   *
+   * @example <caption>Get voice file and text from a voice message</caption>
+   * const voice = message.toVoice()
+   * const fileBox = await voice.file()
+   * const { text, noSpeech } = await voice.text()
+   */
+  toVoice (): VoiceInterface {
+    log.verbose('Message', 'toVoice() for message id: %s', this.id)
+    if (this.type() !== PUPPET.types.Message.Audio) {
+      throw new Error(`not a voice type message. type: ${this.type()}`)
+    }
+    return this.wechaty.Voice.create(this.id)
   }
 
   async toPreview (): Promise<FileBoxInterface | undefined> {

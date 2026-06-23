@@ -7,6 +7,7 @@ import {
   DelayImpl,
   FriendshipImpl,
   ImageImpl,
+  VoiceImpl,
   LocationImpl,
   MessageImpl,
   MiniProgramImpl,
@@ -35,6 +36,7 @@ import {
   DelayConstructor,
   FriendshipConstructor,
   ImageConstructor,
+  VoiceConstructor,
   LocationConstructor,
   MessageConstructor,
   MiniProgramConstructor,
@@ -79,6 +81,7 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
     __wechatifiedDelay?                         : DelayConstructor
     __wechatifiedFriendship?                    : FriendshipConstructor
     __wechatifiedImage?                         : ImageConstructor
+    __wechatifiedVoice?                         : VoiceConstructor
     __wechatifiedLocation?                      : LocationConstructor
     __wechatifiedMessage?                       : MessageConstructor
     __wechatifiedMiniProgram?                   : MiniProgramConstructor
@@ -107,6 +110,7 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
     get Delay ()                        : DelayConstructor                          { return guardWechatify(this.__wechatifiedDelay)          }
     get Friendship ()                   : FriendshipConstructor                     { return guardWechatify(this.__wechatifiedFriendship)     }
     get Image ()                        : ImageConstructor                          { return guardWechatify(this.__wechatifiedImage)          }
+    get Voice ()                        : VoiceConstructor                          { return guardWechatify(this.__wechatifiedVoice)          }
     get Location ()                     : LocationConstructor                       { return guardWechatify(this.__wechatifiedLocation)       }
     get Message ()                      : MessageConstructor                        { return guardWechatify(this.__wechatifiedMessage)        }
     get MiniProgram ()                  : MiniProgramConstructor                    { return guardWechatify(this.__wechatifiedMiniProgram)    }
@@ -155,6 +159,7 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
       this.__wechatifiedDelay                        = wechatifyUserModule(DelayImpl)(this as any)
       this.__wechatifiedFriendship                   = wechatifyUserModule(FriendshipImpl)(this as any)
       this.__wechatifiedImage                        = wechatifyUserModule(ImageImpl)(this as any)
+      this.__wechatifiedVoice                        = wechatifyUserModule(VoiceImpl)(this as any)
       this.__wechatifiedLocation                     = wechatifyUserModule(LocationImpl)(this as any)
       this.__wechatifiedMessage                      = wechatifyUserModule(MessageImpl)(this as any)
       this.__wechatifiedMiniProgram                  = wechatifyUserModule(MiniProgramImpl)(this as any)
@@ -204,6 +209,7 @@ type ProtectedPropertyWechatifyUserModuleMixin =
   | '__wechatifiedDelay'
   | '__wechatifiedFriendship'
   | '__wechatifiedImage'
+  | '__wechatifiedVoice'
   | '__wechatifiedLocation'
   | '__wechatifiedMessage'
   | '__wechatifiedMiniProgram'
