@@ -43,6 +43,11 @@ const GRPC_STATUS_UNIMPLEMENTED = 12
  * NOT match here: otherwise the fallback silently masks real failures and — for
  * `text()` — discards the `noSpeech` discriminator, making the bot re-run its
  * own paid ASR on voices the puppet already confirmed as empty.
+ *
+ * Note: the "method does not exist at all" case (an old puppet built against a
+ * wechaty-puppet without the method) is detected up-front via a `typeof` guard
+ * at the call site, NOT here — matching the `'is not a function'` text would
+ * also swallow a genuine `TypeError` raised inside a working implementation.
  */
 function isUnsupportedError (e: unknown): boolean {
   const err = e as { code?: number | string; message?: string } | undefined
@@ -50,16 +55,8 @@ function isUnsupportedError (e: unknown): boolean {
   if (err?.code === GRPC_STATUS_UNIMPLEMENTED) {
     return true
   }
-  const message = err?.message || ''
   // puppet implements the abstract method via throwUnsupportedError()
-  if (message.includes('Unsupported API')) {
-    return true
-  }
-  // puppet built against an old wechaty-puppet without the method at all
-  if (message.includes('is not a function')) {
-    return true
-  }
-  return false
+  return (err?.message || '').includes('Unsupported API')
 }
 
 class VoiceMixin extends wechatifyMixinBase() {
@@ -82,20 +79,28 @@ class VoiceMixin extends wechatifyMixinBase() {
    * Get the voice file (FileBox) via the puppet's dedicated `messageVoice` RPC.
    *
    * Falls back to the generic `messageFile` when the puppet does not implement
-   * `messageVoice` (old puppet without the new RPC → rejection), keeping the
-   * behaviour compatible with the legacy "voice file via messageFile" path.
+   * `messageVoice` — either the method is absent (old puppet built without it,
+   * caught by the `typeof` guard) or it rejects with an unsupported-API error.
+   * Keeps the behaviour compatible with the legacy "voice file via messageFile"
+   * path. A genuine runtime error from a working `messageVoice` is rethrown.
    */
   async file (): Promise<FileBoxInterface> {
     log.verbose('Voice', 'file() for id: "%s"', this.id)
+    const puppet = this.wechaty.puppet
+    // puppet built against an old wechaty-puppet without the method at all
+    if (typeof (puppet as { messageVoice?: unknown }).messageVoice !== 'function') {
+      log.verbose('Voice', 'file() messageVoice() absent, fallback to messageFile()')
+      return puppet.messageFile(this.id)
+    }
     try {
-      const fileBox = await this.wechaty.puppet.messageVoice(this.id)
+      const fileBox = await puppet.messageVoice(this.id)
       return fileBox
     } catch (e) {
       if (!isUnsupportedError(e)) {
         throw e
       }
       log.verbose('Voice', 'file() messageVoice() unsupported, fallback to messageFile(): %s', (e as Error).message)
-      const fileBox = await this.wechaty.puppet.messageFile(this.id)
+      const fileBox = await puppet.messageFile(this.id)
       return fileBox
     }
   }
@@ -106,21 +111,31 @@ class VoiceMixin extends wechatifyMixinBase() {
    * "confirmed no speech" (`noSpeech=true`) from "normal transcription".
    *
    * Falls back to reading the legacy `messagePayload().text` when the puppet
-   * does not implement `messageVoiceText` (old puppet without the new RPC →
-   * rejection). Old puppets put the ASR result into `payload.text`, so this
-   * keeps the behaviour compatible; `noSpeech` is `false` in the fallback.
+   * does not implement `messageVoiceText` — either the method is absent (old
+   * puppet built without it, caught by the `typeof` guard) or it rejects with
+   * an unsupported-API error. Old puppets put the ASR result into
+   * `payload.text`, so this keeps the behaviour compatible; `noSpeech` is
+   * `false` in the fallback. A genuine runtime error is rethrown (so the bot
+   * does not silently drop `noSpeech` and re-run its own paid ASR).
    */
   async text (): Promise<PUPPET.payloads.VoiceText> {
     log.verbose('Voice', 'text() for id: "%s"', this.id)
+    const puppet = this.wechaty.puppet
+    // puppet built against an old wechaty-puppet without the method at all
+    if (typeof (puppet as { messageVoiceText?: unknown }).messageVoiceText !== 'function') {
+      log.verbose('Voice', 'text() messageVoiceText() absent, fallback to messagePayload().text')
+      const payload = await puppet.messagePayload(this.id)
+      return { text: payload.text || '', noSpeech: false }
+    }
     try {
-      const payload = await this.wechaty.puppet.messageVoiceText(this.id)
+      const payload = await puppet.messageVoiceText(this.id)
       return payload
     } catch (e) {
       if (!isUnsupportedError(e)) {
         throw e
       }
       log.verbose('Voice', 'text() messageVoiceText() unsupported, fallback to messagePayload().text: %s', (e as Error).message)
-      const payload = await this.wechaty.puppet.messagePayload(this.id)
+      const payload = await puppet.messagePayload(this.id)
       return { text: payload.text || '', noSpeech: false }
     }
   }

@@ -77,6 +77,16 @@ test('Voice.file() falls back to messageFile on unsupported error', async t => {
   t.ok(puppet.messageFile.calledOnceWith(MESSAGE_ID), 'should call messageFile on fallback')
 })
 
+test('Voice.file() falls back to messageFile when messageVoice is absent (old puppet)', async t => {
+  await ensureStarted()
+  puppet.messageVoice = undefined // old puppet built without the method at all
+  puppet.messageFile  = sinon.stub().resolves(FileBox.fromBuffer(Buffer.from('file'), 'file.bin'))
+
+  const fileBox = await voice().file()
+  t.equal(fileBox.name, 'file.bin', 'should fall back to messageFile via the typeof guard')
+  t.ok(puppet.messageFile.calledOnceWith(MESSAGE_ID), 'should call messageFile on fallback')
+})
+
 test('Voice.file() rethrows a transient error instead of falling back', async t => {
   await ensureStarted()
   puppet.messageVoice = sinon.stub().rejects(new Error('socket hang up'))
@@ -84,6 +94,17 @@ test('Voice.file() rethrows a transient error instead of falling back', async t 
 
   await t.rejects(() => voice().file(), /socket hang up/, 'should rethrow the transient error')
   t.notOk(puppet.messageFile.called, 'should NOT fall back on a transient error')
+})
+
+test('Voice.file() rethrows a genuine "is not a function" TypeError from a working messageVoice', async t => {
+  await ensureStarted()
+  // method exists but its implementation throws internally — must NOT be
+  // misclassified as unsupported just because the message says "is not a function"
+  puppet.messageVoice = sinon.stub().rejects(new TypeError('innerHelper.process is not a function'))
+  puppet.messageFile  = sinon.stub().resolves(FileBox.fromBuffer(Buffer.from('file'), 'file.bin'))
+
+  await t.rejects(() => voice().file(), /is not a function/, 'should rethrow the internal TypeError')
+  t.notOk(puppet.messageFile.called, 'should NOT mask a real implementation bug')
 })
 
 test('Voice.text() returns the dedicated messageVoiceText payload when supported', async t => {
@@ -103,7 +124,9 @@ test('Voice.text() preserves noSpeech=true from the puppet (skip paid ASR)', asy
   puppet.messagePayload   = sinon.stub().resolves({ text: '' } as PUPPET.payloads.Message)
 
   const result = await voice().text()
+  t.same(result, { text: '', noSpeech: true }, 'should return the puppet payload verbatim')
   t.equal(result.noSpeech, true, 'should preserve noSpeech=true so the bot can skip its own ASR')
+  t.ok(puppet.messageVoiceText.calledOnceWith(MESSAGE_ID), 'should call messageVoiceText')
   t.notOk(puppet.messagePayload.called, 'should NOT fall back when supported')
 })
 
@@ -128,6 +151,16 @@ test('Voice.text() falls back on gRPC UNIMPLEMENTED (code 12)', async t => {
   t.ok(puppet.messagePayload.calledOnceWith(MESSAGE_ID), 'should call messagePayload on fallback')
 })
 
+test('Voice.text() falls back to messagePayload when messageVoiceText is absent (old puppet)', async t => {
+  await ensureStarted()
+  puppet.messageVoiceText = undefined // old puppet built without the method at all
+  puppet.messagePayload   = sinon.stub().resolves({ text: 'legacy asr' } as PUPPET.payloads.Message)
+
+  const result = await voice().text()
+  t.same(result, { text: 'legacy asr', noSpeech: false }, 'should fall back via the typeof guard with noSpeech=false')
+  t.ok(puppet.messagePayload.calledOnceWith(MESSAGE_ID), 'should call messagePayload on fallback')
+})
+
 test('Voice.text() rethrows a transient error instead of falling back', async t => {
   await ensureStarted()
   puppet.messageVoiceText = sinon.stub().rejects(new Error('ETIMEDOUT'))
@@ -135,6 +168,17 @@ test('Voice.text() rethrows a transient error instead of falling back', async t 
 
   await t.rejects(() => voice().text(), /ETIMEDOUT/, 'should rethrow the transient error')
   t.notOk(puppet.messagePayload.called, 'should NOT fall back on a transient error (would drop noSpeech)')
+})
+
+test('Voice.text() rethrows a genuine "is not a function" TypeError from a working messageVoiceText', async t => {
+  await ensureStarted()
+  // regression: a real internal TypeError must NOT be downgraded — that would
+  // drop noSpeech and make the bot re-run its own paid ASR
+  puppet.messageVoiceText = sinon.stub().rejects(new TypeError('innerHelper.process is not a function'))
+  puppet.messagePayload   = sinon.stub().resolves({ text: 'legacy asr' } as PUPPET.payloads.Message)
+
+  await t.rejects(() => voice().text(), /is not a function/, 'should rethrow the internal TypeError')
+  t.notOk(puppet.messagePayload.called, 'should NOT mask a real implementation bug')
 })
 
 test('teardown: stop the shared wechaty', async t => {
