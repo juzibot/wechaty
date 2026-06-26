@@ -21,12 +21,53 @@ import type {
   FileBoxInterface,
 }                   from 'file-box'
 import type { Constructor } from 'clone-class'
+import type * as PUPPET from '@juzi/wechaty-puppet'
 import { validationMixin } from '../user-mixins/validation.js'
 import { log } from '../config.js'
 
 import {
   wechatifyMixinBase,
 }                       from '../user-mixins/wechatify.js'
+
+/**
+ * gRPC status code for an RPC the server does not implement.
+ * @see https://grpc.github.io/grpc/core/md_doc_statuscodes.html
+ */
+const GRPC_STATUS_UNIMPLEMENTED = 12
+
+/**
+ * Whether `e` means the puppet / server does not implement the new voice RPC,
+ * i.e. it is safe to fall back to the legacy path.
+ *
+ * Transient errors (network / timeout / file expired / other gRPC codes) must
+ * NOT match here: otherwise the fallback silently masks real failures and — for
+ * `text()` — discards the `noSpeech` discriminator, making the bot re-run its
+ * own paid ASR on voices the puppet already confirmed as empty.
+ */
+function isUnsupportedError (e: unknown): boolean {
+  const err = e as { code?: number | string; message?: string } | undefined
+  // old wechaty-puppet-service server without the new RPC → gRPC UNIMPLEMENTED
+  if (err?.code === GRPC_STATUS_UNIMPLEMENTED) {
+    return true
+  }
+  const message = err?.message || ''
+  // puppet implements the abstract method via throwUnsupportedError()
+  if (message.includes('Unsupported API')) {
+    return true
+  }
+  // puppet built against an old wechaty-puppet without the method at all
+  if (message.includes('is not a function')) {
+    return true
+  }
+  return false
+}
+
+/**
+ * Sourced from the puppet method signature (single source of truth) rather than
+ * re-declared, since `@juzi/wechaty-puppet` does not re-export `VoiceTextPayload`
+ * through its public `payloads` barrel.
+ */
+type VoiceTextPayload = Awaited<ReturnType<PUPPET.impls.PuppetInterface['messageVoiceText']>>
 
 class VoiceMixin extends wechatifyMixinBase() {
 
@@ -57,7 +98,10 @@ class VoiceMixin extends wechatifyMixinBase() {
       const fileBox = await this.wechaty.puppet.messageVoice(this.id)
       return fileBox
     } catch (e) {
-      log.verbose('Voice', 'file() messageVoice() failed, fallback to messageFile(): %s', (e as Error).message)
+      if (!isUnsupportedError(e)) {
+        throw e
+      }
+      log.verbose('Voice', 'file() messageVoice() unsupported, fallback to messageFile(): %s', (e as Error).message)
       const fileBox = await this.wechaty.puppet.messageFile(this.id)
       return fileBox
     }
@@ -73,13 +117,16 @@ class VoiceMixin extends wechatifyMixinBase() {
    * rejection). Old puppets put the ASR result into `payload.text`, so this
    * keeps the behaviour compatible; `noSpeech` is `false` in the fallback.
    */
-  async text (): Promise<{ text: string; noSpeech: boolean }> {
+  async text (): Promise<VoiceTextPayload> {
     log.verbose('Voice', 'text() for id: "%s"', this.id)
     try {
       const payload = await this.wechaty.puppet.messageVoiceText(this.id)
       return payload
     } catch (e) {
-      log.verbose('Voice', 'text() messageVoiceText() failed, fallback to messagePayload().text: %s', (e as Error).message)
+      if (!isUnsupportedError(e)) {
+        throw e
+      }
+      log.verbose('Voice', 'text() messageVoiceText() unsupported, fallback to messagePayload().text: %s', (e as Error).message)
       const payload = await this.wechaty.puppet.messagePayload(this.id)
       return { text: payload.text || '', noSpeech: false }
     }
