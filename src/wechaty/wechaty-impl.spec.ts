@@ -9,6 +9,7 @@ import type {
   ContactConstructor,
   FriendshipConstructor,
   ImageConstructor,
+  VoiceConstructor,
   LocationConstructor,
   MessageConstructor,
   MiniProgramConstructor,
@@ -51,6 +52,7 @@ test('Wechaty interface', async t => {
     Delay                         : DelayConstructor
     Friendship                    : FriendshipConstructor
     Image                         : ImageConstructor
+    Voice                         : VoiceConstructor
     Location                      : LocationConstructor
     Message                       : MessageConstructor
     MiniProgram                   : MiniProgramConstructor
@@ -82,6 +84,7 @@ test('Wechaty interface', async t => {
         = this.Delay
         = this.Friendship
         = this.Image
+        = this.Voice
         = this.Location
         = this.Message
         = this.MiniProgram

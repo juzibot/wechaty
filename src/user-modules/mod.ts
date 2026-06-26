@@ -43,6 +43,11 @@ import {
   ImageConstructor,
 }                           from './image.js'
 import {
+  VoiceImpl,
+  VoiceInterface,
+  VoiceConstructor,
+}                           from './voice.js'
+import {
   LocationImpl,
   LocationInterface,
   LocationConstructor,
@@ -175,6 +180,7 @@ export type {
   FavoriteInterface,
   FriendshipInterface,
   ImageInterface,
+  VoiceInterface,
   LocationInterface,
   MessageInterface,
   MiniProgramInterface,
@@ -207,6 +213,7 @@ export type {
   FavoriteConstructor,
   FriendshipConstructor,
   ImageConstructor,
+  VoiceConstructor,
   LocationConstructor,
   MessageConstructor,
   MiniProgramConstructor,
@@ -241,6 +248,7 @@ export {
   FavoriteImpl,
   FriendshipImpl,
   ImageImpl,
+  VoiceImpl,
   LocationImpl,
   MessageImpl,
   MiniProgramImpl,

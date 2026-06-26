@@ -32,6 +32,7 @@ export type {
   FavoriteInterface                      as Favorite,
   FriendshipInterface                    as Friendship,
   ImageInterface                         as Image,
+  VoiceInterface                         as Voice,
   LocationInterface                      as Location,
   MessageInterface                       as Message,
   MiniProgramInterface                   as MiniProgram,
