@@ -62,13 +62,6 @@ function isUnsupportedError (e: unknown): boolean {
   return false
 }
 
-/**
- * Sourced from the puppet method signature (single source of truth) rather than
- * re-declared, since `@juzi/wechaty-puppet` does not re-export `VoiceTextPayload`
- * through its public `payloads` barrel.
- */
-type VoiceTextPayload = Awaited<ReturnType<PUPPET.impls.PuppetInterface['messageVoiceText']>>
-
 class VoiceMixin extends wechatifyMixinBase() {
 
   static create (id: string): VoiceInterface {
@@ -117,7 +110,7 @@ class VoiceMixin extends wechatifyMixinBase() {
    * rejection). Old puppets put the ASR result into `payload.text`, so this
    * keeps the behaviour compatible; `noSpeech` is `false` in the fallback.
    */
-  async text (): Promise<VoiceTextPayload> {
+  async text (): Promise<PUPPET.payloads.VoiceText> {
     log.verbose('Voice', 'text() for id: "%s"', this.id)
     try {
       const payload = await this.wechaty.puppet.messageVoiceText(this.id)
