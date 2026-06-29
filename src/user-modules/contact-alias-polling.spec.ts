@@ -24,7 +24,7 @@ import { WechatyBuilder } from '../wechaty-builder.js'
  * stale-read scenario, contactPayloadDirty must be called more than
  * once.
  */
-test('alias() must call contactPayloadDirty on every poll iteration', { timeout: 15_000 }, async t => {
+test('alias() must call contactPayloadDirty on every poll iteration', async t => {
   const puppet = new PuppetMock() as any
   const wechaty = WechatyBuilder.build({ puppet })
 
