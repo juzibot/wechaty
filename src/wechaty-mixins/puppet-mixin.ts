@@ -753,16 +753,21 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                   }
                   case PUPPET.types.Payload.Call: {
                     /**
-                     * Invalidate the puppet-side cache so the next callPayload()
-                     * pull reflects the latest server state, then refresh the
-                     * user-layer Call payload so getters (media / participants /
-                     * endTime) reflect the new view immediately. Whether the
-                     * call is still alive is still decided by the call-event
-                     * handler via __finalizeIfEnded; we do not touch the pool
-                     * here, and we do not emit a synthetic user event — the
-                     * UI is expected to read getters when it needs the value.
+                     * Refresh the user-layer Call payload so getters (media /
+                     * participants / endTime) reflect the new view. Whether
+                     * the call is still alive is still decided by the
+                     * call-event handler via __finalizeIfEnded; we do not
+                     * touch the pool here, and we do not emit a synthetic
+                     * user event — the UI is expected to read getters when
+                     * it needs the value.
+                     *
+                     * IMPORTANT: do NOT call puppet.callPayloadDirty here.
+                     * Under puppet-service that fires a gRPC DirtyPayload
+                     * which the server bounces back as another `dirty`
+                     * event, forming an infinite client⇄server feedback
+                     * loop. Cache invalidation is already handled by the
+                     * cache-mixin onDirty listener registered alongside.
                      */
-                    await this.puppet.callPayloadDirty(payloadId)
                     const call = this.__callPool.get(payloadId)
                     if (call) {
                       try {

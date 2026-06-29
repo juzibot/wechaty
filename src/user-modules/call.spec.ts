@@ -922,7 +922,11 @@ test('dirty(Call) refreshes user-layer payload so getters see new value', async 
   await flush()
 
   t.equal(incoming!.media(), PUPPET.types.CallMediaType.Video, 'media should reflect refreshed payload after dirty')
-  t.ok((puppet.callPayloadDirty as any).called, 'puppet.callPayloadDirty should be invoked')
+  // Note: the handler intentionally does NOT call puppet.callPayloadDirty;
+  // doing so would form a gRPC loop under puppet-service (server bounces the
+  // dirty back through the event stream). Cache invalidation is handled by
+  // the cache-mixin onDirty listener; the user-visible contract is that
+  // .media() above reflects the fresh server value.
 
   await wechaty.stop()
   sandbox.restore()
