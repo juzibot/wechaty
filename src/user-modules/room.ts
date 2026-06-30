@@ -268,6 +268,69 @@ class RoomMixin extends MixinBase implements SayableSayer {
     return undefined
   }
 
+  /**
+   * Async iterator variant of {@link findAll} that yields rooms in batches.
+   *
+   * Each batch is materialised with a single `puppet.batchRoomPayload` RPC,
+   * so iterating N rooms costs roughly `ceil(N / batch)` round trips instead
+   * of N. Uses `puppet.batchRoomPayload` directly (required on the puppet
+   * abstract), so callers do not need a per-id fallback path. Callers may
+   * `break` between batches to short-circuit.
+   *
+   * @static
+   * @param {PUPPET.filters.Room} [query]
+   * @param {{ batch?: number }} [opts] batch size, default 100
+   * @returns {AsyncIterable<RoomInterface[]>}
+   * @example
+   * for await (const chunk of bot.Room.findAllIter()) {
+   *   for (const room of chunk) {
+   *     console.log(await room.topic())
+   *   }
+   * }
+   */
+  static async * findAllIter (
+    query? : PUPPET.filters.Room,
+    opts?  : { batch?: number },
+  ): AsyncIterable<RoomInterface[]> {
+    const batch = opts?.batch ?? 100
+    log.verbose('Room', 'findAllIter(%s, batch=%d)', JSON.stringify(query, stringifyFilter) || '', batch)
+
+    if (batch <= 0) {
+      throw new Error(`Room.findAllIter() batch must be positive, got ${batch}`)
+    }
+
+    const roomIdList: string[] = await this.wechaty.puppet.roomSearch(query)
+
+    if (!this.wechaty.isLoggedIn) {
+      throw new Error('Room.findAllIter() requires logged in')
+    }
+
+    for (let i = 0; i < roomIdList.length; i += batch) {
+      const idChunk = roomIdList.slice(i, i + batch)
+
+      const payloadMap = await this.wechaty.puppet.batchRoomPayload(idChunk)
+
+      const roomChunk: RoomInterface[] = []
+      for (const id of idChunk) {
+        const payload = payloadMap.get(id)
+        if (!payload) {
+          log.silly('Room', 'findAllIter() payload missing for id=%s, skip', id)
+          continue
+        }
+
+        const room = (this.wechaty.Room as any as typeof RoomImpl).load(id)
+        room.payload = payload
+        roomChunk.push(room)
+      }
+
+      if (roomChunk.length > 0) {
+        yield roomChunk
+      } else {
+        log.warn('Room', 'findAllIter() batch all missing from payloadMap, idChunk=%j', idChunk)
+      }
+    }
+  }
+
   static async batchLoadRooms (roomIdList: string[]) {
     let continuousErrorCount = 0
     let totalErrorCount = 0

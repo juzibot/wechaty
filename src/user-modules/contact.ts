@@ -216,6 +216,73 @@ class ContactMixin extends MixinBase implements SayableSayer {
     return contactList
   }
 
+  /**
+   * Async iterator variant of {@link findAll} that yields contacts in batches.
+   *
+   * Each batch is materialised with a single `puppet.batchContactPayload` RPC,
+   * so iterating N contacts costs roughly `ceil(N / batch)` round trips instead
+   * of N. Uses `puppet.batchContactPayload` directly (required on the puppet
+   * abstract), without holding the whole list in memory or blocking the caller
+   * until every contact has been hydrated. Callers may `break` between batches
+   * to short-circuit.
+   *
+   * @static
+   * @param {string | PUPPET.filters.Contact} [query]
+   * @param {{ batch?: number }} [opts] batch size, default 100
+   * @returns {AsyncIterable<ContactInterface[]>}
+   * @example
+   * for await (const chunk of bot.Contact.findAllIter()) {
+   *   for (const contact of chunk) {
+   *     console.log(contact.name())
+   *   }
+   * }
+   */
+  static async * findAllIter (
+    query? : string | PUPPET.filters.Contact,
+    opts?  : { batch?: number },
+  ): AsyncIterable<ContactInterface[]> {
+    const batch = opts?.batch ?? 100
+    log.verbose('Contact', 'findAllIter(%s, batch=%d)', JSON.stringify(query, stringifyFilter) || '', batch)
+
+    if (batch <= 0) {
+      throw new Error(`Contact.findAllIter() batch must be positive, got ${batch}`)
+    }
+
+    const contactIdList: string[] = await this.wechaty.puppet.contactSearch(query)
+
+    if (!this.wechaty.isLoggedIn) {
+      throw new Error('Contact.findAllIter() requires logged in')
+    }
+
+    for (let i = 0; i < contactIdList.length; i += batch) {
+      const idChunk = contactIdList.slice(i, i + batch)
+
+      const payloadMap = await this.wechaty.puppet.batchContactPayload(idChunk)
+
+      const contactChunk: ContactInterface[] = []
+      for (const id of idChunk) {
+        const payload = payloadMap.get(id)
+        if (!payload) {
+          log.silly('Contact', 'findAllIter() payload missing for id=%s, skip', id)
+          continue
+        }
+
+        const contact: ContactImpl = this.wechaty.puppet.currentUserId === id
+          ? (this.wechaty.ContactSelf as any as typeof ContactSelfImpl).load(id)
+          : (this.wechaty.Contact as any as typeof ContactImpl).load(id)
+
+        contact.payload = payload
+        contactChunk.push(contact)
+      }
+
+      if (contactChunk.length > 0) {
+        yield contactChunk
+      } else {
+        log.warn('Contact', 'findAllIter() batch all missing from payloadMap, idChunk=%j', idChunk)
+      }
+    }
+  }
+
   static async batchLoadContacts (contactIdList: string[]) {
     if (typeof this.wechaty.puppet.batchContactPayload === 'function') {
       const contactList: ContactInterface[] = contactIdList.map(id => {

@@ -20,8 +20,10 @@
  */
 import {
   test,
+  sinon,
 }           from 'tstest'
 
+import type * as PUPPET from '@juzi/wechaty-puppet'
 import { PuppetMock } from '@juzi/wechaty-puppet-mock'
 import { WechatyBuilder } from '../wechaty-builder.js'
 
@@ -86,6 +88,216 @@ test('should throw when instanciate the global class', async t => {
     t.fail('should not run to here')
     t.fail(c.toString())
   }, 'should throw when we instanciate a global class')
+})
+
+test('findAllIter() yields every contact returned by contactSearch', async t => {
+  const TOTAL = 7
+
+  const sandbox = sinon.createSandbox()
+  const puppet = new PuppetMock() as any
+  const wechaty = WechatyBuilder.build({ puppet })
+
+  const idList = Array.from({ length: TOTAL }, (_, idx) => `c-${idx}`)
+  const buildPayload = (id: string) => ({ id, name: `name-${id}` } as PUPPET.payloads.Contact)
+
+  sandbox.stub(puppet, 'contactSearch').resolves(idList)
+  sandbox.stub(puppet, 'batchContactPayload').callsFake(async (...args: any[]) => {
+    const ids = args[0] as string[]
+    return new Map(ids.map(id => [ id, buildPayload(id) ]))
+  })
+
+  await wechaty.start()
+  const bot = puppet.mocker.createContact({ name: 'bot' })
+  await puppet.mocker.login(bot)
+
+  const seen: string[] = []
+  for await (const chunk of wechaty.Contact.findAllIter()) {
+    for (const contact of chunk) {
+      seen.push(contact.id)
+    }
+  }
+
+  t.equal(seen.length, TOTAL, `should yield ${TOTAL} contacts`)
+  t.same(seen, idList, 'should yield contacts in search order')
+
+  await wechaty.stop()
+})
+
+test('findAllIter() chunks 101 contacts into [100, 1] at default batch=100', async t => {
+  const TOTAL = 101
+
+  const sandbox = sinon.createSandbox()
+  const puppet = new PuppetMock() as any
+  const wechaty = WechatyBuilder.build({ puppet })
+
+  const idList = Array.from({ length: TOTAL }, (_, idx) => `c-${idx}`)
+  sandbox.stub(puppet, 'contactSearch').resolves(idList)
+  sandbox.stub(puppet, 'batchContactPayload').callsFake(async (...args: any[]) => {
+    const ids = args[0] as string[]
+    return new Map(ids.map(id => [ id, { id, name: id } as PUPPET.payloads.Contact ]))
+  })
+
+  await wechaty.start()
+  const bot = puppet.mocker.createContact({ name: 'bot' })
+  await puppet.mocker.login(bot)
+
+  const sizes: number[] = []
+  for await (const chunk of wechaty.Contact.findAllIter()) {
+    sizes.push(chunk.length)
+  }
+
+  t.same(sizes, [ 100, 1 ], 'should split into two batches: 100 and 1')
+
+  await wechaty.stop()
+})
+
+test('findAllIter() honors early break without throwing', async t => {
+  const TOTAL = 250
+
+  const sandbox = sinon.createSandbox()
+  const puppet = new PuppetMock() as any
+  const wechaty = WechatyBuilder.build({ puppet })
+
+  const idList = Array.from({ length: TOTAL }, (_, idx) => `c-${idx}`)
+  sandbox.stub(puppet, 'contactSearch').resolves(idList)
+  const batchSpy = sandbox.stub(puppet, 'batchContactPayload').callsFake(async (...args: any[]) => {
+    const ids = args[0] as string[]
+    return new Map(ids.map(id => [ id, { id, name: id } as PUPPET.payloads.Contact ]))
+  })
+
+  await wechaty.start()
+  const bot = puppet.mocker.createContact({ name: 'bot' })
+  await puppet.mocker.login(bot)
+
+  let received = 0
+  await t.resolves((async () => {
+    for await (const chunk of wechaty.Contact.findAllIter()) {
+      received += chunk.length
+      if (received >= 100) {
+        break
+      }
+    }
+  })(), 'breaking the loop should not throw')
+
+  t.equal(received, 100, 'should stop after the first batch')
+  t.equal(batchSpy.callCount, 1, 'should not invoke batchContactPayload again after break')
+
+  await wechaty.stop()
+})
+
+test('findAllIter() invokes batchContactPayload ceil(N/batch) times, not N times', async t => {
+  const TOTAL = 100
+  const BATCH = 25
+
+  const sandbox = sinon.createSandbox()
+  const puppet = new PuppetMock() as any
+  const wechaty = WechatyBuilder.build({ puppet })
+
+  const idList = Array.from({ length: TOTAL }, (_, idx) => `c-${idx}`)
+  sandbox.stub(puppet, 'contactSearch').resolves(idList)
+
+  const batchSpy = sandbox.stub(puppet, 'batchContactPayload').callsFake(async (...args: any[]) => {
+    const ids = args[0] as string[]
+    return new Map(ids.map(id => [ id, { id, name: id } as PUPPET.payloads.Contact ]))
+  })
+  const rawSpy = sandbox.spy(puppet, 'contactRawPayload')
+
+  await wechaty.start()
+  const bot = puppet.mocker.createContact({ name: 'bot' })
+  await puppet.mocker.login(bot)
+
+  const rawCountBefore = rawSpy.callCount
+
+  let received = 0
+  for await (const chunk of wechaty.Contact.findAllIter(undefined, { batch: BATCH })) {
+    received += chunk.length
+  }
+
+  t.equal(received, TOTAL, 'should iterate all contacts')
+  t.equal(batchSpy.callCount, Math.ceil(TOTAL / BATCH), `should invoke batchContactPayload ${Math.ceil(TOTAL / BATCH)} times`)
+  t.equal(rawSpy.callCount, rawCountBefore, 'should never fall back to per-id contactRawPayload during iteration')
+
+  await wechaty.stop()
+})
+
+test('findAllIter() with empty contactSearch yields nothing and does not throw', async t => {
+  const sandbox = sinon.createSandbox()
+  const puppet = new PuppetMock() as any
+  const wechaty = WechatyBuilder.build({ puppet })
+
+  sandbox.stub(puppet, 'contactSearch').resolves([])
+  const batchSpy = sandbox.stub(puppet, 'batchContactPayload').resolves(new Map())
+
+  await wechaty.start()
+  const bot = puppet.mocker.createContact({ name: 'bot' })
+  await puppet.mocker.login(bot)
+
+  let chunkCount = 0
+  await t.resolves((async () => {
+    for await (const _chunk of wechaty.Contact.findAllIter()) {
+      chunkCount++
+    }
+  })(), 'empty iteration should not throw')
+
+  t.equal(chunkCount, 0, 'should yield zero chunks')
+  t.equal(batchSpy.callCount, 0, 'should not call batchContactPayload when no ids')
+
+  await wechaty.stop()
+})
+
+test('findAllIter() throws when batch <= 0', async t => {
+  const sandbox = sinon.createSandbox()
+  const puppet = new PuppetMock() as any
+  const wechaty = WechatyBuilder.build({ puppet })
+
+  sandbox.stub(puppet, 'contactSearch').resolves([])
+  sandbox.stub(puppet, 'batchContactPayload').resolves(new Map())
+
+  await wechaty.start()
+  const bot = puppet.mocker.createContact({ name: 'bot' })
+  await puppet.mocker.login(bot)
+
+  for (const badBatch of [ 0, -1 ]) {
+    await t.rejects(
+      (async () => {
+        for await (const _chunk of wechaty.Contact.findAllIter(undefined, { batch: badBatch })) {
+          // should never reach here
+        }
+      })(),
+      /batch must be positive/,
+      `should throw when batch=${badBatch}`,
+    )
+  }
+
+  await wechaty.stop()
+})
+
+test('findAllIter() skips ids missing from payloadMap', async t => {
+  const sandbox = sinon.createSandbox()
+  const puppet = new PuppetMock() as any
+  const wechaty = WechatyBuilder.build({ puppet })
+
+  sandbox.stub(puppet, 'contactSearch').resolves([ 'c1', 'c2', 'c3' ])
+  sandbox.stub(puppet, 'batchContactPayload').resolves(
+    new Map([ [ 'c1', { id: 'c1', name: 'name-c1' } as PUPPET.payloads.Contact ] ]),
+  )
+
+  await wechaty.start()
+  const bot = puppet.mocker.createContact({ name: 'bot' })
+  await puppet.mocker.login(bot)
+
+  const seen: string[] = []
+  await t.resolves((async () => {
+    for await (const chunk of wechaty.Contact.findAllIter()) {
+      for (const contact of chunk) {
+        seen.push(contact.id)
+      }
+    }
+  })(), 'missing ids should not throw or stall iteration')
+
+  t.same(seen, [ 'c1' ], 'should yield only contacts whose payload was returned')
+
+  await wechaty.stop()
 })
 
 test('ProtectedProperties', async t => {
