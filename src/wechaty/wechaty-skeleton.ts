@@ -27,12 +27,25 @@ import {
   WechatyEventName,
 }                               from '../schemas/mod.js'
 
+import type { LoggerLike }      from '../schemas/logger.js'
 import type { WechatyOptions }  from '../schemas/wechaty-options.js'
 
 abstract class WechatySkeleton extends WechatyEventEmitter {
 
   static readonly log: Loggable = log
-  readonly log: Loggable = log
+
+  /**
+   * Effective logger for this Wechaty instance.
+   *
+   * Populated in the following order (see puppet-mixin):
+   *   1. `puppet.log`     — the logger the puppet ended up using
+   *      (which, when {@link WechatyOptions.logger} is supplied, is
+   *      the caller's logger).
+   *   2. the built-in brolog `log` — hard fallback for the pre-init
+   *      window and for puppets that have not adopted `puppet.log`.
+   */
+  __log: LoggerLike = log
+  get log (): LoggerLike { return this.__log }
 
   /**
    * the UUID of the Wechaty
@@ -117,6 +130,7 @@ abstract class WechatySkeleton extends WechatyEventEmitter {
 
 type WechatySkeletonProtectedProperty =
   | '__events'
+  | '__log'
   | '__memory'
   | '__options'
   | 'memory'

@@ -217,6 +217,18 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
       log.verbose('WechatyPuppetMixin', 'init() emitting "puppet" event ... done')
 
       this.__puppet = puppetInstance
+
+      /**
+       * Adopt the puppet's effective logger onto the Wechaty side, so that
+       * `wechaty.log` and, via the accessory chain, every user module
+       * (`Contact.log`, `Message.log`, ...) route through it. The `??` guards
+       * puppets that have not yet adopted the pluggable logger — for those
+       * we keep the brolog `log` already assigned in WechatySkeleton.
+       */
+      const puppetLog = (puppetInstance as unknown as { log?: typeof log }).log
+      if (puppetLog) {
+        this.__log = puppetLog
+      }
     }
 
     __setupPuppetEvents (puppet: PUPPET.impls.PuppetInterface): void {
