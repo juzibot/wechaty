@@ -173,11 +173,22 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
       this.__puppetMixinInited = true
 
       log.verbose('WechatyPuppetMixin', 'init() instanciating puppet instance ...')
+      /**
+       * Forward `WechatyOptions.logger` down into `PuppetOptions.logger` so
+       * that the puppet layer emits logs through the same logger the caller
+       * supplied to Wechaty. `PuppetOptions` accepts arbitrary keys
+       * (`[key: string]: unknown`), so passing `logger` here works even
+       * before the puppet publishes a typed `logger?: LoggerLike` field.
+       */
+      const basePuppetOptions = 'puppetOptions' in this.__options
+        ? this.__options.puppetOptions
+        : undefined
+      const mergedPuppetOptions = this.__options.logger
+        ? { ...(basePuppetOptions ?? {}), logger: this.__options.logger }
+        : basePuppetOptions
       const puppetInstance = await PUPPET.helpers.resolvePuppet({
         puppet: this.__options.puppet || config.systemPuppetName(),
-        puppetOptions: 'puppetOptions' in this.__options
-          ? this.__options.puppetOptions
-          : undefined,
+        puppetOptions: mergedPuppetOptions,
       })
       log.verbose('WechatyPuppetMixin', 'init() instanciating puppet instance ... done')
 

@@ -18,11 +18,15 @@ import {
 import type {
   Accepter,
 }                           from './acceptable.js'
+import type {
+  LoggerLike,
+}                           from './logger.js'
 
 export type {
   Accepter,
   CallEventListeners,
   ContactEventListeners,
+  LoggerLike,
   RoomEventListeners,
   WechatyEventListeners,
   WechatyEventName,
