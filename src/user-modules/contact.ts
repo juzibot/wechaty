@@ -28,7 +28,6 @@ import type {
   Constructor,
 }                       from 'clone-class'
 
-
 import { ContactEventEmitter }        from '../schemas/mod.js'
 
 import {
