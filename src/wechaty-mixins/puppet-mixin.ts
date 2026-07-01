@@ -1,5 +1,5 @@
 import * as PUPPET      from '@juzi/wechaty-puppet'
-import { log }          from '@juzi/wechaty-puppet'
+import { log, type LoggerLike } from '@juzi/wechaty-puppet'
 import {
   GError,
   timeoutPromise,
@@ -176,9 +176,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
       /**
        * Forward `WechatyOptions.logger` down into `PuppetOptions.logger` so
        * that the puppet layer emits logs through the same logger the caller
-       * supplied to Wechaty. `PuppetOptions` accepts arbitrary keys
-       * (`[key: string]: unknown`), so passing `logger` here works even
-       * before the puppet publishes a typed `logger?: LoggerLike` field.
+       * supplied to Wechaty.
        */
       const basePuppetOptions = 'puppetOptions' in this.__options
         ? this.__options.puppetOptions
@@ -221,11 +219,13 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
       /**
        * Adopt the puppet's effective logger onto the Wechaty side, so that
        * `wechaty.log` and, via the accessory chain, every user module
-       * (`Contact.log`, `Message.log`, ...) route through it. The `??` guards
-       * puppets that have not yet adopted the pluggable logger — for those
-       * we keep the brolog `log` already assigned in WechatySkeleton.
+       * (`Contact.log`, `Message.log`, ...) route through it. `PuppetInterface`
+       * hides `log` (via `PuppetSkeletonProtectedProperty`), so a structural
+       * cast is required. The `??` guards third-party puppets that never
+       * adopted the pluggable logger — those fall back to the brolog `log`
+       * already assigned in WechatySkeleton.
        */
-      const puppetLog = (puppetInstance as unknown as { log?: typeof log }).log
+      const puppetLog = (puppetInstance as unknown as { log?: LoggerLike }).log
       if (puppetLog) {
         this.__log = puppetLog
       }
