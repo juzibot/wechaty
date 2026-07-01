@@ -33,6 +33,12 @@ interface WechatyOptionsBase {
    *
    * Supply your own logger to route Wechaty and puppet output into your
    * host process's logging pipeline (structured logs, sinks, sampling, ...).
+   *
+   * Scope note: this covers wechaty's own instance-level log calls and the
+   * puppet layer (once it is constructed). Third-party libraries embedded
+   * inside wechaty (e.g. `state-switch`, `memory-card`, `gerror`) still
+   * emit through the process-wide brolog and are not rerouted by this
+   * option.
    */
   logger?        : LoggerLike,
 }

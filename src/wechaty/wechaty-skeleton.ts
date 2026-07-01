@@ -20,7 +20,6 @@
 import { MemoryCard }     from 'memory-card'
 import { log }            from '@juzi/wechaty-puppet'
 import * as UUID          from 'uuid'
-import type { Loggable }  from 'brolog'
 
 import {
   WechatyEventEmitter,
@@ -32,7 +31,7 @@ import type { WechatyOptions }  from '../schemas/wechaty-options.js'
 
 abstract class WechatySkeleton extends WechatyEventEmitter {
 
-  static readonly log: Loggable = log
+  static readonly log: LoggerLike = log
 
   /**
    * Effective logger for this Wechaty instance.

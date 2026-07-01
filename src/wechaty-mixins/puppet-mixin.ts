@@ -188,6 +188,25 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
         puppet: this.__options.puppet || config.systemPuppetName(),
         puppetOptions: mergedPuppetOptions,
       })
+
+      /**
+       * Adopt the puppet's effective logger onto the Wechaty side, so that
+       * `wechaty.log` and, via the accessory chain, every user module
+       * (`Contact.log`, `Message.log`, ...) route through it. `PuppetInterface`
+       * hides `log` (via `PuppetSkeletonProtectedProperty`), so a structural
+       * cast is required. The `??` guards third-party puppets that never
+       * adopted the pluggable logger — those fall back to the brolog `log`
+       * already assigned in WechatySkeleton.
+       *
+       * Adopted immediately after `resolvePuppet` so the rest of init() —
+       * setMemory / setupPuppetEvents / the sync `emit('puppet')` listeners —
+       * all route through the caller-supplied logger, not brolog.
+       */
+      const puppetLog = (puppetInstance as unknown as { log?: LoggerLike }).log
+      if (puppetLog) {
+        this.__log = puppetLog
+      }
+
       this.log.verbose('WechatyPuppetMixin', 'init() instanciating puppet instance ... done')
 
       /**
@@ -215,20 +234,6 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
       this.log.verbose('WechatyPuppetMixin', 'init() emitting "puppet" event ... done')
 
       this.__puppet = puppetInstance
-
-      /**
-       * Adopt the puppet's effective logger onto the Wechaty side, so that
-       * `wechaty.log` and, via the accessory chain, every user module
-       * (`Contact.log`, `Message.log`, ...) route through it. `PuppetInterface`
-       * hides `log` (via `PuppetSkeletonProtectedProperty`), so a structural
-       * cast is required. The `??` guards third-party puppets that never
-       * adopted the pluggable logger — those fall back to the brolog `log`
-       * already assigned in WechatySkeleton.
-       */
-      const puppetLog = (puppetInstance as unknown as { log?: LoggerLike }).log
-      if (puppetLog) {
-        this.__log = puppetLog
-      }
     }
 
     __setupPuppetEvents (puppet: PUPPET.impls.PuppetInterface): void {
