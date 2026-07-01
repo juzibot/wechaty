@@ -18,11 +18,8 @@ import type {
   CallImpl,
   ContactImpl,
   ContactInterface,
-  RoomImpl,
   TagGroupInterface,
   TagInterface,
-  WxxdOrderImpl,
-  WxxdProductImpl,
 }                               from '../user-modules/mod.js'
 
 import type {
@@ -721,12 +718,12 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
               try {
                 switch (payloadType) {
                   case PUPPET.types.Payload.Contact: {
-                    const cached = this.Contact.pool.get(payloadId) as undefined | ContactImpl
+                    const cached = this.Contact.pool.get(payloadId)
                     if (cached) await cached.ready(true)
                     break
                   }
                   case PUPPET.types.Payload.Room: {
-                    const cached = this.Room.pool.get(payloadId) as undefined | RoomImpl
+                    const cached = this.Room.pool.get(payloadId)
                     if (cached) await cached.ready(true)
                     break
                   }
@@ -737,7 +734,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                     // A bare (non-composite) RoomMember dirty id addresses the
                     // whole room, mirroring the Room branch — but never load
                     // a new Room here.
-                    const cached = this.Room.pool.get(payloadId) as undefined | RoomImpl
+                    const cached = this.Room.pool.get(payloadId)
                     if (cached) await cached.ready()
                     break
                   }
@@ -762,12 +759,12 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                   case PUPPET.types.Payload.Post:
                     break
                   case PUPPET.types.Payload.WxxdProduct: {
-                    const cached = this.WxxdProduct.pool.get(payloadId) as undefined | WxxdProductImpl
+                    const cached = this.WxxdProduct.pool.get(payloadId)
                     if (cached) await cached.ready(true)
                     break
                   }
                   case PUPPET.types.Payload.WxxdOrder: {
-                    const cached = this.WxxdOrder.pool.get(payloadId) as undefined | WxxdOrderImpl
+                    const cached = this.WxxdOrder.pool.get(payloadId)
                     if (cached) await cached.ready(true)
                     break
                   }
