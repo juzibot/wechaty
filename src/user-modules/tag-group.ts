@@ -22,7 +22,6 @@ import type { TagGroupQueryFilter } from '@juzi/wechaty-puppet/dist/esm/src/sche
 
 import type { Constructor } from 'clone-class'
 import { concurrencyExecuter } from 'rx-queue'
-import { log } from '../config.js'
 import { poolifyMixin } from '../user-mixins/poolify.js'
 
 import { validationMixin } from '../user-mixins/validation.js'
@@ -62,7 +61,7 @@ class TagGroupMixin extends MixinBase {
   }
 
   static async list (): Promise<TagGroupInterface[]> {
-    log.verbose('TagGroup', 'list()')
+    this.log.verbose('TagGroup', 'list()')
 
     try {
       const tagGroupIds = await this.wechaty.puppet.tagGroupList()
@@ -103,13 +102,13 @@ class TagGroupMixin extends MixinBase {
 
     } catch (e) {
       this.wechaty.emitError(e)
-      log.error('TagGroup', 'list() exception: %s', (e as Error).message)
+      this.log.error('TagGroup', 'list() exception: %s', (e as Error).message)
       return []
     }
   }
 
   static async createTagGroup (name: string): Promise<TagGroupInterface | void> {
-    log.verbose('TagGroup', 'createTagGroup(%s, %s)', name)
+    this.log.verbose('TagGroup', 'createTagGroup(%s, %s)', name)
 
     try {
       const groupId = await this.wechaty.puppet.tagGroupAdd(name)
@@ -119,18 +118,18 @@ class TagGroupMixin extends MixinBase {
       }
     } catch (e) {
       this.wechaty.emitError(e)
-      log.error('Contact', 'createTag() exception: %s', (e as Error).message)
+      this.log.error('Contact', 'createTag() exception: %s', (e as Error).message)
     }
   }
 
   static async deleteTagGroup (tagGroup: TagGroupInterface): Promise<TagGroupInterface | void> {
-    log.verbose('TagGroup', 'deleteTagGroup(%s)', tagGroup)
+    this.log.verbose('TagGroup', 'deleteTagGroup(%s)', tagGroup)
 
     try {
       await this.wechaty.puppet.tagGroupDelete(tagGroup.id)
     } catch (e) {
       this.wechaty.emitError(e)
-      log.error('TagGroup', 'deleteTagGroup() exception: %s', (e as Error).message)
+      this.log.error('TagGroup', 'deleteTagGroup() exception: %s', (e as Error).message)
     }
   }
 
@@ -161,7 +160,7 @@ class TagGroupMixin extends MixinBase {
   }
 
   static async find (filter: TagGroupQueryFilter): Promise<TagGroupInterface | undefined> {
-    log.silly('TagGroup', 'find(%s)', JSON.stringify(filter))
+    this.log.silly('TagGroup', 'find(%s)', JSON.stringify(filter))
 
     if (filter.id) {
       const tagGroup = (this.wechaty.TagGroup as any as typeof TagGroupImpl).load(filter.id)

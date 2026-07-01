@@ -26,7 +26,6 @@ import type {
 
 import {
   FOUR_PER_EM_SPACE,
-  log,
 }                           from '../config.js'
 import {
   wechatyCaptureException,
@@ -98,7 +97,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
     contactList : ContactInterface[],
     topic?      : string,
   ): Promise<RoomInterface> {
-    log.verbose('Room', 'create(%s, %s)', contactList.join(','), topic)
+    this.log.verbose('Room', 'create(%s, %s)', contactList.join(','), topic)
 
     // if (contactList.length < 2) {
     //   throw new Error('contactList need at least 2 contact to create a new room')
@@ -112,7 +111,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
       return room
     } catch (e) {
       this.wechaty.emitError(e)
-      log.error('Room', 'create() exception: %s', (e && (e as Error).stack) || (e as Error).message || (e as Error))
+      this.log.error('Room', 'create() exception: %s', (e && (e as Error).stack) || (e as Error).message || (e as Error))
       throw e
     }
   }
@@ -123,7 +122,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
    * @returns {Promise<PUPPET.types.RoomParseDynamicQRCode>}
    */
   static async parseDynamicQRCode (url: string): Promise<PUPPET.types.RoomParseDynamicQRCode> {
-    log.info('Room', 'parseDynamicQRCode(%s)', url)
+    this.log.info('Room', 'parseDynamicQRCode(%s)', url)
     if (!url) {
       throw new Error('parseDynamicQRCode() url is required')
     }
@@ -158,7 +157,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
   static async findAll (
     query? : PUPPET.filters.Room,
   ): Promise<RoomInterface[]> {
-    log.verbose('Room', 'findAll(%s)', JSON.stringify(query, stringifyFilter) || '')
+    this.log.verbose('Room', 'findAll(%s)', JSON.stringify(query, stringifyFilter) || '')
 
     const roomIdList = await this.wechaty.puppet.roomSearch(query)
 
@@ -222,7 +221,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
   static async find (
     query : string | PUPPET.filters.Room,
   ): Promise<undefined | RoomInterface> {
-    log.silly('Room', 'find(%s)', JSON.stringify(query, stringifyFilter))
+    this.log.silly('Room', 'find(%s)', JSON.stringify(query, stringifyFilter))
 
     if (typeof query === 'string') {
       query = { topic: query }
@@ -249,7 +248,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
     }
 
     if (roomList.length > 1) {
-      log.warn('Room', 'find() got more than one(%d) result', roomList.length)
+      this.log.warn('Room', 'find() got more than one(%d) result', roomList.length)
     }
 
     for (const [ idx, room ] of roomList.entries()) {
@@ -258,13 +257,13 @@ class RoomMixin extends MixinBase implements SayableSayer {
       // https://github.com/wechaty/wechaty/issues/1345
       const valid = await this.wechaty.puppet.roomValidate(room.id)
       if (valid) {
-        log.verbose('Room', 'find() room<id=%s> is valid: return it', idx, room.id)
+        this.log.verbose('Room', 'find() room<id=%s> is valid: return it', idx, room.id)
         return room
       } else {
-        log.verbose('Room', 'find() room<id=%s> is invalid: skip it', idx, room.id)
+        this.log.verbose('Room', 'find() room<id=%s> is invalid: skip it', idx, room.id)
       }
     }
-    log.warn('Room', 'find() all %d rooms are invalid', roomList.length)
+    this.log.warn('Room', 'find() all %d rooms are invalid', roomList.length)
     return undefined
   }
 
@@ -293,7 +292,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
     opts?  : { batch?: number },
   ): AsyncIterable<RoomInterface[]> {
     const batch = opts?.batch ?? 100
-    log.verbose('Room', 'findAllIter(%s, batch=%d)', JSON.stringify(query, stringifyFilter) || '', batch)
+    this.log.verbose('Room', 'findAllIter(%s, batch=%d)', JSON.stringify(query, stringifyFilter) || '', batch)
 
     if (batch <= 0) {
       throw new Error(`Room.findAllIter() batch must be positive, got ${batch}`)
@@ -314,7 +313,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
       for (const id of idChunk) {
         const payload = payloadMap.get(id)
         if (!payload) {
-          log.silly('Room', 'findAllIter() payload missing for id=%s, skip', id)
+          this.log.silly('Room', 'findAllIter() payload missing for id=%s, skip', id)
           continue
         }
 
@@ -326,7 +325,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
       if (roomChunk.length > 0) {
         yield roomChunk
       } else {
-        log.warn('Room', 'findAllIter() batch all missing from payloadMap, idChunk=%j', idChunk)
+        this.log.warn('Room', 'findAllIter() batch all missing from payloadMap, idChunk=%j', idChunk)
       }
     }
   }

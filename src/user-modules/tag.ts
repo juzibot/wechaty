@@ -22,7 +22,6 @@ import type { TagQueryFilter } from '@juzi/wechaty-puppet/dist/esm/src/schemas/t
 
 import type { Constructor } from 'clone-class'
 import { concurrencyExecuter } from 'rx-queue'
-import { log } from '../config.js'
 import { poolifyMixin } from '../user-mixins/poolify.js'
 
 import assert from 'assert'
@@ -76,7 +75,7 @@ class TagMixin extends MixinBase {
   }
 
   static async list (): Promise<TagInterface[]> {
-    log.verbose('Tag', 'list()')
+    this.log.verbose('Tag', 'list()')
 
     const tagIdList = await this.wechaty.puppet.tagTagList()
 
@@ -116,7 +115,7 @@ class TagMixin extends MixinBase {
   }
 
   static async find (filter: TagQueryFilter): Promise<TagInterface | undefined> {
-    log.silly('Tag', 'find(%s)', JSON.stringify(filter))
+    this.log.silly('Tag', 'find(%s)', JSON.stringify(filter))
 
     if (filter.id) {
       const tag = (this.wechaty.Tag as any as typeof TagImpl).load(filter.id)
@@ -142,7 +141,7 @@ class TagMixin extends MixinBase {
   }
 
   static async findMulti (filters: TagQueryFilter[]): Promise<TagInterface[] | undefined> {
-    log.silly('Tag', 'find(%s)', JSON.stringify(filters))
+    this.log.silly('Tag', 'find(%s)', JSON.stringify(filters))
 
     const filterIdList = filters.filter(i => !!i.id).map(i => i.id)
     const filterNameList = filters.filter(i => !!i.name).map(i => i.name)
@@ -254,7 +253,7 @@ class TagMixin extends MixinBase {
   }
 
   static async createTag (name: string, tagGroup?: TagGroupInterface): Promise<TagInterface | void> {
-    log.verbose('Tag', 'createTag(%s, %s)', tagGroup, name)
+    this.log.verbose('Tag', 'createTag(%s, %s)', tagGroup, name)
 
     try {
       const tagInfoList = await this.wechaty.puppet.tagTagAdd([ name ], tagGroup?.name())
@@ -267,12 +266,12 @@ class TagMixin extends MixinBase {
       }
     } catch (e) {
       this.wechaty.emitError(e)
-      log.error('Tag', 'createTag() exception: %s', (e as Error).message)
+      this.log.error('Tag', 'createTag() exception: %s', (e as Error).message)
     }
   }
 
   static async createMultiTag (nameList: string[], tagGroup?: TagGroupInterface): Promise<TagInterface[] | void> {
-    log.verbose('Tag', 'createMultiTag(%s, %s)', tagGroup, nameList)
+    this.log.verbose('Tag', 'createMultiTag(%s, %s)', tagGroup, nameList)
 
     try {
       const tagInfoList = await this.wechaty.puppet.tagTagAdd(nameList, tagGroup?.name())
@@ -285,34 +284,34 @@ class TagMixin extends MixinBase {
       }
     } catch (e) {
       this.wechaty.emitError(e)
-      log.error('Tag', 'createMultiTag() exception: %s', (e as Error).message)
+      this.log.error('Tag', 'createMultiTag() exception: %s', (e as Error).message)
     }
   }
 
   static async deleteTag (tagInstance: TagInterface): Promise<void> {
-    log.verbose('Tag', 'deleteTag(%s, %s)', tagInstance)
+    this.log.verbose('Tag', 'deleteTag(%s, %s)', tagInstance)
 
     try {
       await this.wechaty.puppet.tagTagDelete([ tagInstance.id ])
     } catch (e) {
       this.wechaty.emitError(e)
-      log.error('Tag', 'deleteTag() exception: %s', (e as Error).message)
+      this.log.error('Tag', 'deleteTag() exception: %s', (e as Error).message)
     }
   }
 
   static async deleteMultiTag (tagInstances: TagInterface[]): Promise<void> {
-    log.verbose('Tag', 'deleteMultiTag(%s, %s)', tagInstances)
+    this.log.verbose('Tag', 'deleteMultiTag(%s, %s)', tagInstances)
 
     try {
       await this.wechaty.puppet.tagTagDelete(tagInstances.map(i => i.id))
     } catch (e) {
       this.wechaty.emitError(e)
-      log.error('Tag', 'deleteMultiTag() exception: %s', (e as Error).message)
+      this.log.error('Tag', 'deleteMultiTag() exception: %s', (e as Error).message)
     }
   }
 
   static async modifyTag (tagInstance: TagInterface, tagNewName: string): Promise<TagInterface | void> {
-    log.verbose('Tag', 'modifyTag(%s, %s)', tagInstance)
+    this.log.verbose('Tag', 'modifyTag(%s, %s)', tagInstance)
 
     try {
       const tagNewInfo: PUPPET.types.TagInfo = {
@@ -329,14 +328,14 @@ class TagMixin extends MixinBase {
       }
     } catch (e) {
       this.wechaty.emitError(e)
-      log.error('Tag', 'modifyTag() exception: %s', (e as Error).message)
+      this.log.error('Tag', 'modifyTag() exception: %s', (e as Error).message)
     }
   }
 
   static async modifyMultiTag (
     tagInfos: Array<{ tag: TagInterface, newName: string }>,
   ): Promise<TagInterface[] | void> {
-    log.verbose('Tag', 'modifyMultiTag(%o)', tagInfos)
+    this.log.verbose('Tag', 'modifyMultiTag(%o)', tagInfos)
 
     try {
       const tagNewInfoList: PUPPET.types.TagInfo[] = tagInfos.map(i => ({
@@ -353,7 +352,7 @@ class TagMixin extends MixinBase {
       }
     } catch (e) {
       this.wechaty.emitError(e)
-      log.error('Tag', 'modifyMultiTag() exception: %s', (e as Error).message)
+      this.log.error('Tag', 'modifyMultiTag() exception: %s', (e as Error).message)
     }
   }
 

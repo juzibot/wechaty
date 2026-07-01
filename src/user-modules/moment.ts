@@ -17,7 +17,6 @@
  *   limitations under the License.
  *
  */
-import { log } from '@juzi/wechaty-puppet'
 import type { Constructor } from 'clone-class'
 
 import type { ContactInterface } from './contact.js'
@@ -47,19 +46,19 @@ class MomentMixin extends wechatifyMixinBase() {
   }
 
   static async signature (signature?: string): Promise<void | string> {
-    log.verbose('Moment', 'signature(%s)', signature)
+    this.log.verbose('Moment', 'signature(%s)', signature)
 
     return this.wechaty.puppet.momentSignature(signature)
   }
 
   static async coverage (coverage?: FileBoxInterface): Promise<void | FileBoxInterface> {
-    log.verbose('Moment', 'coverage(%s)', JSON.stringify(coverage))
+    this.log.verbose('Moment', 'coverage(%s)', JSON.stringify(coverage))
 
     return this.wechaty.puppet.momentCoverage(coverage)
   }
 
   static async visibleList (): Promise<ContactInterface[]> {
-    log.verbose('Moment', 'visibleList()')
+    this.log.verbose('Moment', 'visibleList()')
 
     try {
       const contactIdList: string[] = await this.wechaty.puppet.momentVisibleList()
@@ -84,7 +83,7 @@ class MomentMixin extends wechatifyMixinBase() {
 
     } catch (e) {
       this.wechaty.emitError(e)
-      log.error('Moment', 'this.wechaty.puppet.momentVisibleList() rejected: %s', (e as Error).message)
+      this.log.error('Moment', 'this.wechaty.puppet.momentVisibleList() rejected: %s', (e as Error).message)
       return []
     }
   }

@@ -30,7 +30,6 @@ import { escapeRegExp }           from '../pure-functions/escape-regexp.js'
 import { timestampToDate }        from '../pure-functions/timestamp-to-date.js'
 
 import {
-  log,
   AT_SEPARATOR_REGEX,
 }                         from '../config.js'
 import type {
@@ -157,7 +156,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
   static async find (
     query : string | PUPPET.filters.Message,
   ): Promise<undefined | MessageInterface> {
-    log.verbose('Message', 'find(%s)', JSON.stringify(query))
+    this.log.verbose('Message', 'find(%s)', JSON.stringify(query))
 
     if (typeof query === 'object' && query.id) {
       const message = this.load(query.id)
@@ -181,7 +180,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
     }
 
     if (messageList.length > 1) {
-      log.warn('Message', 'findAll() got more than one(%d) result', messageList.length)
+      this.log.warn('Message', 'findAll() got more than one(%d) result', messageList.length)
     }
 
     return messageList[0]!
@@ -193,7 +192,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
   static async findAll (
     query? : PUPPET.filters.Message,
   ): Promise<MessageInterface[]> {
-    log.verbose('Message', 'findAll(%s)', JSON.stringify(query) || '')
+    this.log.verbose('Message', 'findAll(%s)', JSON.stringify(query) || '')
 
     // Huan(202111): { id } query has been optimized in the PuppetAbstract class
 
@@ -206,7 +205,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
         messageList.map(
           message => message.ready()
             .catch(e => {
-              log.warn('Room', 'findAll() message.ready() rejection: %s', e)
+              this.log.warn('Room', 'findAll() message.ready() rejection: %s', e)
               invalidDict[message.id] = true
             }),
         ),
@@ -216,7 +215,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
 
     } catch (e) {
       this.wechaty.emitError(e)
-      log.warn('Message', 'findAll() rejected: %s', (e as Error).message)
+      this.log.warn('Message', 'findAll() rejected: %s', (e as Error).message)
       return [] // fail safe
     }
   }
@@ -228,7 +227,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
    * https://www.tatango.com/resources/video-lessons/video-mo-mt-sms-messaging/
    */
   static load (id: string): MessageImplInterface {
-    log.verbose('Message', 'static load(%s)', id)
+    this.log.verbose('Message', 'static load(%s)', id)
 
     /**
      * Must NOT use `Message` at here
@@ -242,7 +241,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
   }
 
   static async getBroadcastTargets (): Promise<{ contacts: ContactInterface[]; rooms: RoomInterface[] }> {
-    log.verbose('Message', 'static getBroadcastTargets()')
+    this.log.verbose('Message', 'static getBroadcastTargets()')
 
     const { contactIds = [], roomIds = [] } = await this.wechaty.puppet.getMessageBroadcastTarget()
 
@@ -319,7 +318,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
   }
 
   static async createBroadcast (targets: (ContactInterface | RoomInterface)[], post: PostInterface): Promise<PostInterface | void> {
-    log.verbose('Message', 'static createBroadcast()')
+    this.log.verbose('Message', 'static createBroadcast()')
 
     const targetIds = targets.map(target => target.id)
     const type = post.payload.type || PUPPET.types.Post.Unspecified
@@ -336,7 +335,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
   }
 
   static async batchSendMessage (targets: (ContactInterface | RoomInterface)[], post: PostInterface, sendBatchId: string): Promise<BatchSendMessageResult[]> {
-    log.verbose('Message', 'static batchSendMessage()')
+    this.log.verbose('Message', 'static batchSendMessage()')
 
     const targetIds = targets.map(target => target.id)
 
@@ -452,7 +451,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
       status: PUPPET.types.BroadcastTargetStatus,
     }[]
   }> {
-    log.verbose('Message', 'static getBroadcastStatus()')
+    this.log.verbose('Message', 'static getBroadcastStatus()')
 
     const postId = broadcast.id
     if (!postId) {
@@ -522,7 +521,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
   }
 
   static async mergeForward (to: ContactInterface | RoomInterface, messageList: MessageInterface[]): Promise<void | MessageInterface> {
-    log.verbose('Message', `mergeForward(${messageList})`)
+    this.log.verbose('Message', `mergeForward(${messageList})`)
     try {
       const msgId = await this.wechaty.puppet.messageForward(
         to.id,
@@ -533,7 +532,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
         return msg
       }
     } catch (e) {
-      log.error('Message', 'forward(%s) exception: %s', to, e)
+      this.log.error('Message', 'forward(%s) exception: %s', to, e)
       throw e
     }
   }

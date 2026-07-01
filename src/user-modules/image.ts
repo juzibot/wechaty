@@ -23,7 +23,6 @@ import type {
 }                   from 'file-box'
 import type { Constructor } from 'clone-class'
 import { validationMixin } from '../user-mixins/validation.js'
-import { log } from '../config.js'
 
 import {
   wechatifyMixinBase,
@@ -32,7 +31,7 @@ import {
 class ImageMixin extends wechatifyMixinBase() {
 
   static create (id: string): ImageInterface {
-    log.verbose('Image', 'static create(%s)', id)
+    this.log.verbose('Image', 'static create(%s)', id)
 
     const image = new this(id)
     return image

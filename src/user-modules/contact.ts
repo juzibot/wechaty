@@ -28,9 +28,6 @@ import type {
   Constructor,
 }                       from 'clone-class'
 
-import {
-  log,
-}                           from '../config.js'
 
 import { ContactEventEmitter }        from '../schemas/mod.js'
 
@@ -98,7 +95,7 @@ class ContactMixin extends MixinBase implements SayableSayer {
   static async find (
     query : string | PUPPET.filters.Contact,
   ): Promise<undefined | ContactInterface> {
-    log.silly('Contact', 'find(%s)', JSON.stringify(query, stringifyFilter))
+    this.log.silly('Contact', 'find(%s)', JSON.stringify(query, stringifyFilter))
 
     if (typeof query === 'object' && query.id) {
       let contact: ContactImpl
@@ -129,7 +126,7 @@ class ContactMixin extends MixinBase implements SayableSayer {
     }
 
     if (contactList.length > 1) {
-      log.warn('Contact', 'find() got more than 1 result: %d total', contactList.length)
+      this.log.warn('Contact', 'find() got more than 1 result: %d total', contactList.length)
     }
 
     for (const [ idx, contact ] of contactList.entries()) {
@@ -138,15 +135,15 @@ class ContactMixin extends MixinBase implements SayableSayer {
       // https://github.com/wechaty/wechaty/issues/1345
       const valid = await this.wechaty.puppet.contactValidate(contact.id)
       if (valid) {
-        log.silly('Contact', 'find() contact<id=%s> is valid, return it', idx, contact.id)
+        this.log.silly('Contact', 'find() contact<id=%s> is valid, return it', idx, contact.id)
         return contact
       } else {
-        log.silly('Contact', 'find() contact<id=%s> is invalid, skip it', idx, contact.id)
+        this.log.silly('Contact', 'find() contact<id=%s> is invalid, skip it', idx, contact.id)
       }
 
     }
 
-    log.warn('Contact', 'find() all of %d contacts are invalid', contactList.length)
+    this.log.warn('Contact', 'find() all of %d contacts are invalid', contactList.length)
     return undefined
   }
 
@@ -172,7 +169,7 @@ class ContactMixin extends MixinBase implements SayableSayer {
   static async findAll (
     query? : string | PUPPET.filters.Contact,
   ): Promise<ContactInterface[]> {
-    log.verbose('Contact', 'findAll(%s)', JSON.stringify(query, stringifyFilter) || '')
+    this.log.verbose('Contact', 'findAll(%s)', JSON.stringify(query, stringifyFilter) || '')
 
     const contactIdList: string[] = await this.wechaty.puppet.contactSearch(query)
 
@@ -242,7 +239,7 @@ class ContactMixin extends MixinBase implements SayableSayer {
     opts?  : { batch?: number },
   ): AsyncIterable<ContactInterface[]> {
     const batch = opts?.batch ?? 100
-    log.verbose('Contact', 'findAllIter(%s, batch=%d)', JSON.stringify(query, stringifyFilter) || '', batch)
+    this.log.verbose('Contact', 'findAllIter(%s, batch=%d)', JSON.stringify(query, stringifyFilter) || '', batch)
 
     if (batch <= 0) {
       throw new Error(`Contact.findAllIter() batch must be positive, got ${batch}`)
@@ -263,7 +260,7 @@ class ContactMixin extends MixinBase implements SayableSayer {
       for (const id of idChunk) {
         const payload = payloadMap.get(id)
         if (!payload) {
-          log.silly('Contact', 'findAllIter() payload missing for id=%s, skip', id)
+          this.log.silly('Contact', 'findAllIter() payload missing for id=%s, skip', id)
           continue
         }
 
@@ -278,7 +275,7 @@ class ContactMixin extends MixinBase implements SayableSayer {
       if (contactChunk.length > 0) {
         yield contactChunk
       } else {
-        log.warn('Contact', 'findAllIter() batch all missing from payloadMap, idChunk=%j', idChunk)
+        this.log.warn('Contact', 'findAllIter() batch all missing from payloadMap, idChunk=%j', idChunk)
       }
     }
   }
@@ -348,7 +345,7 @@ class ContactMixin extends MixinBase implements SayableSayer {
   // TODO
   // eslint-disable-next-line no-use-before-define
   static async delete (contact: ContactInterface): Promise<void> {
-    log.verbose('Contact', 'static delete(%s)', contact.id)
+    this.log.verbose('Contact', 'static delete(%s)', contact.id)
     await this.wechaty.puppet.contactDelete(contact.id)
   }
 

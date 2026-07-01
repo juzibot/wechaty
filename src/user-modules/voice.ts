@@ -23,7 +23,6 @@ import type {
 import type { Constructor } from 'clone-class'
 import type * as PUPPET from '@juzi/wechaty-puppet'
 import { validationMixin } from '../user-mixins/validation.js'
-import { log } from '../config.js'
 
 import {
   wechatifyMixinBase,
@@ -62,7 +61,7 @@ function isUnsupportedError (e: unknown): boolean {
 class VoiceMixin extends wechatifyMixinBase() {
 
   static create (id: string): VoiceInterface {
-    log.verbose('Voice', 'static create(%s)', id)
+    this.log.verbose('Voice', 'static create(%s)', id)
 
     const voice = new this(id)
     return voice

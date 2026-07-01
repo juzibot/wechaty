@@ -135,13 +135,13 @@ class PostMixin extends wechatifyMixinBase() {
   static create (
     payload: PUPPET.payloads.PostClient,
   ): PostInterface {
-    log.verbose('Post', 'create()')
+    this.log.verbose('Post', 'create()')
 
     return new this(payload)
   }
 
   static load (id: string): PostInterface {
-    log.verbose('Post', 'static load(%s)', id)
+    this.log.verbose('Post', 'static load(%s)', id)
 
     /**
      * Must NOT use `Post` at here
@@ -157,7 +157,7 @@ class PostMixin extends wechatifyMixinBase() {
   static async find (
     filter: PUPPET.filters.Post,
   ): Promise<undefined | PostInterface> {
-    log.verbose('Post', 'find(%s)',
+    this.log.verbose('Post', 'find(%s)',
       JSON.stringify(filter),
     )
 
@@ -181,7 +181,7 @@ class PostMixin extends wechatifyMixinBase() {
     postList       : PostInterface[],
     nextPageToken? : string,
   ]> {
-    log.verbose('Post', 'findAll(%s%s)',
+    this.log.verbose('Post', 'findAll(%s%s)',
       JSON.stringify(filter),
       pagination ? ', ' + JSON.stringify(pagination) : '',
     )

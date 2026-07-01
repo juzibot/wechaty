@@ -1,7 +1,6 @@
 import type * as PUPPET from '@juzi/wechaty-puppet'
 
 import type { Constructor } from 'clone-class'
-import { log } from '../config.js'
 
 import { validationMixin } from '../user-mixins/validation.js'
 
@@ -17,7 +16,7 @@ class ChannelCardMixin extends wechatifyMixinBase() {
    *
    */
   static async create (): Promise<ChannelCardInterface> {
-    log.verbose('ChannelCard', 'create()')
+    this.log.verbose('ChannelCard', 'create()')
 
     // TODO: get appid and username from wechat
     const payload: PUPPET.payloads.ChannelCard = {

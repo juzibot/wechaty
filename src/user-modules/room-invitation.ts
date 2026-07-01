@@ -19,7 +19,6 @@
  */
 import type * as PUPPET          from '@juzi/wechaty-puppet'
 
-import { log } from '../config.js'
 import type { Constructor } from 'clone-class'
 
 import type {
@@ -244,7 +243,7 @@ class RoomInvitationMixin extends wechatifyMixinBase() implements Accepter {
   static async fromJSON (
     payload: string | PUPPET.payloads.RoomInvitation,
   ): Promise<RoomInvitationInterface> {
-    log.verbose('RoomInvitation', 'fromJSON(%s)',
+    this.log.verbose('RoomInvitation', 'fromJSON(%s)',
       typeof payload === 'string'
         ? payload
         : JSON.stringify(payload),

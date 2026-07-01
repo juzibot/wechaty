@@ -2,7 +2,6 @@ import type { Constructor } from 'clone-class'
 import type { PaginationRequest } from '@juzi/wechaty-puppet/filters'
 import * as PUPPET from '@juzi/wechaty-puppet'
 
-import { log } from '../config.js'
 import { poolifyMixin } from '../user-mixins/poolify.js'
 import { validationMixin } from '../user-mixins/validation.js'
 import { wechatifyMixin } from '../user-mixins/wechatify.js'
@@ -33,7 +32,7 @@ class WxxdProductMixin extends MixinBase {
    * List all products
    */
   static async list (query: PaginationRequest) {
-    log.verbose('WxxdProduct', 'list(%s)', JSON.stringify(query))
+    this.log.verbose('WxxdProduct', 'list(%s)', JSON.stringify(query))
 
     return await this.wechaty.puppet.listWxxdProducts(query)
   }
@@ -44,7 +43,7 @@ class WxxdProductMixin extends MixinBase {
   static async find (
     query: string | { id: string },
   ): Promise<WxxdProductInterface | undefined> {
-    log.verbose('WxxdProduct', 'find(%s)', JSON.stringify(query))
+    this.log.verbose('WxxdProduct', 'find(%s)', JSON.stringify(query))
 
     const id = typeof query === 'string' ? query : query.id
 

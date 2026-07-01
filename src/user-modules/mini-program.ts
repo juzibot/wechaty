@@ -20,7 +20,6 @@
 import type * as PUPPET  from '@juzi/wechaty-puppet'
 
 import type { Constructor } from 'clone-class'
-import { log } from '../config.js'
 
 import { validationMixin } from '../user-mixins/validation.js'
 
@@ -37,7 +36,7 @@ class MiniProgramMixin extends wechatifyMixinBase() {
    *
    */
   static async create (): Promise<MiniProgramInterface> {
-    log.verbose('MiniProgram', 'create()')
+    this.log.verbose('MiniProgram', 'create()')
 
     // TODO: get appid and username from wechat
     const payload: PUPPET.payloads.MiniProgram = {

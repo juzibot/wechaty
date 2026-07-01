@@ -1,4 +1,4 @@
-import { log, types } from '@juzi/wechaty-puppet'
+import type { types } from '@juzi/wechaty-puppet'
 import type { Constructor } from 'clone-class'
 
 import { validationMixin } from '../user-mixins/validation.js'
@@ -41,7 +41,7 @@ class WecomMixin extends wechatifyMixinBase() {
     const filteredRoomIds = Array.from(rawRoomIdSet).filter(id => !actualRoomIdSet.has(id))
 
     if (filteredRoomIds.length) {
-      log.warn(`these rooms cannot be applied with anti-spam strategy: ${filteredRoomIds}`)
+      this.log.warn(`these rooms cannot be applied with anti-spam strategy: ${filteredRoomIds}`)
     }
 
     if (actualRoomIdSet.size) {

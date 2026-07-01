@@ -1,7 +1,6 @@
 import * as PUPPET from '@juzi/wechaty-puppet'
 
 import type { Constructor } from 'clone-class'
-import { log } from '../config.js'
 
 import { validationMixin } from '../user-mixins/validation.js'
 
@@ -19,7 +18,7 @@ type ChatHistoryMessageType = string | LocationInterface | MiniProgramInterface 
 class ChatHistoryMixin extends wechatifyMixinBase() {
 
   static async create (): Promise<ChatHistoryInterface> {
-    log.verbose('ChatHistory', 'create()')
+    this.log.verbose('ChatHistory', 'create()')
 
     const payload: PUPPET.payloads.ChatHistory[] = [
       {

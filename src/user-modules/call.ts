@@ -1,7 +1,6 @@
 import * as PUPPET from '@juzi/wechaty-puppet'
 
 import type { Constructor } from 'clone-class'
-import { log } from '../config.js'
 
 import { validationMixin } from '../user-mixins/validation.js'
 
@@ -386,7 +385,7 @@ export {
 class CallRecordMixin extends wechatifyMixinBase() {
 
   static async create (): Promise<CallRecordInterface> {
-    log.verbose('CallRecord', 'create()')
+    this.log.verbose('CallRecord', 'create()')
 
     const payload: PUPPET.payloads.CallRecord = {
       starter: 'todo',

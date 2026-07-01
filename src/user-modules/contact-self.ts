@@ -18,9 +18,6 @@
  *
  */
 import type * as PUPPET from '@juzi/wechaty-puppet'
-import {
-  log,
-}                             from '@juzi/wechaty-puppet'
 import type {
   FileBoxInterface,
 }                             from 'file-box'
@@ -68,7 +65,7 @@ class ContactSelfMixin extends MixinBase {
         return contact as ContactSelfInterface
       }
     } catch (e) {
-      log.silly('ContactSelf', 'find() exception: %s', (e as Error).message)
+      this.log.silly('ContactSelf', 'find() exception: %s', (e as Error).message)
     }
     return undefined
   }

@@ -1,5 +1,4 @@
 import type { Constructor } from 'clone-class'
-import { log } from '../config.js'
 
 import { validationMixin } from '../user-mixins/validation.js'
 
@@ -15,7 +14,7 @@ class DouyinOneClickPhoneCollectionMixin extends wechatifyMixinBase() {
    *
    */
   static async create (): Promise<DouyinOneClickPhoneCollectionInterface> {
-    log.verbose('DouyinOneClickPhoneCollection', 'create()')
+    this.log.verbose('DouyinOneClickPhoneCollection', 'create()')
 
     return new this({})
   }
