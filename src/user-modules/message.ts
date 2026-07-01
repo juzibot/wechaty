@@ -553,7 +553,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
     public readonly id: string,
   ) {
     super()
-    log.verbose('Message', 'constructor(%s) for class %s',
+    this.log.verbose('Message', 'constructor(%s) for class %s',
       id || '',
       this.constructor.name,
     )
@@ -591,7 +591,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
     ) {
       msgStrList.push(`\t${this.text().substr(0, 70)}`)
     } else {
-      log.silly('Message', 'toString() for message type: %s(%s)', PUPPET.types.Message[this.type()], this.type())
+      this.log.silly('Message', 'toString() for message type: %s(%s)', PUPPET.types.Message[this.type()], this.type())
       // if (!this.#payload) {
       //   throw new Error('no payload')
       // }
@@ -643,7 +643,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
         throw new Error('no talkerId found for talker')
       }
 
-      log.warn('Message', 'talker() payload.talkerId not exist! See: https://github.com/wechaty/puppet/issues/187')
+      this.log.warn('Message', 'talker() payload.talkerId not exist! See: https://github.com/wechaty/puppet/issues/187')
       console.error('Puppet: %s@%s', this.wechaty.puppet.name(), this.wechaty.puppet.version())
       console.error(new Error().stack)
     }
@@ -662,7 +662,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
    *  https://github.com/wechaty/wechaty/issues/2094
    */
   from (): undefined | ContactInterface {
-    log.warn('Message', 'from() is deprecated, use talker() instead. Call stack: %s',
+    this.log.warn('Message', 'from() is deprecated, use talker() instead. Call stack: %s',
       new Error().stack,
     )
     try {
@@ -704,7 +704,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
        */
       listenerId = this.payload.toId
 
-      log.warn('Message', 'listener() payload.listenerId should be set! See: https://github.com/wechaty/puppet/issues/187')
+      this.log.warn('Message', 'listener() payload.listenerId should be set! See: https://github.com/wechaty/puppet/issues/187')
       console.error('Puppet: %s@%s', this.wechaty.puppet.name(), this.wechaty.puppet.version())
       console.error(new Error().stack)
     }
@@ -784,7 +784,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
     const oldText = this.payload.text || ''
     const newText = (this.payload.textContent || []).map(item => item.text).join('')
     if (newText && oldText !== newText) {
-      log.warn('Message', `got different text, old: ${oldText}, new: ${newText}`)
+      this.log.warn('Message', `got different text, old: ${oldText}, new: ${newText}`)
     }
 
     // still use old text before we deprecate old text field
@@ -821,7 +821,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
 
     } catch (e) {
       this.wechaty.emitError(e)
-      log.verbose(`Can not retrieve the recalled message with id ${originalMessageId}.`)
+      this.log.verbose(`Can not retrieve the recalled message with id ${originalMessageId}.`)
     }
     return undefined
   }
@@ -918,7 +918,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
   async say (
     sayable: Sayable,
   ): Promise<void | MessageInterface> {
-    log.verbose('Message', 'say(%s)', sayable)
+    this.log.verbose('Message', 'say(%s)', sayable)
 
     const talker  = this.talker()
     const room    = this.room()
@@ -939,7 +939,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
     text: string,
     mentionList?: ContactInterface[],
   ): Promise<void | MessageInterface> {
-    log.verbose('Message', 'say(%s)', text)
+    this.log.verbose('Message', 'say(%s)', text)
 
     const talker = this.talker()
     const room = this.room()
@@ -973,7 +973,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
    */
 
   async recall (): Promise<boolean> {
-    log.verbose('Message', 'recall()')
+    this.log.verbose('Message', 'recall()')
     const isSuccess = await this.wechaty.puppet.messageRecall(this.id)
     return isSuccess
   }
@@ -1021,7 +1021,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
       return talker.id === this.wechaty.puppet.currentUserId
     } catch (e) {
       this.wechaty.emitError(e)
-      log.error('Message', 'self() rejection: %s', (e as Error).message)
+      this.log.error('Message', 'self() rejection: %s', (e as Error).message)
       return false
     }
   }
@@ -1046,7 +1046,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
    * console.log(contactList)
    */
   async mentionList (): Promise<ContactInterface[]> {
-    log.verbose('Message', 'mentionList()')
+    this.log.verbose('Message', 'mentionList()')
 
     const room = this.room()
     if (this.type() !== PUPPET.types.Message.Text || !room) {
@@ -1105,7 +1105,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
     // filter blank string
     mentionNameList = mentionNameList.filter(s => !!s)
 
-    log.verbose('Message', 'mentionList() text = "%s", mentionNameList = "%s"',
+    this.log.verbose('Message', 'mentionList() text = "%s", mentionNameList = "%s"',
       this.text(),
       JSON.stringify(mentionNameList),
     )
@@ -1120,13 +1120,13 @@ class MessageMixin extends MixinBase implements SayableSayer {
     contactList = contactList.concat.apply([], contactListNested)
 
     if (contactList.length === 0) {
-      log.silly('Message', `message.mentionList() can not found member using room.member() from mentionList, mention string: ${JSON.stringify(mentionNameList)}`)
+      this.log.silly('Message', `message.mentionList() can not found member using room.member() from mentionList, mention string: ${JSON.stringify(mentionNameList)}`)
     }
     return contactList
   }
 
   isMentionAll (): boolean {
-    log.verbose('Message', 'isMentionAll()')
+    this.log.verbose('Message', 'isMentionAll()')
 
     const room = this.room()
     if (this.type() !== PUPPET.types.Message.Text || !room) {
@@ -1147,7 +1147,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
    * @deprecated mention() DEPRECATED. use mentionList() instead.
    */
   async mention (): Promise<ContactInterface[]> {
-    log.warn('Message', 'mention() DEPRECATED. use mentionList() instead. Call stack: %s',
+    this.log.warn('Message', 'mention() DEPRECATED. use mentionList() instead. Call stack: %s',
       new Error().stack,
     )
     return this.mentionList()
@@ -1172,7 +1172,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
           case PUPPET.types.TextContentType.At:
             return ''
           default:
-            log.warn(`got unknown type ${type} in text content`)
+            this.log.warn(`got unknown type ${type} in text content`)
             return ''
         }
       }).join('')
@@ -1230,7 +1230,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
    * @ignore
    */
   async ready (forceSync = false): Promise<void> {
-    log.verbose('Message', 'ready()')
+    this.log.verbose('Message', 'ready()')
 
     if (this.isReady() && !forceSync) {
       return
@@ -1249,7 +1249,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
         throw new Error('no talkerId found for talker')
       }
 
-      log.warn('Message', 'ready() payload.talkerId not exist! See: https://github.com/wechaty/puppet/issues/187')
+      this.log.warn('Message', 'ready() payload.talkerId not exist! See: https://github.com/wechaty/puppet/issues/187')
       console.error('Puppet: %s@%s', this.wechaty.puppet.name(), this.wechaty.puppet.version())
       console.error(new Error().stack)
     }
@@ -1263,7 +1263,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
        */
       listenerId = this.payload.toId
 
-      log.warn('Message', 'ready() payload.listenerId should be set! See: https://github.com/wechaty/puppet/issues/187')
+      this.log.warn('Message', 'ready() payload.listenerId should be set! See: https://github.com/wechaty/puppet/issues/187')
       console.error('Puppet: %s@%s', this.wechaty.puppet.name(), this.wechaty.puppet.version())
       console.error(new Error().stack)
     }
@@ -1303,7 +1303,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
 
   //           default:
   //             const e = new Error('ready() unsupported typeApp(): ' + this.typeApp())
-  //             log.warn('PuppeteerMessage', e.message)
+  //             this.log.warn('PuppeteerMessage', e.message)
   //             throw e
   //         }
   //         break
@@ -1333,7 +1333,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
    * .start()
    */
   async forward (to: RoomInterface | ContactInterface): Promise<void | MessageInterface> {
-    log.verbose('Message', 'forward(%s)', to)
+    this.log.verbose('Message', 'forward(%s)', to)
 
     // let roomId
     // let contactId
@@ -1348,7 +1348,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
         return msg
       }
     } catch (e) {
-      log.error('Message', 'forward(%s) exception: %s', to, e)
+      this.log.error('Message', 'forward(%s) exception: %s', to, e)
       throw e
     }
   }
@@ -1393,7 +1393,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
    * fileBox.toFile(fileName)
    */
   async toFileBox (): Promise<FileBoxInterface> {
-    log.verbose('Message', 'toFileBox()')
+    this.log.verbose('Message', 'toFileBox()')
     if (this.type() === PUPPET.types.Message.Text) {
       throw new Error('text message no file')
     }
@@ -1415,7 +1415,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
    * fileBox.toFile(fileName)
    */
   toImage (): ImageInterface {
-    log.verbose('Message', 'toImage() for message id: %s', this.id)
+    this.log.verbose('Message', 'toImage() for message id: %s', this.id)
     if (this.type() !== PUPPET.types.Message.Image) {
       throw new Error(`not a image type message. type: ${this.type()}`)
     }
@@ -1436,7 +1436,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
    * const { text, noSpeech } = await voice.text()
    */
   toVoice (): VoiceInterface {
-    log.verbose('Message', 'toVoice() for message id: %s', this.id)
+    this.log.verbose('Message', 'toVoice() for message id: %s', this.id)
     if (this.type() !== PUPPET.types.Message.Audio) {
       throw new Error(`not a voice type message. type: ${this.type()}`)
     }
@@ -1444,7 +1444,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
   }
 
   async toPreview (): Promise<FileBoxInterface | undefined> {
-    log.verbose('Message', 'toPreview() for message id: %s', this.id)
+    this.log.verbose('Message', 'toPreview() for message id: %s', this.id)
     if (!ALLOW_PREVIEW_TYPES.some(e => e === this.type())) {
       throw new Error(`cannot get preview for this type. type: ${this.type}`)
     }
@@ -1460,7 +1460,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
    * @returns {Promise<ContactInterface>}
    */
   async toContact (): Promise<ContactInterface> {
-    log.verbose('Message', 'toContact()')
+    this.log.verbose('Message', 'toContact()')
 
     if (this.type() !== PUPPET.types.Message.Contact) {
       throw new Error('message not a ShareCard')
@@ -1481,7 +1481,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
   }
 
   async toUrlLink (): Promise<UrlLinkInterface> {
-    log.verbose('Message', 'toUrlLink()')
+    this.log.verbose('Message', 'toUrlLink()')
 
     if (!this.payload) {
       throw new Error('no payload')
@@ -1497,7 +1497,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
   }
 
   async toMiniProgram (): Promise<MiniProgramInterface> {
-    log.verbose('Message', 'toMiniProgram()')
+    this.log.verbose('Message', 'toMiniProgram()')
 
     if (!this.payload) {
       throw new Error('no payload')
@@ -1513,7 +1513,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
   }
 
   async toLocation (): Promise<LocationInterface> {
-    log.verbose('Message', 'toLocation()')
+    this.log.verbose('Message', 'toLocation()')
 
     if (!this.payload) {
       throw new Error('no payload')
@@ -1529,7 +1529,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
   }
 
   public async toPost (): Promise<PostInterface> {
-    log.verbose('Message', 'toPost()')
+    this.log.verbose('Message', 'toPost()')
 
     if (!this.payload) {
       throw new Error('no payload')
@@ -1545,7 +1545,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
   }
 
   public async toChannel (): Promise<ChannelInterface> {
-    log.verbose('Message', 'toChannel()')
+    this.log.verbose('Message', 'toChannel()')
 
     if (!this.payload) {
       throw new Error('no payload')
@@ -1560,7 +1560,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
   }
 
   public async toChannelCard (): Promise<ChannelCardInterface> {
-    log.verbose('Message', 'toChannelCard()')
+    this.log.verbose('Message', 'toChannelCard()')
 
     if (!this.payload) {
       throw new Error('no payload')
@@ -1575,7 +1575,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
   }
 
   public async toConsultCard (): Promise<ConsultCardInterface> {
-    log.verbose('Message', 'toConsultCard()')
+    this.log.verbose('Message', 'toConsultCard()')
 
     if (!this.payload) {
       throw new Error('no payload')
@@ -1590,7 +1590,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
   }
 
   public async toPremiumOnlineAppointmentCard (): Promise<PremiumOnlineAppointmentCardInterface> {
-    log.verbose('Message', 'toPremiumOnlineAppointmentCard()')
+    this.log.verbose('Message', 'toPremiumOnlineAppointmentCard()')
 
     if (!this.payload) {
       throw new Error('no payload')
@@ -1605,7 +1605,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
   }
 
   public async toCallRecord (): Promise<CallRecordInterface> {
-    log.verbose('Message', 'toCallRecord()')
+    this.log.verbose('Message', 'toCallRecord()')
 
     if (!this.payload) {
       throw new Error('no payload')
@@ -1620,7 +1620,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
   }
 
   public async toChatHistory (): Promise<ChatHistoryInterface> {
-    log.verbose('Message', 'toChatHistory()')
+    this.log.verbose('Message', 'toChatHistory()')
 
     if (!this.payload) {
       throw new Error('no payload')
@@ -1635,7 +1635,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
   }
 
   public async toWxxdProduct (): Promise<WxxdProductInterface> {
-    log.verbose('Message', 'toWxxdProduct()')
+    this.log.verbose('Message', 'toWxxdProduct()')
 
     if (!this.payload) {
       throw new Error('no payload')
@@ -1652,7 +1652,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
   }
 
   public async toWxxdOrder (): Promise<WxxdOrderInterface> {
-    log.verbose('Message', 'toWxxdOrder()')
+    this.log.verbose('Message', 'toWxxdOrder()')
 
     if (!this.payload) {
       throw new Error('no payload')
@@ -1669,12 +1669,12 @@ class MessageMixin extends MixinBase implements SayableSayer {
   }
 
   async toSayable (): Promise<undefined | Sayable> {
-    log.verbose('Message', 'toSayable()')
+    this.log.verbose('Message', 'toSayable()')
     return messageToSayable(this)
   }
 
   async getQuotedMessage (): Promise<undefined | MessageInterface> {
-    log.verbose('Message', 'getQuotedMessage()')
+    this.log.verbose('Message', 'getQuotedMessage()')
     if (!this.payload) {
       throw new Error('no payload')
     }
@@ -1692,7 +1692,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
       try {
         additionalInfoObj = JSON.parse(this.payload.additionalInfo)
       } catch (e) {
-        log.warn('Message', 'additionalInfo() parse failed, additionalInfo: %s', this.payload.additionalInfo)
+        this.log.warn('Message', 'additionalInfo() parse failed, additionalInfo: %s', this.payload.additionalInfo)
       }
     }
     return additionalInfoObj

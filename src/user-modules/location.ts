@@ -55,7 +55,7 @@ class LocationMixin extends wechatifyMixinBase() {
     public readonly payload: PUPPET.payloads.Location,
   ) {
     super()
-    log.verbose('Location', 'constructor()')
+    this.log.verbose('Location', 'constructor()')
     // Huan(202110): it is ok to create a raw one without wechaty instance
     // guardWechatifyClass.call(this, Location)
   }

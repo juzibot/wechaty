@@ -36,7 +36,7 @@ const ioMixin = <MixinBase extends typeof WechatySkeleton & GErrorMixin> (mixinB
     }
 
     override async start (): Promise<void> {
-      log.verbose('WechatyIoMixin', 'start()')
+      this.log.verbose('WechatyIoMixin', 'start()')
 
       await super.start()
 
@@ -48,13 +48,13 @@ const ioMixin = <MixinBase extends typeof WechatySkeleton & GErrorMixin> (mixinB
        * Clean the memory leak-ed io (?)
        */
       if (this.__io) {
-        log.error('WechatyIoMixin', 'start() found existing io instance: stopping...')
+        this.log.error('WechatyIoMixin', 'start() found existing io instance: stopping...')
         try {
           await this.__io.stop()
         } catch (e) {
           this.emitError(e)
         }
-        log.error('WechatyIoMixin', 'start() found existing io instance: stopping... done')
+        this.log.error('WechatyIoMixin', 'start() found existing io instance: stopping... done')
         this.__io = undefined
       }
 
@@ -66,13 +66,13 @@ const ioMixin = <MixinBase extends typeof WechatySkeleton & GErrorMixin> (mixinB
         wechaty : this as any,  // <- FIXME: remove any, Huan(202111)
       })
 
-      log.verbose('WechatyIoMixin', 'start() starting io ...')
+      this.log.verbose('WechatyIoMixin', 'start() starting io ...')
       await this.__io.start()
-      log.verbose('WechatyIoMixin', 'start() starting io ... done')
+      this.log.verbose('WechatyIoMixin', 'start() starting io ... done')
     }
 
     override async stop (): Promise<void> {
-      log.verbose('WechatyIoMixin', 'stop()')
+      this.log.verbose('WechatyIoMixin', 'stop()')
 
       try {
         if (!this.__io) {
@@ -83,9 +83,9 @@ const ioMixin = <MixinBase extends typeof WechatySkeleton & GErrorMixin> (mixinB
         this.__io = undefined
 
         try {
-          log.verbose('WechatyIoMixin', 'stop() starting io ...')
+          this.log.verbose('WechatyIoMixin', 'stop() starting io ...')
           await io.stop()
-          log.verbose('WechatyIoMixin', 'stop() starting io ... done')
+          this.log.verbose('WechatyIoMixin', 'stop() starting io ... done')
         } catch (e) {
           this.emitError(e)
         }

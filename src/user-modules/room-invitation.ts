@@ -66,7 +66,7 @@ class RoomInvitationMixin extends wechatifyMixinBase() implements Accepter {
     public readonly id: string,
   ) {
     super()
-    log.verbose('RoomInvitation', 'constructor(id=%s)', id)
+    this.log.verbose('RoomInvitation', 'constructor(id=%s)', id)
   }
 
   override toString () {
@@ -110,7 +110,7 @@ class RoomInvitationMixin extends wechatifyMixinBase() implements Accepter {
    * .start()
    */
   async accept (): Promise<void> {
-    log.verbose('RoomInvitation', 'accept()')
+    this.log.verbose('RoomInvitation', 'accept()')
 
     try {
       await this.wechaty.puppet.roomInvitationAccept(this.id)
@@ -118,13 +118,13 @@ class RoomInvitationMixin extends wechatifyMixinBase() implements Accepter {
       const inviter = await this.inviter()
       const topic   = await this.topic()
 
-      log.verbose('RoomInvitation', 'accept() with room(%s) & inviter(%s) ready()',
+      this.log.verbose('RoomInvitation', 'accept() with room(%s) & inviter(%s) ready()',
         topic,
         inviter,
       )
     } catch (e) {
       this.wechaty.emitError(e)
-      log.warn('RoomInvitation', 'accept() rejection: %s',
+      this.log.warn('RoomInvitation', 'accept() rejection: %s',
         (e && (e as Error).message) || e,
       )
     }
@@ -144,7 +144,7 @@ class RoomInvitationMixin extends wechatifyMixinBase() implements Accepter {
    * .start()
    */
   async inviter (): Promise<ContactInterface> {
-    log.verbose('RoomInvitation', 'inviter()')
+    this.log.verbose('RoomInvitation', 'inviter()')
 
     const payload = await this.wechaty.puppet.roomInvitationPayload(this.id)
     const inviter = await this.wechaty.Contact.find({ id: payload.inviterId })
@@ -174,7 +174,7 @@ class RoomInvitationMixin extends wechatifyMixinBase() implements Accepter {
   }
 
   async memberCount (): Promise<number> {
-    log.verbose('RoomInvitation', 'memberCount()')
+    this.log.verbose('RoomInvitation', 'memberCount()')
 
     const payload = await this.wechaty.puppet.roomInvitationPayload(this.id)
 
@@ -186,7 +186,7 @@ class RoomInvitationMixin extends wechatifyMixinBase() implements Accepter {
     * @ignore
    */
   async memberList (): Promise<ContactInterface[]> {
-    log.verbose('RoomInvitation', 'roomMemberList()')
+    this.log.verbose('RoomInvitation', 'roomMemberList()')
 
     const payload = await this.wechaty.puppet.roomInvitationPayload(this.id)
 
@@ -208,7 +208,7 @@ class RoomInvitationMixin extends wechatifyMixinBase() implements Accepter {
    * @returns {Promise<Date>}
    */
   async date (): Promise<Date> {
-    log.verbose('RoomInvitation', 'date()')
+    this.log.verbose('RoomInvitation', 'date()')
 
     const payload = await this.wechaty.puppet.roomInvitationPayload(this.id)
     return timestampToDate(payload.timestamp)
@@ -273,7 +273,7 @@ class RoomInvitationMixin extends wechatifyMixinBase() implements Accepter {
    * .start()
    */
   async toJSON (): Promise<string> {
-    log.verbose('RoomInvitation', 'toJSON()')
+    this.log.verbose('RoomInvitation', 'toJSON()')
     const payload = await this.wechaty.puppet.roomInvitationPayload(this.id)
     return JSON.stringify(payload)
   }

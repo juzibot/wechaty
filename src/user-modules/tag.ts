@@ -56,7 +56,7 @@ class TagMixin extends MixinBase {
     public readonly id: string,
   ) {
     super()
-    log.silly('Tag', 'constructor()')
+    this.log.silly('Tag', 'constructor()')
   }
 
   type (): PUPPET.types.Tag {
@@ -213,10 +213,10 @@ class TagMixin extends MixinBase {
   async ready (
     forceSync = false,
   ): Promise<void> {
-    log.silly('Tag', 'ready() @ %s with Tag key="%s"', this.wechaty.puppet, this.id)
+    this.log.silly('Tag', 'ready() @ %s with Tag key="%s"', this.wechaty.puppet, this.id)
 
     if (!forceSync && this.isReady()) { // already ready
-      log.silly('Tag', 'ready() isReady() true')
+      this.log.silly('Tag', 'ready() isReady() true')
       return
     }
 
@@ -225,7 +225,7 @@ class TagMixin extends MixinBase {
 
     } catch (e) {
       this.wechaty.emitError(e)
-      log.verbose('Tag', 'ready() this.wechaty.puppet.tagPayload(%s) exception: %s',
+      this.log.verbose('Tag', 'ready() this.wechaty.puppet.tagPayload(%s) exception: %s',
         this.id,
         (e as Error).message,
       )
@@ -234,7 +234,7 @@ class TagMixin extends MixinBase {
   }
 
   async contactList (): Promise<ContactInterface[]> {
-    log.verbose('Tag', 'contactList() for tag : %s', this)
+    this.log.verbose('Tag', 'contactList() for tag : %s', this)
 
     const contactIds = await this.wechaty.puppet.tagTagContactList(this.id)
     const contactPromises = contactIds.map(id => this.wechaty.Contact.find({ id }))
@@ -242,7 +242,7 @@ class TagMixin extends MixinBase {
   }
 
   async tag (contacts: ContactInterface | ContactInterface[]): Promise<void> {
-    log.verbose('Tag', 'tag(%s) for tag : %s', contacts, this)
+    this.log.verbose('Tag', 'tag(%s) for tag : %s', contacts, this)
 
     let contactIds: string[]
     if (Array.isArray(contacts)) {

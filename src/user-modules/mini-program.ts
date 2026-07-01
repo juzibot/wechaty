@@ -60,7 +60,7 @@ class MiniProgramMixin extends wechatifyMixinBase() {
     public readonly payload: PUPPET.payloads.MiniProgram,
   ) {
     super()
-    log.verbose('MiniProgram', 'constructor()')
+    this.log.verbose('MiniProgram', 'constructor()')
     // Huan(202110): it is ok to create a raw one without wechaty instance
     // guardWechatifyClass.call(this, MiniProgram)
   }

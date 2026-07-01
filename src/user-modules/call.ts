@@ -59,7 +59,7 @@ class CallMixin extends CallMixinBase {
     this.__direction = options.direction
     this.__status    = options.status ?? (options.direction === 'outgoing' ? 'calling' : 'ringing')
 
-    log.verbose('Call', 'constructor(%s, dir=%s, status=%s)', this.id, this.__direction, this.__status)
+    this.log.verbose('Call', 'constructor(%s, dir=%s, status=%s)', this.id, this.__direction, this.__status)
   }
 
   direction (): CallDirection { return this.__direction }
@@ -262,7 +262,7 @@ class CallMixin extends CallMixinBase {
     reason?: string,
   ): void {
     if (this.__status === 'ended') {
-      log.warn('Call', '__handleSignal(%s) ignored in ended state for callId=%s', signal, this.id)
+      this.log.warn('Call', '__handleSignal(%s) ignored in ended state for callId=%s', signal, this.id)
       return
     }
 
@@ -310,7 +310,7 @@ class CallMixin extends CallMixinBase {
         break
 
       default:
-        log.warn('Call', '__handleSignal() unhandled signal: %s', signal)
+        this.log.warn('Call', '__handleSignal() unhandled signal: %s', signal)
         break
     }
   }
@@ -351,7 +351,7 @@ class CallMixin extends CallMixinBase {
   }
 
   private __transitionTo (nextStatus: CallStatus): void {
-    log.verbose('Call', '__transitionTo(%s) from %s', nextStatus, this.__status)
+    this.log.verbose('Call', '__transitionTo(%s) from %s', nextStatus, this.__status)
     this.__status = nextStatus
   }
 
@@ -406,7 +406,7 @@ class CallRecordMixin extends wechatifyMixinBase() {
       public readonly payload: PUPPET.payloads.CallRecord,
   ) {
     super()
-    log.verbose('CallRecord', 'constructor()')
+    this.log.verbose('CallRecord', 'constructor()')
   }
 
   async starter (): Promise<undefined | ContactInterface> {

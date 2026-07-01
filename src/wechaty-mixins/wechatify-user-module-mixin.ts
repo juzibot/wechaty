@@ -134,18 +134,18 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
     get WxxdOrder ()                     : WxxdOrderConstructor                     { return guardWechatify(this.__wechatifiedWxxdOrder)       }
 
     override async init (): Promise<void> {
-      log.verbose('WechatifyUserModuleMixin', 'init()')
+      this.log.verbose('WechatifyUserModuleMixin', 'init()')
       await super.init()
 
       /**
        * Skip if already wechatified
        */
       if (this.__wechatifiedMessage) {
-        log.verbose('WechatifyUserModuleMixin', 'init() Wechaty User Module (WUM)s have already wechatified: skip')
+        this.log.verbose('WechatifyUserModuleMixin', 'init() Wechaty User Module (WUM)s have already wechatified: skip')
         return
       }
 
-      log.verbose('WechatifyUserModuleMixin', 'init() initializing Wechaty User Module (WUM) ...')
+      this.log.verbose('WechatifyUserModuleMixin', 'init() initializing Wechaty User Module (WUM) ...')
 
       /**
        * Wechatify User Classes
@@ -182,7 +182,7 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
       this.__wechatifiedWxxdProduct                   = wechatifyUserModule(WxxdProductImpl)(this as any)
       this.__wechatifiedWxxdOrder                     = wechatifyUserModule(WxxdOrderImpl)(this as any)
 
-      log.verbose('WechatifyUserModuleMixin', 'init() initializing Wechaty User Module (WUM) ... done')
+      this.log.verbose('WechatifyUserModuleMixin', 'init() initializing Wechaty User Module (WUM) ... done')
     }
 
   }

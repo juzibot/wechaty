@@ -90,20 +90,20 @@ abstract class WechatySkeleton extends WechatyEventEmitter {
    *    by skipping the second time initialization.
    */
   async init (): Promise<void> {
-    log.verbose('WechatySkeleton', 'init()')
+    this.log.verbose('WechatySkeleton', 'init()')
 
     if (!this.__memory) {
       this.__memory = new MemoryCard(this.__options.name)
       try {
         await this.__memory.load()
       } catch (_) {
-        log.silly('WechatySkeleton', 'onStart() memory.load() had already loaded')
+        this.log.silly('WechatySkeleton', 'onStart() memory.load() had already loaded')
       }
     }
   }
 
   async start (): Promise<void> {
-    log.verbose('WechatySkeleton', 'start()')
+    this.log.verbose('WechatySkeleton', 'start()')
     // no super.start()
 
     /**
@@ -113,12 +113,12 @@ abstract class WechatySkeleton extends WechatyEventEmitter {
   }
 
   async stop  (): Promise<void> {
-    log.verbose('WechatySkeleton', 'stop()')
+    this.log.verbose('WechatySkeleton', 'stop()')
     // no super.stop()
   }
 
   override on (event: WechatyEventName, listener: (...args: any[]) => any): this {
-    log.verbose('WechatySkeleton', 'on(%s, listener) registering... listenerCount: %s',
+    this.log.verbose('WechatySkeleton', 'on(%s, listener) registering... listenerCount: %s',
       event,
       this.listenerCount(event),
     )

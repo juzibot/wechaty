@@ -104,7 +104,7 @@ class ContactSelfMixin extends MixinBase {
    *
    */
   public override async avatar (file?: FileBoxInterface): Promise<void | FileBoxInterface> {
-    log.verbose('Contact', 'avatar(%s)', file ? file.name : '')
+    this.log.verbose('Contact', 'avatar(%s)', file ? file.name : '')
 
     if (!file) {
       const filebox = await super.avatar()
@@ -133,7 +133,7 @@ class ContactSelfMixin extends MixinBase {
    * })
    */
   public async qrcode (): Promise<string> {
-    log.verbose('Contact', 'qrcode()')
+    this.log.verbose('Contact', 'qrcode()')
     if (this.id !== this.wechaty.puppet.currentUserId) {
       throw new Error('only can get qrcode for the currentUser')
     }
@@ -162,7 +162,7 @@ class ContactSelfMixin extends MixinBase {
   public override name (name: string): Promise<void>
 
   public override name (name?: string): string | Promise<void> {
-    log.verbose('ContactSelf', 'name(%s)', name || '')
+    this.log.verbose('ContactSelf', 'name(%s)', name || '')
 
     if (typeof name === 'undefined') {
       return super.name()
@@ -179,7 +179,7 @@ class ContactSelfMixin extends MixinBase {
   public override realName (realName: string): Promise<void>
 
   public override realName (realName?: string): string | Promise<void> {
-    log.verbose('ContactSelf', 'realName(%s)', realName || '')
+    this.log.verbose('ContactSelf', 'realName(%s)', realName || '')
 
     if (typeof realName === 'undefined') {
       return super.realName()
@@ -196,7 +196,7 @@ class ContactSelfMixin extends MixinBase {
   public override aka (aka: string): Promise<void>
 
   public override aka (aka?: string): string | Promise<void> {
-    log.verbose('ContactSelf', 'aka(%s)', aka || '')
+    this.log.verbose('ContactSelf', 'aka(%s)', aka || '')
 
     if (typeof aka === 'undefined') {
       return super.aka()
@@ -225,7 +225,7 @@ class ContactSelfMixin extends MixinBase {
    * })
    */
   public async signature (signature: string): Promise<void> {
-    log.verbose('ContactSelf', 'signature()')
+    this.log.verbose('ContactSelf', 'signature()')
 
     if (this.id !== this.wechaty.puppet.currentUserId) {
       throw new Error('only can change signature for user self')
@@ -235,7 +235,7 @@ class ContactSelfMixin extends MixinBase {
   }
 
   public async roomAlias (room: RoomInterface, alias?: string): Promise<void | string> {
-    log.verbose('ContactSelf', 'roomAlias()')
+    this.log.verbose('ContactSelf', 'roomAlias()')
 
     if (typeof alias === 'undefined') {
       return room.alias(this)

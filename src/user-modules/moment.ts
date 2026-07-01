@@ -94,7 +94,7 @@ class MomentMixin extends wechatifyMixinBase() {
    */
   constructor () {
     super()
-    log.verbose('Moment', 'constructor()')
+    this.log.verbose('Moment', 'constructor()')
   }
 
 }

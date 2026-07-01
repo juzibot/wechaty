@@ -390,7 +390,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
     public readonly id: string,
   ) {
     super()
-    log.silly('Room', `constructor(${id})`)
+    this.log.silly('Room', `constructor(${id})`)
   }
 
   /**
@@ -443,7 +443,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
   async ready (
     forceSync = false,
   ): Promise<void> {
-    log.silly('Room', 'ready()')
+    this.log.silly('Room', 'ready()')
 
     if (!forceSync && this.isReady()) {
       return
@@ -576,7 +576,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
     ...varList : unknown[]
   ): Promise<void | MessageInterface> {
 
-    log.verbose('Room', 'say(%s, %s)',
+    this.log.verbose('Room', 'say(%s, %s)',
       sayable,
       varList.join(', '),
     )
@@ -800,7 +800,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
    *
    */
   // public on (event: RoomEventName, listener: (...args: any[]) => any): this {
-  //   log.verbose('Room', 'on(%s, %s)', event, typeof listener)
+  //   this.log.verbose('Room', 'on(%s, %s)', event, typeof listener)
 
   //   super.on(event, listener) // Room is `Sayable`
   //   return this
@@ -831,7 +831,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
    * }
    */
   async add (contact: ContactInterface, quoteIds?: string[]): Promise<void> {
-    log.verbose('Room', 'add(%s)', contact)
+    this.log.verbose('Room', 'add(%s)', contact)
     await this.wechaty.puppet.roomAdd(this.id, contact.id, false, quoteIds)
   }
 
@@ -840,7 +840,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
     failList: ContactInterface[],
     failReasonList: string[],
   }> {
-    log.verbose('Room', 'addV2(%s)', contacts)
+    this.log.verbose('Room', 'addV2(%s)', contacts)
     const contactIds = contacts.map(c => c.id)
     try {
       const result = await this.wechaty.puppet.roomAddV2(this.id, contactIds, false, quoteIds)
@@ -902,7 +902,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
    * }
    */
   async remove (contacts: ContactInterface | ContactInterface[]): Promise<void> {
-    log.verbose('Room', 'del(%s)', contacts)
+    this.log.verbose('Room', 'del(%s)', contacts)
 
     let contactIds: string[]
     if (Array.isArray(contacts)) {
@@ -919,7 +919,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
     failList: ContactInterface[],
     failReasonList: string[],
   }> {
-    log.verbose('Room', 'addV2(%s)', contacts)
+    this.log.verbose('Room', 'addV2(%s)', contacts)
     const contactIds = contacts.map(c => c.id)
     try {
       const result = await this.wechaty.puppet.roomDelV2(this.id, contactIds)
@@ -960,12 +960,12 @@ class RoomMixin extends MixinBase implements SayableSayer {
    * @deprecated use remove(contact) instead.
    */
   async del (contact: ContactImpl | ContactImpl[]): Promise<void> {
-    log.warn('Room', 'del() is DEPRECATED, use remove() instead.\n%s', new Error().stack)
+    this.log.warn('Room', 'del() is DEPRECATED, use remove() instead.\n%s', new Error().stack)
     return this.remove(contact)
   }
 
   async dismiss (): Promise<void> {
-    log.verbose('Room', 'dismiss()')
+    this.log.verbose('Room', 'dismiss()')
 
     if (!this.owner()?.self()) {
       throw new Error('you cannot dismiss a room you don\'t own')
@@ -975,7 +975,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
   }
 
   // private delLocal(contact: Contact): void {
-  //   log.verbose('Room', 'delLocal(%s)', contact)
+  //   this.log.verbose('Room', 'delLocal(%s)', contact)
 
   //   const memberIdList = this.payload && this.payload.memberIdList
   //   if (memberIdList && memberIdList.length > 0) {
@@ -999,7 +999,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
    * await room.quit()
    */
   async quit (): Promise<void> {
-    log.verbose('Room', 'quit() %s', this)
+    this.log.verbose('Room', 'quit() %s', this)
     await this.wechaty.puppet.roomQuit(this.id)
   }
 
@@ -1038,9 +1038,9 @@ class RoomMixin extends MixinBase implements SayableSayer {
    * .start()
    */
   async topic (newTopic?: string): Promise<void | string> {
-    log.verbose('Room', 'topic(%s)', newTopic || '')
+    this.log.verbose('Room', 'topic(%s)', newTopic || '')
     if (!this.isReady()) {
-      log.warn('Room', 'topic() room not ready')
+      this.log.warn('Room', 'topic() room not ready')
       throw new Error('not ready')
     }
 
@@ -1064,7 +1064,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
     const future = this.wechaty.puppet
       .roomTopic(this.id, newTopic)
       .catch(e => {
-        log.warn('Room', 'topic(newTopic=%s) exception: %s',
+        this.log.warn('Room', 'topic(newTopic=%s) exception: %s',
           newTopic, (e && e.message) || e,
         )
         wechatyCaptureException(e)
@@ -1103,7 +1103,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
    * console.log(`room announce change from ${oldAnnounce} to ${room.announce()}`)
    */
   async announce (text?: string): Promise<void | string> {
-    log.verbose('Room', 'announce(%s)',
+    this.log.verbose('Room', 'announce(%s)',
       typeof text === 'undefined'
         ? ''
         : `"${text || ''}"`,
@@ -1125,7 +1125,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
    * @returns {Promise<string>}
    */
   async qrCode (): Promise<string> {
-    log.verbose('Room', 'qrCode()')
+    this.log.verbose('Room', 'qrCode()')
     const qrcodeValue = await this.wechaty.puppet.roomQRCode(this.id)
     return guardQrCodeValue(qrcodeValue)
   }
@@ -1201,7 +1201,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
       }
     } catch (e) {
       this.wechaty.emitError(e)
-      log.error('Room', 'readMark() exception: %s', (e as Error).message)
+      this.log.error('Room', 'readMark() exception: %s', (e as Error).message)
     }
   }
 
@@ -1210,7 +1210,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
       await this.wechaty.puppet.endConversation(this.id)
     } catch (e) {
       this.wechaty.emitError(e)
-      log.error('Room', 'endConversation() exception: %s', (e as Error).message)
+      this.log.error('Room', 'endConversation() exception: %s', (e as Error).message)
     }
   }
 
@@ -1278,7 +1278,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
   async memberAll (
     query?: string | PUPPET.filters.RoomMember,
   ): Promise<ContactInterface[]> {
-    log.silly('Room', 'memberAll(%s)',
+    this.log.silly('Room', 'memberAll(%s)',
       JSON.stringify(query) || '',
     )
 
@@ -1326,7 +1326,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
   async member (
     queryArg: string | PUPPET.filters.RoomMember,
   ): Promise<undefined | ContactInterface> {
-    log.verbose('Room', 'member(%s)', JSON.stringify(queryArg))
+    this.log.verbose('Room', 'member(%s)', JSON.stringify(queryArg))
 
     let memberList: ContactInterface[]
     // ISSUE #622
@@ -1342,7 +1342,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
     }
 
     if (memberList.length > 1) {
-      log.warn('Room', 'member(%s) get %d contacts, use the first one by default', JSON.stringify(queryArg), memberList.length)
+      this.log.warn('Room', 'member(%s) get %d contacts, use the first one by default', JSON.stringify(queryArg), memberList.length)
     }
     return memberList[0]!
   }
@@ -1359,12 +1359,12 @@ class RoomMixin extends MixinBase implements SayableSayer {
    * await room.memberList()
    */
   protected async memberList (): Promise<ContactInterface[]> {
-    log.verbose('Room', 'memberList()')
+    this.log.verbose('Room', 'memberList()')
 
     const memberIdList = await this.wechaty.puppet.roomMemberList(this.id)
 
     // if (!memberIdList) {
-    //   log.warn('Room', 'memberList() not ready')
+    //   this.log.warn('Room', 'memberList() not ready')
     //   return []
     // }
 
@@ -1382,7 +1382,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
    * const owner = room.owner()
    */
   owner (): undefined | ContactInterface {
-    log.verbose('Room', 'owner()')
+    this.log.verbose('Room', 'owner()')
 
     const ownerId = this.payload && this.payload.ownerId
     if (!ownerId) {
@@ -1402,10 +1402,10 @@ class RoomMixin extends MixinBase implements SayableSayer {
    * const adminList = room.adminList()
    */
   async adminList (): Promise<ContactInterface[]> {
-    log.verbose('Room', 'adminList()')
+    this.log.verbose('Room', 'adminList()')
 
     if (!this.isReady()) {
-      log.warn('Room', 'adminList() room not ready')
+      this.log.warn('Room', 'adminList() room not ready')
       return []
     }
 
@@ -1428,7 +1428,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
   async avatar (): Promise<FileBoxInterface>
   async avatar (avatar: FileBoxInterface): Promise<void>
   async avatar (avatar?: FileBoxInterface): Promise<FileBoxInterface | void> {
-    log.verbose('Room', 'avatar()')
+    this.log.verbose('Room', 'avatar()')
 
     if (!avatar && this.payload?.avatar) {
       return FileBox.fromUrl(this.payload.avatar)
@@ -1443,7 +1443,7 @@ class RoomMixin extends MixinBase implements SayableSayer {
       try {
         additionalInfoObj = JSON.parse(this.payload.additionalInfo)
       } catch (e) {
-        log.warn('Room', 'additionalInfo() parse failed, additionalInfo: %s', this.payload.additionalInfo)
+        this.log.warn('Room', 'additionalInfo() parse failed, additionalInfo: %s', this.payload.additionalInfo)
       }
     }
     return additionalInfoObj
@@ -1464,12 +1464,12 @@ class RoomMixin extends MixinBase implements SayableSayer {
   }
 
   async addAdmins (contactList: ContactInterface[]): Promise<void> {
-    log.verbose('Room', 'addAdmins(%s)', contactList)
+    this.log.verbose('Room', 'addAdmins(%s)', contactList)
     await this.wechaty.puppet.roomAddAdmins(this.id, contactList.map(c => c.id))
   }
 
   async delAdmins (contactList: ContactInterface[]): Promise<void> {
-    log.verbose('Room', 'delAdmins(%s)', contactList)
+    this.log.verbose('Room', 'delAdmins(%s)', contactList)
     await this.wechaty.puppet.roomDelAdmins(this.id, contactList.map(c => c.id))
   }
 

@@ -42,11 +42,11 @@ class ImageMixin extends wechatifyMixinBase() {
     public id: string,
   ) {
     super()
-    log.verbose('Image', 'constructor(%s)', id)
+    this.log.verbose('Image', 'constructor(%s)', id)
   }
 
   async thumbnail (): Promise<FileBoxInterface> {
-    log.verbose('Image', 'thumbnail() for id: "%s"', this.id)
+    this.log.verbose('Image', 'thumbnail() for id: "%s"', this.id)
     const fileBox = await this.wechaty.puppet.messageImage(
       this.id,
       PUPPET.types.Image.Thumbnail,
@@ -55,7 +55,7 @@ class ImageMixin extends wechatifyMixinBase() {
   }
 
   async hd (): Promise<FileBoxInterface> {
-    log.verbose('Image', 'hd() for id: "%s"', this.id)
+    this.log.verbose('Image', 'hd() for id: "%s"', this.id)
     const fileBox = await this.wechaty.puppet.messageImage(
       this.id,
       PUPPET.types.Image.HD,
@@ -64,7 +64,7 @@ class ImageMixin extends wechatifyMixinBase() {
   }
 
   async artwork (): Promise<FileBoxInterface> {
-    log.verbose('Image', 'artwork() for id: "%s"', this.id)
+    this.log.verbose('Image', 'artwork() for id: "%s"', this.id)
     const fileBox = await this.wechaty.puppet.messageImage(
       this.id,
       PUPPET.types.Image.Artwork,

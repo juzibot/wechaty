@@ -43,7 +43,7 @@ class ChatHistoryMixin extends wechatifyMixinBase() {
       public readonly payload: PUPPET.payloads.ChatHistory[],
   ) {
     super()
-    log.verbose('ChatHistory', 'constructor()')
+    this.log.verbose('ChatHistory', 'constructor()')
   }
 
   // avatar (): FileBoxInterface {

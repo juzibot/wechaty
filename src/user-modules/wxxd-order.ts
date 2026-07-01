@@ -26,7 +26,7 @@ class WxxdOrderMixin extends MixinBase {
     public readonly id: string,
   ) {
     super()
-    log.silly('WxxdOrder', 'constructor(%s)', id)
+    this.log.silly('WxxdOrder', 'constructor(%s)', id)
   }
 
   /**
@@ -93,10 +93,10 @@ class WxxdOrderMixin extends MixinBase {
   }
 
   async ready (forceSync = false): Promise<void> {
-    log.silly('WxxdOrder', 'ready() @ %s with id="%s"', this.wechaty.puppet, this.id)
+    this.log.silly('WxxdOrder', 'ready() @ %s with id="%s"', this.wechaty.puppet, this.id)
 
     if (!forceSync && this.isReady()) {
-      log.silly('WxxdOrder', 'ready() isReady() true')
+      this.log.silly('WxxdOrder', 'ready() isReady() true')
       return
     }
 
@@ -104,7 +104,7 @@ class WxxdOrderMixin extends MixinBase {
       this.payload = await this.wechaty.puppet.wxxdOrderPayload(this.id)
     } catch (e) {
       this.wechaty.emitError(e)
-      log.verbose('WxxdOrder', 'ready() this.wechaty.puppet.wxxdOrderPayload(%s) exception: %s',
+      this.log.verbose('WxxdOrder', 'ready() this.wechaty.puppet.wxxdOrderPayload(%s) exception: %s',
         this.id,
         (e as Error).message,
       )

@@ -39,7 +39,7 @@ class ChannelCardMixin extends wechatifyMixinBase() {
     public readonly payload: PUPPET.payloads.ChannelCard,
   ) {
     super()
-    log.verbose('ChannelCard', 'constructor()')
+    this.log.verbose('ChannelCard', 'constructor()')
   }
 
   avatar (): undefined | string {

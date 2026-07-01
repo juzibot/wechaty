@@ -2,8 +2,6 @@ import type * as PUPPET from '@juzi/wechaty-puppet'
 
 import type { Constructor } from 'clone-class'
 
-import { log } from '../config.js'
-
 import { validationMixin } from '../user-mixins/validation.js'
 
 import {
@@ -17,7 +15,7 @@ class ConsultCardMixin extends wechatifyMixinBase() {
     public readonly payload: PUPPET.payloads.ConsultCard,
   ) {
     super()
-    log.verbose('ConsultCard', 'constructor()')
+    this.log.verbose('ConsultCard', 'constructor()')
   }
 
   static async findAll (query: {
@@ -27,7 +25,7 @@ class ConsultCardMixin extends wechatifyMixinBase() {
     page?: number,
     pageSize?: number
   }): Promise<ConsultCardInterface[]> {
-    log.verbose('ConsultCard', 'findAll(%s)', JSON.stringify(query))
+    this.log.verbose('ConsultCard', 'findAll(%s)', JSON.stringify(query))
 
     const params = {
       cardType: query.cardType,
@@ -54,7 +52,7 @@ class ConsultCardMixin extends wechatifyMixinBase() {
     cardType: number,
     id: string
   }): Promise<ConsultCardInterface | undefined> {
-    log.verbose('ConsultCard', 'find(%s)', JSON.stringify(query))
+    this.log.verbose('ConsultCard', 'find(%s)', JSON.stringify(query))
 
     const consultCardList = await this.findAll({
       cardType: query.cardType,

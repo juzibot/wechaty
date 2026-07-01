@@ -102,7 +102,7 @@ class UrlLinkMixin extends wechatifyMixinBase() {
     public readonly payload: PUPPET.payloads.UrlLink,
   ) {
     super()
-    log.verbose('UrlLink', 'constructor()')
+    this.log.verbose('UrlLink', 'constructor()')
     // Huan(202110): it is ok to create a raw one without wechaty instance
     // guardWechatifyClass.call(this, UrlLink)
   }

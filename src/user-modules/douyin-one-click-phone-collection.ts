@@ -27,7 +27,7 @@ class DouyinOneClickPhoneCollectionMixin extends wechatifyMixinBase() {
     public readonly payload: {},
   ) {
     super()
-    log.verbose('DouyinOneClickPhoneCollection', 'constructor()')
+    this.log.verbose('DouyinOneClickPhoneCollection', 'constructor()')
     // Huan(202110): it is ok to create a raw one without wechaty instance
     // guardWechatifyClass.call(this, DouyinOneClickPhoneCollection)
   }

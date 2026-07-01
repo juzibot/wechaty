@@ -58,7 +58,7 @@ class WecomMixin extends wechatifyMixinBase() {
    */
   constructor () {
     super()
-    log.verbose('Wecom', 'constructor()')
+    this.log.verbose('Wecom', 'constructor()')
   }
 
 }

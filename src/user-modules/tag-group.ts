@@ -54,7 +54,7 @@ class TagGroupMixin extends MixinBase {
     public readonly id: string,
   ) {
     super()
-    log.silly('TagGroup', 'constructor()')
+    this.log.silly('TagGroup', 'constructor()')
   }
 
   name (): string {
@@ -135,7 +135,7 @@ class TagGroupMixin extends MixinBase {
   }
 
   async tags (): Promise<TagInterface[]> {
-    log.verbose('TagGroup', 'tags(%s)', this)
+    this.log.verbose('TagGroup', 'tags(%s)', this)
     try {
       const tagIdList = await this.wechaty.puppet.tagGroupTagList(this.id)
 
@@ -154,7 +154,7 @@ class TagGroupMixin extends MixinBase {
 
     } catch (e) {
       this.wechaty.emitError(e)
-      log.error('TagGroup', 'list() exception: %s', (e as Error).message)
+      this.log.error('TagGroup', 'list() exception: %s', (e as Error).message)
       return []
     }
 
@@ -216,10 +216,10 @@ class TagGroupMixin extends MixinBase {
   async ready (
     forceSync = false,
   ): Promise<void> {
-    log.silly('TagGroup', 'ready() @ %s with TagGroup="%s"', this.wechaty.puppet, this.id)
+    this.log.silly('TagGroup', 'ready() @ %s with TagGroup="%s"', this.wechaty.puppet, this.id)
 
     if (!forceSync && this.isReady()) { // already ready
-      log.silly('TagGroup', 'ready() isReady() true')
+      this.log.silly('TagGroup', 'ready() isReady() true')
       return
     }
 
@@ -227,7 +227,7 @@ class TagGroupMixin extends MixinBase {
       this.payload = await this.wechaty.puppet.tagGroupPayload(this.id)
     } catch (e) {
       this.wechaty.emitError(e)
-      log.verbose('TagGroup', 'ready() this.wechaty.puppet.tagGroupPayload(%s) exception: %s',
+      this.log.verbose('TagGroup', 'ready() this.wechaty.puppet.tagGroupPayload(%s) exception: %s',
         this.id,
         (e as Error).message,
       )
