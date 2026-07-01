@@ -18,7 +18,6 @@ import type {
   CallImpl,
   ContactImpl,
   ContactInterface,
-  MessageImpl,
   RoomImpl,
   TagGroupInterface,
   TagInterface,
@@ -700,26 +699,46 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
           case 'dirty':
             /**
              * https://github.com/wechaty/wechaty-puppet-service/issues/43
+             *
+             * `dirty` semantics: the puppet-service told us the cached payload
+             * for this id is stale. It is NOT a request to load the payload.
+             *
+             * The old handler used `this.Xxx.find({ id })` which, on pool miss,
+             * constructs a fresh user-layer instance AND calls `.ready()` — a
+             * puppet-side gRPC round-trip. For a `dirty` event about an id
+             * that no business code has ever touched, this turned a passive
+             * "invalidate if cached" signal into an active fetch, amplifying
+             * dirty-event bursts (e.g. during message storms) into extra
+             * puppet-service QPS.
+             *
+             * Fix: for pooled user-modules, look the instance up in the pool
+             * directly and only call `.ready(true)` when it is already there.
+             * The Call branch (below) already follows this shape via
+             * `__callPool.get(...)`. Message has no pool, so its branch is a
+             * no-op break (any caller wanting a Message must load it itself).
              */
             puppet.on('dirty', async ({ payloadType, payloadId }) => {
               try {
                 switch (payloadType) {
                   case PUPPET.types.Payload.Contact: {
-                    const contact = await this.Contact.find({ id: payloadId }) as unknown as undefined | ContactImpl
-                    await contact?.ready(true)
+                    const cached = this.Contact.pool.get(payloadId) as undefined | ContactImpl
+                    if (cached) await cached.ready(true)
                     break
                   }
                   case PUPPET.types.Payload.Room: {
-                    const room = await this.Room.find({ id: payloadId })  as unknown as undefined | RoomImpl
-                    await room?.ready(true)
+                    const cached = this.Room.pool.get(payloadId) as undefined | RoomImpl
+                    if (cached) await cached.ready(true)
                     break
                   }
                   case PUPPET.types.Payload.RoomMember: {
                     if (payloadId.includes(PUPPET.STRING_SPLITTER)) {
                       break
                     }
-                    const room = await this.Room.find({ id: payloadId }) as unknown as undefined | RoomImpl
-                    await room?.ready()
+                    // A bare (non-composite) RoomMember dirty id addresses the
+                    // whole room, mirroring the Room branch — but never load
+                    // a new Room here.
+                    const cached = this.Room.pool.get(payloadId) as undefined | RoomImpl
+                    if (cached) await cached.ready()
                     break
                   }
 
@@ -729,12 +748,13 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                   case PUPPET.types.Payload.Friendship:
                     // Friendship has no payload
                     break
-                  case PUPPET.types.Payload.Message: {
-                    // Message does not need to dirty (?)
-                    const message = await this.Message.find({ id: payloadId }) as unknown as undefined | MessageImpl
-                    await message?.ready(true)
+                  case PUPPET.types.Payload.Message:
+                    // Message has no user-layer pool (see message.ts: `load`
+                    // constructs a fresh instance every call). Dirty for a
+                    // Message id is therefore a no-op at this layer — the
+                    // cache-mixin listener still invalidates the puppet-side
+                    // payload cache alongside this handler.
                     break
-                  }
                   case PUPPET.types.Payload.Tag:
                     break
                   case PUPPET.types.Payload.TagGroup:
@@ -742,13 +762,13 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                   case PUPPET.types.Payload.Post:
                     break
                   case PUPPET.types.Payload.WxxdProduct: {
-                    const product = await this.WxxdProduct.find({ id: payloadId }) as unknown as undefined | WxxdProductImpl
-                    await product?.ready(true)
+                    const cached = this.WxxdProduct.pool.get(payloadId) as undefined | WxxdProductImpl
+                    if (cached) await cached.ready(true)
                     break
                   }
                   case PUPPET.types.Payload.WxxdOrder: {
-                    const order = await this.WxxdOrder.find({ id: payloadId }) as unknown as undefined | WxxdOrderImpl
-                    await order?.ready(true)
+                    const cached = this.WxxdOrder.pool.get(payloadId) as undefined | WxxdOrderImpl
+                    if (cached) await cached.ready(true)
                     break
                   }
                   case PUPPET.types.Payload.Call: {
