@@ -169,41 +169,41 @@ class WechatyBase extends mixinBase implements SayableSayer {
     override __options: WechatyOptions = {},
   ) {
     super(__options)
-    log.verbose('Wechaty', 'constructor()')
+    this.log.verbose('Wechaty', 'constructor()')
 
     this.__memory = this.__options.memory
     this.wechaty  = this
   }
 
   override async start (): Promise<void> {
-    log.verbose('Wechaty', 'start()')
+    this.log.verbose('Wechaty', 'start()')
     await this.init()
     return super.start()
   }
 
   override async onStart (): Promise<void> {
-    log.verbose('Wechaty', 'onStart()')
+    this.log.verbose('Wechaty', 'onStart()')
 
-    log.verbose('Wechaty', '<%s>(%s) onStart() v%s is starting...',
+    this.log.verbose('Wechaty', '<%s>(%s) onStart() v%s is starting...',
       this.__options.puppet || config.systemPuppetName(),
       this.__options.name   || '',
       this.version(),
     )
-    log.verbose('Wechaty', 'id: %s', this.id)
+    this.log.verbose('Wechaty', 'id: %s', this.id)
 
     const lifeTimer = setInterval(() => {
-      log.silly('Wechaty', 'onStart() setInterval() this timer is to keep Wechaty running...')
+      this.log.silly('Wechaty', 'onStart() setInterval() this timer is to keep Wechaty running...')
     }, 1000 * 60 * 60)
     this._stopCallbackList.push(() => clearInterval(lifeTimer))
 
     this.emit('start')
-    log.verbose('Wechaty', 'onStart() ... done')
+    this.log.verbose('Wechaty', 'onStart() ... done')
   }
 
   override async onStop (): Promise<void> {
-    log.verbose('Wechaty', 'onStop()')
+    this.log.verbose('Wechaty', 'onStop()')
 
-    log.verbose('Wechaty', '<%s> onStop() v%s is stopping ...',
+    this.log.verbose('Wechaty', '<%s> onStop() v%s is stopping ...',
       this.__options.puppet || config.systemPuppetName(),
       this.version(),
     )
@@ -213,7 +213,7 @@ class WechatyBase extends mixinBase implements SayableSayer {
     this._stopCallbackList.length = 0
 
     this.emit('stop')
-    log.verbose('Wechaty', 'onStop() ... done')
+    this.log.verbose('Wechaty', 'onStop() ... done')
   }
 
   /**
@@ -273,7 +273,7 @@ class WechatyBase extends mixinBase implements SayableSayer {
   async say (
     sayable: Sayable,
   ): Promise<void> {
-    log.verbose('Wechaty', 'say(%s)', sayable)
+    this.log.verbose('Wechaty', 'say(%s)', sayable)
     await this.currentUser.say(sayable)
   }
 
@@ -294,7 +294,7 @@ class WechatyBase extends mixinBase implements SayableSayer {
     contacts: ContactInterface[],
     options?: { media?: PUPPET.types.CallMediaType },
   ): Promise<CallInterface> {
-    log.verbose('Wechaty', 'call(%d contacts, %s)', contacts.length, JSON.stringify(options ?? {}))
+    this.log.verbose('Wechaty', 'call(%d contacts, %s)', contacts.length, JSON.stringify(options ?? {}))
 
     if (contacts.length === 0) {
       throw new Error('Wechaty.call() requires at least one contact')
@@ -317,7 +317,7 @@ class WechatyBase extends mixinBase implements SayableSayer {
   async publish (
     post: PostInterface,
   ): Promise<void | PostInterface> {
-    log.verbose('Wechaty', 'publish(%s)',
+    this.log.verbose('Wechaty', 'publish(%s)',
       (post.payload.sayableList as PUPPET.payloads.Sayable[])
         .map(s => s.type).join(','),
     )
@@ -331,7 +331,7 @@ class WechatyBase extends mixinBase implements SayableSayer {
   async unpublish (
     post: PostInterface,
   ): Promise<void> {
-    log.verbose('Wechaty', 'unpublish(%s)', post.id)
+    this.log.verbose('Wechaty', 'unpublish(%s)', post.id)
 
     if (!post.id) {
       throw new Error('cannot unpublish a post without id')
@@ -346,7 +346,7 @@ class WechatyBase extends mixinBase implements SayableSayer {
     id: string,
     code: string,
   ): Promise<void> {
-    log.verbose('Wechaty', 'enterVerifyCode(%s, %s)', id, code)
+    this.log.verbose('Wechaty', 'enterVerifyCode(%s, %s)', id, code)
 
     return this.puppet.enterVerifyCode(id, code)
   }
@@ -354,14 +354,14 @@ class WechatyBase extends mixinBase implements SayableSayer {
   async cancelVerifyCode (
     id: string,
   ): Promise<void> {
-    log.verbose('Wechaty', 'cancelVerifyCode(%s)', id)
+    this.log.verbose('Wechaty', 'cancelVerifyCode(%s)', id)
 
     return this.puppet.cancelVerifyCode(id)
   }
 
   async refreshQrCode (
   ): Promise<void> {
-    log.verbose('Wechaty', 'refreshQrCode(%s)')
+    this.log.verbose('Wechaty', 'refreshQrCode(%s)')
 
     if (this.isLoggedIn) {
       throw new Error('cannot refresh qr because bot is logged in')

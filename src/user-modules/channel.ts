@@ -1,7 +1,6 @@
 import type * as PUPPET from '@juzi/wechaty-puppet'
 
 import type { Constructor } from 'clone-class'
-import { log } from '../config.js'
 
 import { validationMixin } from '../user-mixins/validation.js'
 
@@ -17,7 +16,7 @@ class ChannelMixin extends wechatifyMixinBase() {
    *
    */
   static async create (): Promise<ChannelInterface> {
-    log.verbose('Channel', 'create()')
+    this.log.verbose('Channel', 'create()')
 
     // TODO: get appid and username from wechat
     const payload: PUPPET.payloads.Channel = {
@@ -41,7 +40,7 @@ class ChannelMixin extends wechatifyMixinBase() {
     public readonly payload: PUPPET.payloads.Channel,
   ) {
     super()
-    log.verbose('Channel', 'constructor()')
+    this.log.verbose('Channel', 'constructor()')
   }
 
   avatar (): undefined | string {

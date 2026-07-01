@@ -2,7 +2,6 @@ import type { Constructor } from 'clone-class'
 import type { PaginationRequest } from '@juzi/wechaty-puppet/filters'
 import * as PUPPET from '@juzi/wechaty-puppet'
 
-import { log } from '../config.js'
 import { poolifyMixin } from '../user-mixins/poolify.js'
 import { validationMixin } from '../user-mixins/validation.js'
 import { wechatifyMixin } from '../user-mixins/wechatify.js'
@@ -26,14 +25,14 @@ class WxxdProductMixin extends MixinBase {
     public readonly id: string,
   ) {
     super()
-    log.silly('WxxdProduct', 'constructor(%s)', id)
+    this.log.silly('WxxdProduct', 'constructor(%s)', id)
   }
 
   /**
    * List all products
    */
   static async list (query: PaginationRequest) {
-    log.verbose('WxxdProduct', 'list(%s)', JSON.stringify(query))
+    this.log.verbose('WxxdProduct', 'list(%s)', JSON.stringify(query))
 
     return await this.wechaty.puppet.listWxxdProducts(query)
   }
@@ -44,7 +43,7 @@ class WxxdProductMixin extends MixinBase {
   static async find (
     query: string | { id: string },
   ): Promise<WxxdProductInterface | undefined> {
-    log.verbose('WxxdProduct', 'find(%s)', JSON.stringify(query))
+    this.log.verbose('WxxdProduct', 'find(%s)', JSON.stringify(query))
 
     const id = typeof query === 'string' ? query : query.id
 
@@ -69,10 +68,10 @@ class WxxdProductMixin extends MixinBase {
   }
 
   async ready (forceSync = false): Promise<void> {
-    log.silly('WxxdProduct', 'ready() @ %s with id="%s"', this.wechaty.puppet, this.id)
+    this.log.silly('WxxdProduct', 'ready() @ %s with id="%s"', this.wechaty.puppet, this.id)
 
     if (!forceSync && this.isReady()) {
-      log.silly('WxxdProduct', 'ready() isReady() true')
+      this.log.silly('WxxdProduct', 'ready() isReady() true')
       return
     }
 
@@ -80,7 +79,7 @@ class WxxdProductMixin extends MixinBase {
       this.payload = await this.wechaty.puppet.wxxdProductPayload(this.id)
     } catch (e) {
       this.wechaty.emitError(e)
-      log.verbose('WxxdProduct', 'ready() this.wechaty.puppet.wxxdProductPayload(%s) exception: %s',
+      this.log.verbose('WxxdProduct', 'ready() this.wechaty.puppet.wxxdProductPayload(%s) exception: %s',
         this.id,
         (e as Error).message,
       )

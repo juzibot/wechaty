@@ -58,16 +58,16 @@ const pluginMixin = <MixinBase extends typeof WechatySkeleton & GErrorMixin & Mi
       )[]
     ): WechatyPluginUninstaller {
       const pluginList = plugins.flat()
-      log.verbose('WechatyPluginMixin', 'use() total %d plugins', pluginList.length)
+      this.log.verbose('WechatyPluginMixin', 'use() total %d plugins', pluginList.length)
 
       const uninstallerList: WechatyPluginUninstaller[] = []
 
       for (const plugin of pluginList) {
-        log.verbose('WechatyPluginMixin', 'use() installing Plugin %s on Wechaty %s ...', plugin.name, this.name())
+        this.log.verbose('WechatyPluginMixin', 'use() installing Plugin %s on Wechaty %s ...', plugin.name, this.name())
 
         const uninstaller = plugin(this as any) // <- Huan(202110): TODO: remove any
         if (isWechatyPluginUninstaller(uninstaller)) {
-          log.verbose('WechatyPluginMixin', 'use() saving uninstaller for Plugin %s on Wechaty %s ...', plugin.name, this.name())
+          this.log.verbose('WechatyPluginMixin', 'use() saving uninstaller for Plugin %s on Wechaty %s ...', plugin.name, this.name())
           uninstallerList.push(uninstaller)
         }
       }
@@ -76,9 +76,9 @@ const pluginMixin = <MixinBase extends typeof WechatySkeleton & GErrorMixin & Mi
        * Return the function to uninstall all plugins
        */
       return () => uninstallerList.forEach(uninstaller => {
-        log.verbose('WechatyPluginMixin', 'use() uninstalling Plugin %s on Wechaty %s ...', uninstaller.name, this.name())
+        this.log.verbose('WechatyPluginMixin', 'use() uninstalling Plugin %s on Wechaty %s ...', uninstaller.name, this.name())
         uninstaller()
-        log.verbose('WechatyPluginMixin', 'use() uninstalling Plugin %s on Wechaty %s ... done', uninstaller.name, this.name())
+        this.log.verbose('WechatyPluginMixin', 'use() uninstalling Plugin %s on Wechaty %s ... done', uninstaller.name, this.name())
       })
     }
 

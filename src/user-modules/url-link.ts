@@ -25,7 +25,6 @@ import type { Constructor } from 'clone-class'
 import { openGraph }          from '../helper-functions/open-graph.js'
 import { validationMixin }    from '../user-mixins/validation.js'
 import { wechatifyMixinBase } from '../user-mixins/wechatify.js'
-import { log } from '../config.js'
 import type { FileBoxInterface } from 'file-box'
 
 class UrlLinkMixin extends wechatifyMixinBase() {
@@ -44,7 +43,7 @@ class UrlLinkMixin extends wechatifyMixinBase() {
       >
     >,
   ): Promise<UrlLinkInterface> {
-    log.verbose('UrlLink', 'create(%s)', url)
+    this.log.verbose('UrlLink', 'create(%s)', url)
 
     const meta = await openGraph(url)
 
@@ -102,7 +101,7 @@ class UrlLinkMixin extends wechatifyMixinBase() {
     public readonly payload: PUPPET.payloads.UrlLink,
   ) {
     super()
-    log.verbose('UrlLink', 'constructor()')
+    this.log.verbose('UrlLink', 'constructor()')
     // Huan(202110): it is ok to create a raw one without wechaty instance
     // guardWechatifyClass.call(this, UrlLink)
   }

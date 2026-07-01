@@ -1,5 +1,5 @@
 import * as PUPPET      from '@juzi/wechaty-puppet'
-import { log }          from '@juzi/wechaty-puppet'
+import { log, type LoggerLike } from '@juzi/wechaty-puppet'
 import {
   GError,
   timeoutPromise,
@@ -81,11 +81,11 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
     }
 
     override async start (): Promise<void> {
-      log.verbose('WechatyPuppetMixin', 'start()')
+      this.log.verbose('WechatyPuppetMixin', 'start()')
 
-      log.verbose('WechatyPuppetMixin', 'start() super.start() ...')
+      this.log.verbose('WechatyPuppetMixin', 'start() super.start() ...')
       await super.start()
-      log.verbose('WechatyPuppetMixin', 'start() super.start() ... done')
+      this.log.verbose('WechatyPuppetMixin', 'start() super.start() ... done')
 
       try {
         /**
@@ -97,12 +97,12 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
         }
 
         try {
-          log.verbose('WechatyPuppetMixin', 'start() starting puppet ...')
+          this.log.verbose('WechatyPuppetMixin', 'start() starting puppet ...')
           await timeoutPromise(
             this.puppet.start(),
             15 * 1000,  // 15 seconds timeout
           )
-          log.verbose('WechatyPuppetMixin', 'start() starting puppet ... done')
+          this.log.verbose('WechatyPuppetMixin', 'start() starting puppet ... done')
         } catch (e) {
           if (e instanceof TimeoutPromiseGError) {
             /**
@@ -115,8 +115,8 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
              *
              * e.g. after resolve @issue https://github.com/padlocal/wechaty-puppet-padlocal/issues/116
              */
-            log.warn('WechatyPuppetMixin', 'start() starting puppet ... timeout')
-            log.warn('WechatyPuppetMixin', 'start() puppet info: %s', this.puppet)
+            this.log.warn('WechatyPuppetMixin', 'start() starting puppet ... timeout')
+            this.log.warn('WechatyPuppetMixin', 'start() puppet info: %s', this.puppet)
           } else {
             throw e
           }
@@ -128,88 +128,116 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
     }
 
     override async stop (): Promise<void> {
-      log.verbose('WechatyPuppetMixin', 'stop()')
+      this.log.verbose('WechatyPuppetMixin', 'stop()')
 
       try {
-        log.verbose('WechatyPuppetMixin', 'stop() stopping puppet ...')
+        this.log.verbose('WechatyPuppetMixin', 'stop() stopping puppet ...')
         await timeoutPromise(
           this.puppet.stop(),
           15 * 1000,  // 15 seconds timeout
         )
-        log.verbose('WechatyPuppetMixin', 'stop() stopping puppet ... done')
+        this.log.verbose('WechatyPuppetMixin', 'stop() stopping puppet ... done')
       } catch (e) {
         if (e instanceof TimeoutPromiseGError) {
-          log.warn('WechatyPuppetMixin', 'stop() stopping puppet ... timeout')
-          log.warn('WechatyPuppetMixin', 'stop() puppet info: %s', this.puppet)
+          this.log.warn('WechatyPuppetMixin', 'stop() stopping puppet ... timeout')
+          this.log.warn('WechatyPuppetMixin', 'stop() puppet info: %s', this.puppet)
         }
         this.emitError(e)
       }
 
-      log.verbose('WechatyPuppetMixin', 'stop() super.stop() ...')
+      this.log.verbose('WechatyPuppetMixin', 'stop() super.stop() ...')
       await super.stop()
-      log.verbose('WechatyPuppetMixin', 'stop() super.stop() ... done')
+      this.log.verbose('WechatyPuppetMixin', 'stop() super.stop() ... done')
 
       this.__callPool.clear()
     }
 
     async ready (): Promise<void> {
-      log.verbose('WechatyPuppetMixin', 'ready()')
+      this.log.verbose('WechatyPuppetMixin', 'ready()')
       await this.__readyState.stable('active')
-      log.silly('WechatyPuppetMixin', 'ready() this.readyState.stable(on) resolved')
+      this.log.silly('WechatyPuppetMixin', 'ready() this.readyState.stable(on) resolved')
     }
 
     override async init (): Promise<void> {
-      log.verbose('WechatyPuppetMixin', 'init()')
+      this.log.verbose('WechatyPuppetMixin', 'init()')
       await super.init()
 
       if (this.__puppetMixinInited) {
-        log.verbose('WechatyPuppetMixin', 'init() skipped because this puppet has already been inited before.')
+        this.log.verbose('WechatyPuppetMixin', 'init() skipped because this puppet has already been inited before.')
         return
       }
       this.__puppetMixinInited = true
 
-      log.verbose('WechatyPuppetMixin', 'init() instanciating puppet instance ...')
+      this.log.verbose('WechatyPuppetMixin', 'init() instanciating puppet instance ...')
+      /**
+       * Forward `WechatyOptions.logger` down into `PuppetOptions.logger` so
+       * that the puppet layer emits logs through the same logger the caller
+       * supplied to Wechaty.
+       */
+      const basePuppetOptions = 'puppetOptions' in this.__options
+        ? this.__options.puppetOptions
+        : undefined
+      const mergedPuppetOptions = this.__options.logger
+        ? { ...(basePuppetOptions ?? {}), logger: this.__options.logger }
+        : basePuppetOptions
       const puppetInstance = await PUPPET.helpers.resolvePuppet({
         puppet: this.__options.puppet || config.systemPuppetName(),
-        puppetOptions: 'puppetOptions' in this.__options
-          ? this.__options.puppetOptions
-          : undefined,
+        puppetOptions: mergedPuppetOptions,
       })
-      log.verbose('WechatyPuppetMixin', 'init() instanciating puppet instance ... done')
+
+      /**
+       * Adopt the puppet's effective logger onto the Wechaty side, so that
+       * `wechaty.log` and, via the accessory chain, every user module
+       * (`Contact.log`, `Message.log`, ...) route through it. `PuppetInterface`
+       * hides `log` (via `PuppetSkeletonProtectedProperty`), so a structural
+       * cast is required. The `??` guards third-party puppets that never
+       * adopted the pluggable logger — those fall back to the brolog `log`
+       * already assigned in WechatySkeleton.
+       *
+       * Adopted immediately after `resolvePuppet` so the rest of init() —
+       * setMemory / setupPuppetEvents / the sync `emit('puppet')` listeners —
+       * all route through the caller-supplied logger, not brolog.
+       */
+      const puppetLog = (puppetInstance as unknown as { log?: LoggerLike }).log
+      if (puppetLog) {
+        this.__log = puppetLog
+      }
+
+      this.log.verbose('WechatyPuppetMixin', 'init() instanciating puppet instance ... done')
 
       /**
        * Plug the Memory Card to Puppet
        */
-      log.verbose('WechatyPuppetMixin', 'init() setting memory ...')
+      this.log.verbose('WechatyPuppetMixin', 'init() setting memory ...')
       const puppetMemory = this.memory.multiplex(PUPPET_MEMORY_NAME)
       puppetInstance.setMemory(puppetMemory)
-      log.verbose('WechatyPuppetMixin', 'init() setting memory ... done')
+      this.log.verbose('WechatyPuppetMixin', 'init() setting memory ... done')
 
       /**
        * Propagate Puppet Events to Wechaty
        */
-      log.verbose('WechatyPuppetMixin', 'init() setting up events ...')
+      this.log.verbose('WechatyPuppetMixin', 'init() setting up events ...')
       this.__setupPuppetEvents(puppetInstance)
-      log.verbose('WechatyPuppetMixin', 'init() setting up events ... done')
+      this.log.verbose('WechatyPuppetMixin', 'init() setting up events ... done')
 
       /**
         * Private Event
         *   - Huan(202005): emit puppet when set
         *   - Huan(202110): @see https://github.com/wechaty/redux/blob/16af0ae01f72e37f0ee286b49fa5ccf69850323d/src/wechaty-redux.ts#L82-L98
         */
-      log.verbose('WechatyPuppetMixin', 'init() emitting "puppet" event ...')
+      this.log.verbose('WechatyPuppetMixin', 'init() emitting "puppet" event ...')
       ;(this.emit as any)('puppet', puppetInstance)
-      log.verbose('WechatyPuppetMixin', 'init() emitting "puppet" event ... done')
+      this.log.verbose('WechatyPuppetMixin', 'init() emitting "puppet" event ... done')
 
       this.__puppet = puppetInstance
     }
 
     __setupPuppetEvents (puppet: PUPPET.impls.PuppetInterface): void {
-      log.verbose('WechatyPuppetMixin', '__setupPuppetEvents(%s)', puppet)
+      this.log.verbose('WechatyPuppetMixin', '__setupPuppetEvents(%s)', puppet)
 
       const eventNameList: PUPPET.types.PuppetEventName[] = Object.keys(PUPPET.types.PUPPET_EVENT_DICT) as PUPPET.types.PuppetEventName[]
       for (const eventName of eventNameList) {
-        log.verbose('PuppetMixin',
+        this.log.verbose('PuppetMixin',
           '__setupPuppetEvents() puppet.on(%s) (listenerCount:%s) registering...',
           eventName,
           puppet.listenerCount(eventName),
@@ -289,7 +317,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                 if (contact) {
                   this.emit('logout', contact, payload.data)
                 } else {
-                  log.verbose('PuppetMixin',
+                  this.log.verbose('PuppetMixin',
                     '__setupPuppetEvents() logout event contact self not found for id: %s',
                     payload.contactId,
                   )
@@ -386,7 +414,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
 
           case 'ready':
             puppet.on('ready', async () => {
-              log.silly('WechatyPuppetMixin', '__setupPuppetEvents() puppet.on(ready)')
+              this.log.silly('WechatyPuppetMixin', '__setupPuppetEvents() puppet.on(ready)')
 
               // ready event should be emitted 15s after login
               let onceLogout: () => void
@@ -415,7 +443,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                   this.__readyState.active(true)
                 }
               } catch (e) {
-                log.error(`ready error: ${(e as Error).message}, will emit event anyway if it's logged in now`)
+                this.log.error(`ready error: ${(e as Error).message}, will emit event anyway if it's logged in now`)
                 if (this.puppet.isLoggedIn) {
                   this.emit('ready')
                   this.__loginIndicator.value(true)
@@ -537,7 +565,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                     changer = await this.Contact.find({ id: payload.changerId })
                   }
                 } catch (e) {
-                  log.warn('room-announce', 'room-announce event error: %s', (e as Error).message)
+                  this.log.warn('room-announce', 'room-announce event error: %s', (e as Error).message)
                 }
                 const date = timestampToDate(payload.timestamp)
                 this.emit('room-announce', room, payload.newAnnounce, changer, payload.oldAnnounce, date)
@@ -584,7 +612,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                       return tag.name() === oldName
                     })
                     if (!result) {
-                      log.warn('WechatyPuppetMixin', 'tagRenameEvent still get old name after %s retries for tag %s', PUPPET_PAYLOAD_SYNC_MAX_RETRY, tag.id)
+                      this.log.warn('WechatyPuppetMixin', 'tagRenameEvent still get old name after %s retries for tag %s', PUPPET_PAYLOAD_SYNC_MAX_RETRY, tag.id)
                     }
                   }))
                   this.emit('tag', payload.type, renamedTags, date)
@@ -630,7 +658,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                       return tagGroup.name() === oldName
                     })
                     if (!result) {
-                      log.warn('WechatyPuppetMixin', 'tagGroupRenameEvent still get old name after %s retries for tagGroup %s', PUPPET_PAYLOAD_SYNC_MAX_RETRY, tagGroup.id)
+                      this.log.warn('WechatyPuppetMixin', 'tagGroupRenameEvent still get old name after %s retries for tagGroup %s', PUPPET_PAYLOAD_SYNC_MAX_RETRY, tagGroup.id)
                     }
                   }))
                   this.emit('tag-group', payload.type, renamedTagGroups, date)
@@ -664,7 +692,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                 this.emit('contact-enter-conversation', contact, date, payload.scene)
                 contact.emit('enter-conversation', date, payload.scene)
               } else {
-                log.verbose('PuppetMixin',
+                this.log.verbose('PuppetMixin',
                   '__setupPuppetEvents() contact-enter-conversation event contact not found for id: %s',
                   payload.contactId,
                 )
@@ -681,7 +709,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                 this.emit('contact-lead-filled', contact, leads, date)
                 contact.emit('lead-filled', leads, date)
               } else {
-                log.verbose('PuppetMixin',
+                this.log.verbose('PuppetMixin',
                   '__setupPuppetEvents() contact-lead-filled event contact not found for id: %s',
                   payload.contactId,
                 )
@@ -790,7 +818,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                       try {
                         await call.ready(true)
                       } catch (e) {
-                        log.warn(
+                        this.log.warn(
                           'WechatyPuppetMixin',
                           'dirty(Call) ready failed for callId=%s: %s',
                           payloadId,
@@ -803,7 +831,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
 
                   case PUPPET.types.Payload.Unspecified:
                   default:
-                    log.warn('unknown payload type: ' + payloadType)
+                    this.log.warn('unknown payload type: ' + payloadType)
                 }
                 this.emit('dirty', payloadId, payloadType)
               } catch (e) {
@@ -851,7 +879,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
               try {
                 if (payload.signal === PUPPET.types.CallSignal.Invite) {
                   if (this.__callPool.has(payload.callId)) {
-                    log.warn('WechatyPuppetMixin', '__setupPuppetEvents() duplicate Invite for callId=%s, ignoring', payload.callId)
+                    this.log.warn('WechatyPuppetMixin', '__setupPuppetEvents() duplicate Invite for callId=%s, ignoring', payload.callId)
                     return
                   }
                   const call = new (this.Call as any)({
@@ -870,13 +898,13 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                   // are expected within race windows (e.g. a Ringing ack arriving
                   // before callInvite returns) or after the Call has been finalized
                   // and removed from the pool. Drop silently — log.warn, not error.
-                  log.warn('WechatyPuppetMixin', '__setupPuppetEvents() call event for unknown callId=%s, dropping', payload.callId)
+                  this.log.warn('WechatyPuppetMixin', '__setupPuppetEvents() call event for unknown callId=%s, dropping', payload.callId)
                   return
                 }
 
                 const actor = await (this.Contact as typeof ContactImpl).find({ id: payload.contactId })
                 if (!actor) {
-                  log.warn('WechatyPuppetMixin', '__setupPuppetEvents() actor contact not found for callId=%s contactId=%s, dropping', payload.callId, payload.contactId)
+                  this.log.warn('WechatyPuppetMixin', '__setupPuppetEvents() actor contact not found for callId=%s contactId=%s, dropping', payload.callId, payload.contactId)
                   return
                 }
 
@@ -921,7 +949,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
         }
       }
 
-      log.verbose('WechatyPuppetMixin', '__setupPuppetEvents() ... done')
+      this.log.verbose('WechatyPuppetMixin', '__setupPuppetEvents() ... done')
     }
 
     /**
@@ -959,7 +987,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
             await call.sync()
             ended = !!call.endTime()
           } catch (e) {
-            log.warn(
+            this.log.warn(
               'WechatyPuppetMixin',
               '__finalizeIfEnded() sync attempt %d failed for callId=%s: %s',
               attempt + 1,
@@ -977,7 +1005,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
         try {
           const participants = await call.participants()
           if (participants.length === 2) {
-            log.warn(
+            this.log.warn(
               'WechatyPuppetMixin',
               '__finalizeIfEnded() 1v1 fallback after sync failure for callId=%s (rosterLength=%d)',
               call.id,
@@ -985,7 +1013,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
             )
             ended = true
           } else {
-            log.error(
+            this.log.error(
               'WechatyPuppetMixin',
               '__finalizeIfEnded() sync failed, leaving callId=%s in pool for next dirty signal (rosterLength=%d)',
               call.id,
@@ -993,7 +1021,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
             )
           }
         } catch (e) {
-          log.error(
+          this.log.error(
             'WechatyPuppetMixin',
             '__finalizeIfEnded() participants lookup failed for callId=%s: %s',
             call.id,

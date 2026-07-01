@@ -49,7 +49,7 @@ const loginMixin = <MixinBase extends typeof WechatySkeleton & PuppetMixin & GEr
       } catch (e) {
         this.emit('error', e)
 
-        log.warn('WechatyLoginMixin', 'get isLoggedIn puppet instance is not ready yet')
+        this.log.warn('WechatyLoginMixin', 'get isLoggedIn puppet instance is not ready yet')
         // https://github.com/wechaty/wechaty/issues/1878
         return false
       }
@@ -63,7 +63,7 @@ const loginMixin = <MixinBase extends typeof WechatySkeleton & PuppetMixin & GEr
     }
 
     override async init (): Promise<void> {
-      log.verbose('WechatyLoginMixin', 'init()')
+      this.log.verbose('WechatyLoginMixin', 'init()')
       await super.init()
 
       if (this.__loginMixinInited) {
@@ -80,7 +80,7 @@ const loginMixin = <MixinBase extends typeof WechatySkeleton & PuppetMixin & GEr
      * await bot.logout()
      */
     async logout (reason?: string): Promise<void>  {
-      log.verbose('WechatyLoginMixin', 'logout()')
+      this.log.verbose('WechatyLoginMixin', 'logout()')
       await this.puppet.logout(reason)
     }
 
@@ -88,7 +88,7 @@ const loginMixin = <MixinBase extends typeof WechatySkeleton & PuppetMixin & GEr
      * @deprecated: use `isLoggedIn` property instead. will be removed after Dec 31, 2022
      */
     logonoff (): boolean {
-      log.warn('WechatyLoginMixin', 'logonoff() is deprecated: use `isLoggedIn` property instead.\n%s', new Error().stack)
+      this.log.warn('WechatyLoginMixin', 'logonoff() is deprecated: use `isLoggedIn` property instead.\n%s', new Error().stack)
       return this.isLoggedIn
     }
 
@@ -97,7 +97,7 @@ const loginMixin = <MixinBase extends typeof WechatySkeleton & PuppetMixin & GEr
      * @deprecated use {@link Wechaty#currentUser} instead
      */
     userSelf () {
-      log.warn('WechatyLoginMixin', 'userSelf() deprecated: use currentUser instead.\n%s',
+      this.log.warn('WechatyLoginMixin', 'userSelf() deprecated: use currentUser instead.\n%s',
         new Error().stack,
       )
       return this.currentUser

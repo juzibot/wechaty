@@ -135,13 +135,13 @@ class PostMixin extends wechatifyMixinBase() {
   static create (
     payload: PUPPET.payloads.PostClient,
   ): PostInterface {
-    log.verbose('Post', 'create()')
+    this.log.verbose('Post', 'create()')
 
     return new this(payload)
   }
 
   static load (id: string): PostInterface {
-    log.verbose('Post', 'static load(%s)', id)
+    this.log.verbose('Post', 'static load(%s)', id)
 
     /**
      * Must NOT use `Post` at here
@@ -157,7 +157,7 @@ class PostMixin extends wechatifyMixinBase() {
   static async find (
     filter: PUPPET.filters.Post,
   ): Promise<undefined | PostInterface> {
-    log.verbose('Post', 'find(%s)',
+    this.log.verbose('Post', 'find(%s)',
       JSON.stringify(filter),
     )
 
@@ -181,7 +181,7 @@ class PostMixin extends wechatifyMixinBase() {
     postList       : PostInterface[],
     nextPageToken? : string,
   ]> {
-    log.verbose('Post', 'findAll(%s%s)',
+    this.log.verbose('Post', 'findAll(%s%s)',
       JSON.stringify(filter),
       pagination ? ', ' + JSON.stringify(pagination) : '',
     )
@@ -231,7 +231,7 @@ class PostMixin extends wechatifyMixinBase() {
     idOrPayload: string | PUPPET.payloads.Post,
   ) {
     super()
-    log.verbose('Post', 'constructor(%s)',
+    this.log.verbose('Post', 'constructor(%s)',
       typeof idOrPayload === 'string'
         ? idOrPayload
         : JSON.stringify(idOrPayload.id),
@@ -255,7 +255,7 @@ class PostMixin extends wechatifyMixinBase() {
   }
 
   async author (): Promise<ContactInterface> {
-    log.silly('Post', 'author()')
+    this.log.silly('Post', 'author()')
 
     if (PUPPET.payloads.isPostClient(this.payload)) {
       return this.wechaty.currentUser
@@ -269,7 +269,7 @@ class PostMixin extends wechatifyMixinBase() {
   }
 
   async root (): Promise<undefined | PostInterface> {
-    log.silly('Post', 'root()')
+    this.log.silly('Post', 'root()')
 
     if (!this.payload.rootId) {
       return undefined
@@ -281,7 +281,7 @@ class PostMixin extends wechatifyMixinBase() {
   }
 
   async parent (): Promise<undefined | PostInterface> {
-    log.silly('Post', 'parent()')
+    this.log.silly('Post', 'parent()')
     if (!this.payload.parentId) {
       return undefined
     }
@@ -292,7 +292,7 @@ class PostMixin extends wechatifyMixinBase() {
   }
 
   async sync (): Promise<void> {
-    log.silly('Post', 'sync()')
+    this.log.silly('Post', 'sync()')
 
     if (!this.id) {
       throw new Error('no post id found')
@@ -302,7 +302,7 @@ class PostMixin extends wechatifyMixinBase() {
   }
 
   async ready (): Promise<void> {
-    log.silly('Post', 'ready()')
+    this.log.silly('Post', 'ready()')
 
     if (!this.id) {
       throw new Error('no post id found')
@@ -316,7 +316,7 @@ class PostMixin extends wechatifyMixinBase() {
   }
 
   async * [Symbol.asyncIterator] (): AsyncIterableIterator<Sayable> {
-    log.verbose('Post', '[Symbol.asyncIterator]()')
+    this.log.verbose('Post', '[Symbol.asyncIterator]()')
 
     const payloadToSayable = payloadToSayableWechaty(this.wechaty)
 
@@ -341,7 +341,7 @@ class PostMixin extends wechatifyMixinBase() {
   }
 
   async getSayableWithIndex (sayableIndex: number) {
-    log.verbose('Post', 'getSayableWithIndex(%s)', sayableIndex)
+    this.log.verbose('Post', 'getSayableWithIndex(%s)', sayableIndex)
 
     const payloadToSayable = payloadToSayableWechaty(this.wechaty)
 
@@ -361,7 +361,7 @@ class PostMixin extends wechatifyMixinBase() {
   }
 
   async getSayableWithId (id: string) {
-    log.verbose('Post', 'getSayableWithId(%s)', id)
+    this.log.verbose('Post', 'getSayableWithId(%s)', id)
 
     if (PUPPET.payloads.isPostServer(this.payload)) {
       const payloadToSayable = payloadToSayableWechaty(this.wechaty)
@@ -376,7 +376,7 @@ class PostMixin extends wechatifyMixinBase() {
   async * children (
     filter: PUPPET.filters.Post = {},
   ): AsyncIterableIterator<PostInterface> {
-    log.verbose('Post', '*children(%s)', Object.keys(filter).length ? JSON.stringify(filter) : '')
+    this.log.verbose('Post', '*children(%s)', Object.keys(filter).length ? JSON.stringify(filter) : '')
 
     const pagination: PUPPET.filters.PaginationRequest = {
       pageSize: 100,
@@ -413,7 +413,7 @@ class PostMixin extends wechatifyMixinBase() {
   async * descendants (
     filter: PUPPET.filters.Post = {},
   ): AsyncIterableIterator<PostInterface> {
-    log.verbose('Post', '*descendants(%s)', Object.keys(filter).length ? JSON.stringify(filter) : '')
+    this.log.verbose('Post', '*descendants(%s)', Object.keys(filter).length ? JSON.stringify(filter) : '')
 
     for await (const post of this.children(filter)) {
       yield post
@@ -424,7 +424,7 @@ class PostMixin extends wechatifyMixinBase() {
   async * likes (
     filter: PUPPET.filters.Post = {},
   ): AsyncIterableIterator<Tap> {
-    log.verbose('Post', '*likes(%s)', Object.keys(filter).length ? JSON.stringify(filter) : '')
+    this.log.verbose('Post', '*likes(%s)', Object.keys(filter).length ? JSON.stringify(filter) : '')
     return this.taps({
       ...filter,
       type: PUPPET.types.Tap.Like,
@@ -434,7 +434,7 @@ class PostMixin extends wechatifyMixinBase() {
   async * taps (
     filter: PUPPET.filters.Tap = {},
   ): AsyncIterableIterator<Tap> {
-    log.verbose('Post', '*taps(%s)', Object.keys(filter).length ? JSON.stringify(filter) : '')
+    this.log.verbose('Post', '*taps(%s)', Object.keys(filter).length ? JSON.stringify(filter) : '')
 
     const pagination: PUPPET.filters.PaginationRequest = {}
 
@@ -463,7 +463,7 @@ class PostMixin extends wechatifyMixinBase() {
       | Exclude<Sayable, PostInterface>
       | Exclude<Sayable, PostInterface>[],
   ): Promise<void | PostInterface> {
-    log.verbose('Post', 'reply(%s)', sayable)
+    this.log.verbose('Post', 'reply(%s)', sayable)
 
     if (!this.id) {
       console.error('You can only call `reply()` on received posts, but it seems that you are trying to call reply on a post created from local.')
@@ -495,7 +495,7 @@ class PostMixin extends wechatifyMixinBase() {
   async like ()                : Promise<boolean>
 
   async like (status?: boolean): Promise<void | boolean> {
-    log.verbose('Post', 'like(%s)', typeof status === 'undefined' ? '' : status)
+    this.log.verbose('Post', 'like(%s)', typeof status === 'undefined' ? '' : status)
 
     if (typeof status === 'undefined') {
       return this.tap(
@@ -519,7 +519,7 @@ class PostMixin extends wechatifyMixinBase() {
     type    : PUPPET.types.Tap,
     status? : boolean,
   ): Promise<void | boolean> {
-    log.verbose('Post', 'tap(%s%s)',
+    this.log.verbose('Post', 'tap(%s%s)',
       PUPPET.types.Tap[type],
       typeof status === 'undefined'
         ? ''
@@ -540,7 +540,7 @@ class PostMixin extends wechatifyMixinBase() {
     tapList        : Tap[],
     nextPageToken? : string,
   ]> {
-    log.verbose('Post', 'tapFind()')
+    this.log.verbose('Post', 'tapFind()')
 
     if (!this.id) {
       throw new Error('can not get tapFind for client created post')
@@ -560,7 +560,7 @@ class PostMixin extends wechatifyMixinBase() {
       for (const [ i, contactId ] of data.contactId.entries()) {
         const contact = await this.wechaty.Contact.find({ id: contactId })
         if (!contact) {
-          log.warn('Post', 'tapFind() contact not found for id: %s', contactId)
+          this.log.warn('Post', 'tapFind() contact not found for id: %s', contactId)
           continue
         }
 
@@ -579,17 +579,17 @@ class PostMixin extends wechatifyMixinBase() {
   }
 
   location (): LocationInterface | undefined {
-    log.verbose('Post', 'location()')
+    this.log.verbose('Post', 'location()')
 
     if (!this.payload.location) {
-      log.warn('this post has no location info')
+      this.log.warn('this post has no location info')
       return
     }
     return new this.wechaty.Location(this.payload.location)
   }
 
   async visibleList (): Promise<ContactInterface[]> {
-    log.verbose('Post', 'visibleList()')
+    this.log.verbose('Post', 'visibleList()')
 
     if (!this.payload.visibleList) {
       return []

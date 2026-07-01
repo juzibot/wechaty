@@ -23,7 +23,6 @@ import type {
 import type { Constructor } from 'clone-class'
 import type * as PUPPET from '@juzi/wechaty-puppet'
 import { validationMixin } from '../user-mixins/validation.js'
-import { log } from '../config.js'
 
 import {
   wechatifyMixinBase,
@@ -62,7 +61,7 @@ function isUnsupportedError (e: unknown): boolean {
 class VoiceMixin extends wechatifyMixinBase() {
 
   static create (id: string): VoiceInterface {
-    log.verbose('Voice', 'static create(%s)', id)
+    this.log.verbose('Voice', 'static create(%s)', id)
 
     const voice = new this(id)
     return voice
@@ -72,7 +71,7 @@ class VoiceMixin extends wechatifyMixinBase() {
     public id: string,
   ) {
     super()
-    log.verbose('Voice', 'constructor(%s)', id)
+    this.log.verbose('Voice', 'constructor(%s)', id)
   }
 
   /**
@@ -85,11 +84,11 @@ class VoiceMixin extends wechatifyMixinBase() {
    * path. A genuine runtime error from a working `messageVoice` is rethrown.
    */
   async file (): Promise<FileBoxInterface> {
-    log.verbose('Voice', 'file() for id: "%s"', this.id)
+    this.log.verbose('Voice', 'file() for id: "%s"', this.id)
     const puppet = this.wechaty.puppet
     // puppet built against an old wechaty-puppet without the method at all
     if (typeof (puppet as { messageVoice?: unknown }).messageVoice !== 'function') {
-      log.verbose('Voice', 'file() messageVoice() absent, fallback to messageFile()')
+      this.log.verbose('Voice', 'file() messageVoice() absent, fallback to messageFile()')
       return puppet.messageFile(this.id)
     }
     try {
@@ -99,7 +98,7 @@ class VoiceMixin extends wechatifyMixinBase() {
       if (!isUnsupportedError(e)) {
         throw e
       }
-      log.verbose('Voice', 'file() messageVoice() unsupported, fallback to messageFile(): %s', (e as Error).message)
+      this.log.verbose('Voice', 'file() messageVoice() unsupported, fallback to messageFile(): %s', (e as Error).message)
       const fileBox = await puppet.messageFile(this.id)
       return fileBox
     }
@@ -119,11 +118,11 @@ class VoiceMixin extends wechatifyMixinBase() {
    * does not silently drop `noSpeech` and re-run its own paid ASR).
    */
   async text (): Promise<PUPPET.payloads.VoiceText> {
-    log.verbose('Voice', 'text() for id: "%s"', this.id)
+    this.log.verbose('Voice', 'text() for id: "%s"', this.id)
     const puppet = this.wechaty.puppet
     // puppet built against an old wechaty-puppet without the method at all
     if (typeof (puppet as { messageVoiceText?: unknown }).messageVoiceText !== 'function') {
-      log.verbose('Voice', 'text() messageVoiceText() absent, fallback to messagePayload().text')
+      this.log.verbose('Voice', 'text() messageVoiceText() absent, fallback to messagePayload().text')
       const payload = await puppet.messagePayload(this.id)
       return { text: payload.text || '', noSpeech: false }
     }
@@ -134,7 +133,7 @@ class VoiceMixin extends wechatifyMixinBase() {
       if (!isUnsupportedError(e)) {
         throw e
       }
-      log.verbose('Voice', 'text() messageVoiceText() unsupported, fallback to messagePayload().text: %s', (e as Error).message)
+      this.log.verbose('Voice', 'text() messageVoiceText() unsupported, fallback to messagePayload().text: %s', (e as Error).message)
       const payload = await puppet.messagePayload(this.id)
       return { text: payload.text || '', noSpeech: false }
     }

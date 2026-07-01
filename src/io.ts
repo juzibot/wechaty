@@ -125,7 +125,7 @@ export class Io {
     this.id = options.wechaty.id
 
     this.protocol = options.protocol + '|' + options.wechaty.id + '|' + config.serviceIp + '|' + options.servicePort
-    log.verbose('Io', 'instantiated with apihost[%s], token[%s], protocol[%s], cuid[%s]',
+    this.options.wechaty.log.verbose('Io', 'instantiated with apihost[%s], token[%s], protocol[%s], cuid[%s]',
       options.apihost,
       options.token,
       options.protocol,
@@ -149,7 +149,7 @@ export class Io {
   }
 
   public async start (): Promise<void> {
-    log.verbose('Io', 'start()')
+    this.options.wechaty.log.verbose('Io', 'start()')
 
     if (this.lifeTimer) {
       throw new Error('lifeTimer exist')
@@ -176,7 +176,7 @@ export class Io {
 
       this.lifeTimer = setInterval(() => {
         if (this.ws && this.connected()) {
-          log.silly('Io', 'start() setInterval() ws.ping()')
+          this.options.wechaty.log.silly('Io', 'start() setInterval() ws.ping()')
           // TODO: check 'pong' event on ws
           this.ws.ping()
         }
@@ -185,14 +185,14 @@ export class Io {
       this.state.active(true)
 
     } catch (e) {
-      log.warn('Io', 'start() exception: %s', (e as Error).message)
+      this.options.wechaty.log.warn('Io', 'start() exception: %s', (e as Error).message)
       this.state.inactive(true)
       throw e
     }
   }
 
   private initEventHook () {
-    log.verbose('Io', 'initEventHook()')
+    this.options.wechaty.log.verbose('Io', 'initEventHook()')
     const wechaty = this.options.wechaty
 
     wechaty.on('error',     error =>        this.send({ name: 'error',      payload: error }))
@@ -207,7 +207,7 @@ export class Io {
   }
 
   private async initWebSocket (): Promise<WebSocket> {
-    log.verbose('Io', 'initWebSocket()')
+    this.options.wechaty.log.verbose('Io', 'initWebSocket()')
     // this.state.current('on', false)
 
     // const auth = 'Basic ' + new Buffer(this.setting.token + ':X').toString('base64')
@@ -243,10 +243,10 @@ export class Io {
 
   private wsOnOpen (ws: WebSocket): void {
     if (this.protocol !== ws.protocol) {
-      log.error('Io', 'wsOnOpen() require protocol[%s] failed', this.protocol)
+      this.options.wechaty.log.error('Io', 'wsOnOpen() require protocol[%s] failed', this.protocol)
       // XXX deal with error?
     }
-    log.verbose('Io', 'wsOnOpen() connected with protocol [%s]', ws.protocol)
+    this.options.wechaty.log.verbose('Io', 'wsOnOpen() connected with protocol [%s]', ws.protocol)
     // this.currentState('connected')
     // this.state.current('on')
 
@@ -266,12 +266,12 @@ export class Io {
   }
 
   private wsOnMessage (data: WebSocket.Data): void {
-    log.silly('Io', 'wsOnMessage() ws.on(message): %s', data)
+    this.options.wechaty.log.silly('Io', 'wsOnMessage() ws.on(message): %s', data)
     this.wsOnMessageAsync(data).catch(console.error)
   }
 
   private async wsOnMessageAsync (data: WebSocket.Data): Promise<void> {
-    log.silly('Io', 'wsOnMessageAsync() ws.on(message): %s', data)
+    this.options.wechaty.log.silly('Io', 'wsOnMessageAsync() ws.on(message): %s', data)
 
     // flags.binary will be set if a binary data is received.
     // flags.masked will be set if the data was masked.
@@ -293,7 +293,7 @@ export class Io {
       ioEvent.name    = obj.name
       ioEvent.payload = obj.payload
     } catch (e) {
-      log.verbose('Io', 'on(message) recv a non IoEvent data[%s]', data)
+      this.options.wechaty.log.verbose('Io', 'on(message) recv a non IoEvent data[%s]', data)
     }
 
     switch (ioEvent.name) {
@@ -309,17 +309,17 @@ export class Io {
               const fn = new AsyncFunction(...args, source)
               this.onMessage = fn
             } else {
-              log.warn('Io', 'server pushed function is invalid. args: %s', JSON.stringify(args))
+              this.options.wechaty.log.warn('Io', 'server pushed function is invalid. args: %s', JSON.stringify(args))
             }
           } catch (e) {
-            log.warn('Io', 'server pushed function exception: %s', e)
+            this.options.wechaty.log.warn('Io', 'server pushed function exception: %s', e)
             this.options.wechaty.emitError(e)
           }
         }
         break
 
       case 'reset':
-        log.verbose('Io', 'on(reset): %s', ioEvent.payload)
+        this.options.wechaty.log.verbose('Io', 'on(reset): %s', ioEvent.payload)
         this.options.wechaty.emitError(
           new Error(
             'reset by server: '
@@ -330,13 +330,13 @@ export class Io {
         break
 
       case 'shutdown':
-        log.info('Io', 'on(shutdown): %s', ioEvent.payload)
+        this.options.wechaty.log.info('Io', 'on(shutdown): %s', ioEvent.payload)
         process.exit(0)
         // eslint-disable-next-line
         break
 
       case 'update':
-        log.verbose('Io', 'on(update): %s', ioEvent.payload)
+        this.options.wechaty.log.verbose('Io', 'on(update): %s', ioEvent.payload)
         {
           const wechaty = this.options.wechaty
           if (wechaty.isLoggedIn) {
@@ -365,17 +365,17 @@ export class Io {
         break
 
       case 'logout':
-        log.info('Io', 'on(logout): %s', ioEvent.payload)
+        this.options.wechaty.log.info('Io', 'on(logout): %s', ioEvent.payload)
         await this.options.wechaty.logout()
         break
 
       case 'jsonrpc':
-        log.info('Io', 'on(jsonrpc): %s', ioEvent.payload)
+        this.options.wechaty.log.info('Io', 'on(jsonrpc): %s', ioEvent.payload)
 
         try {
           const request = (ioEvent as IoEventJsonRpc).payload
           if (!isJsonRpcRequest(request)) {
-            log.warn('Io', 'on(jsonrpc) payload is not a jsonrpc request: %s', JSON.stringify(request))
+            this.options.wechaty.log.warn('Io', 'on(jsonrpc) payload is not a jsonrpc request: %s', JSON.stringify(request))
             return
           }
 
@@ -385,7 +385,7 @@ export class Io {
 
           const response = await this.jsonRpc.exec(request)
           if (!response) {
-            log.warn('Io', 'on(jsonrpc) response is undefined.')
+            this.options.wechaty.log.warn('Io', 'on(jsonrpc) response is undefined.')
             return
           }
           const payload = jsonRpcPeer.parse(response) as jsonRpcPeer.JsonRpcPayloadResponse
@@ -395,17 +395,17 @@ export class Io {
             payload,
           }
 
-          log.verbose('Io', 'on(jsonrpc) send(%s)', response)
+          this.options.wechaty.log.verbose('Io', 'on(jsonrpc) send(%s)', response)
           await this.send(jsonrpcEvent)
 
         } catch (e) {
-          log.error('Io', 'on(jsonrpc): %s', e)
+          this.options.wechaty.log.error('Io', 'on(jsonrpc): %s', e)
         }
 
         break
 
       default:
-        log.warn('Io', 'UNKNOWN on(%s): %s', ioEvent.name, ioEvent.payload)
+        this.options.wechaty.log.warn('Io', 'UNKNOWN on(%s): %s', ioEvent.name, ioEvent.payload)
         break
     }
   }
@@ -413,23 +413,23 @@ export class Io {
   // FIXME: it seems the parameter `e` might be `undefined`.
   // @types/ws might has bug for `ws.on('error',    e => this.wsOnError(e))`
   private wsOnError (e?: Error) {
-    log.warn('Io', 'wsOnError() error event[%s]', e && e.message)
+    this.options.wechaty.log.warn('Io', 'wsOnError() error event[%s]', e && e.message)
     if (!e) {
       return
     }
 
     if (!this.ws) {
-      log.error('Io', 'wsOnError() ws.on(error) this.ws is `undefined`', e.message)
+      this.options.wechaty.log.error('Io', 'wsOnError() ws.on(error) this.ws is `undefined`', e.message)
       return
     }
 
     if (this.ws.readyState === WebSocket.CONNECTING) {
-      log.error('Io', 'wsOnError() ws.on(error) ws.readyState is CONNECTING: %s', e.message)
+      this.options.wechaty.log.error('Io', 'wsOnError() ws.on(error) ws.readyState is CONNECTING: %s', e.message)
       return
     }
 
     if (this.ws.readyState  === WebSocket.CLOSING) {
-      log.error('Io', 'wsOnError() ws.on(error) ws.readyState is CLOSING: %s', e.message)
+      this.options.wechaty.log.error('Io', 'wsOnError() ws.on(error) ws.readyState is CLOSING: %s', e.message)
       return
     }
 
@@ -448,26 +448,26 @@ export class Io {
     message : string,
   ): void {
     if (this.state.active()) {
-      log.warn('Io', 'wsOnClose() close event[%d: %s]', code, message)
+      this.options.wechaty.log.warn('Io', 'wsOnClose() close event[%d: %s]', code, message)
       ws.close()
       this.reconnect()
     }
   }
 
   private reconnect () {
-    log.verbose('Io', 'reconnect()')
+    this.options.wechaty.log.verbose('Io', 'reconnect()')
 
     if (this.state.inactive()) {
-      log.warn('Io', 'reconnect() canceled because state.target() === offline')
+      this.options.wechaty.log.warn('Io', 'reconnect() canceled because state.target() === offline')
       return
     }
 
     if (this.connected()) {
-      log.warn('Io', 'reconnect() on a already connected io')
+      this.options.wechaty.log.warn('Io', 'reconnect() on a already connected io')
       return
     }
     if (this.reconnectTimer) {
-      log.warn('Io', 'reconnect() on a already re-connecting io')
+      this.options.wechaty.log.warn('Io', 'reconnect() on a already re-connecting io')
       return
     }
 
@@ -477,7 +477,7 @@ export class Io {
       this.reconnectTimeout *= 3
     }
 
-    log.warn('Io', 'reconnect() will reconnect after %d s', Math.floor(this.reconnectTimeout / 1000))
+    this.options.wechaty.log.warn('Io', 'reconnect() will reconnect after %d s', Math.floor(this.reconnectTimeout / 1000))
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = undefined
       this.initWebSocket().catch(console.error)
@@ -492,12 +492,12 @@ export class Io {
     const ws = this.ws
 
     if (ioEvent) {
-      log.silly('Io', 'send(%s)', JSON.stringify(ioEvent))
+      this.options.wechaty.log.silly('Io', 'send(%s)', JSON.stringify(ioEvent))
       this.eventBuffer.push(ioEvent)
-    } else { log.silly('Io', 'send()') }
+    } else { this.options.wechaty.log.silly('Io', 'send()') }
 
     if (!this.connected()) {
-      log.verbose('Io', 'send() without a connected websocket, eventBuffer.length = %d', this.eventBuffer.length)
+      this.options.wechaty.log.verbose('Io', 'send() without a connected websocket, eventBuffer.length = %d', this.eventBuffer.length)
       return
     }
 
@@ -522,13 +522,13 @@ export class Io {
     try {
       await Promise.all(list)
     } catch (e) {
-      log.error('Io', 'send() exception: %s', (e as Error).stack)
+      this.options.wechaty.log.error('Io', 'send() exception: %s', (e as Error).stack)
       throw e
     }
   }
 
   public async stop (): Promise<void> {
-    log.verbose('Io', 'stop()')
+    this.options.wechaty.log.verbose('Io', 'stop()')
 
     if (!this.ws) {
       throw new Error('no ws')
@@ -569,14 +569,14 @@ export class Io {
    *
    */
   private async ioMessage (m: MessageInterface): Promise<void> {
-    log.silly('Io', 'ioMessage() is a nop function before be overwritten from cloud')
+    this.options.wechaty.log.silly('Io', 'ioMessage() is a nop function before be overwritten from cloud')
     if (typeof this.onMessage === 'function') {
       await this.onMessage(m)
     }
   }
 
   protected async syncMessage (m: MessageInterface): Promise<void> {
-    log.silly('Io', 'syncMessage(%s)', m)
+    this.options.wechaty.log.silly('Io', 'syncMessage(%s)', m)
 
     const messageEvent: IoEvent = {
       name    : 'message',

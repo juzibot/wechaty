@@ -17,7 +17,6 @@
  *   limitations under the License.
  *
  */
-import { log }        from '@juzi/wechaty-puppet'
 import type { Constructor } from 'clone-class'
 import { validationMixin } from '../user-mixins/validation.js'
 
@@ -41,7 +40,7 @@ class FavoriteMixin extends wechatifyMixinBase() {
    * const tags = await wechaty.Favorite.tags()
    */
   static async tags (): Promise<TagInterface[]> {
-    log.verbose('Favorite', 'static tags() for %s', this)
+    this.log.verbose('Favorite', 'static tags() for %s', this)
 
     // TODO:
     // try {

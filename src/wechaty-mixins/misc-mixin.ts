@@ -66,7 +66,7 @@ const miscMixin = <MixinBase extends typeof WechatySkeleton & PuppetMixin & GErr
      * @private
      */
     ding (data?: string): void {
-      log.silly('WechatyMiscMixin', 'ding(%s)', data || '')
+      this.log.silly('WechatyMiscMixin', 'ding(%s)', data || '')
 
       try {
         this.puppet.ding(data)

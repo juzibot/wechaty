@@ -2,7 +2,6 @@ import type { Constructor } from 'clone-class'
 import type { PaginationRequest } from '@juzi/wechaty-puppet/filters'
 import * as PUPPET from '@juzi/wechaty-puppet'
 
-import { log } from '../config.js'
 import { poolifyMixin } from '../user-mixins/poolify.js'
 import { validationMixin } from '../user-mixins/validation.js'
 import { wechatifyMixin } from '../user-mixins/wechatify.js'
@@ -26,14 +25,14 @@ class WxxdOrderMixin extends MixinBase {
     public readonly id: string,
   ) {
     super()
-    log.silly('WxxdOrder', 'constructor(%s)', id)
+    this.log.silly('WxxdOrder', 'constructor(%s)', id)
   }
 
   /**
    * List all orders
    */
   static async list (query: PaginationRequest) {
-    log.verbose('WxxdOrder', 'list(%s)', JSON.stringify(query))
+    this.log.verbose('WxxdOrder', 'list(%s)', JSON.stringify(query))
 
     return await this.wechaty.puppet.listWxxdOrders(query)
   }
@@ -44,7 +43,7 @@ class WxxdOrderMixin extends MixinBase {
   static async find (
     query: string | { id: string },
   ): Promise<WxxdOrderInterface | undefined> {
-    log.verbose('WxxdOrder', 'find(%s)', JSON.stringify(query))
+    this.log.verbose('WxxdOrder', 'find(%s)', JSON.stringify(query))
 
     const id = typeof query === 'string' ? query : query.id
 
@@ -68,7 +67,7 @@ class WxxdOrderMixin extends MixinBase {
    * Send delivery for an order
    */
   static async deliverySend (orderId: string, deliveryId: string, waybillId: string) {
-    log.verbose('WxxdOrder', 'deliverySend(%s, %s, %s)', orderId, deliveryId, waybillId)
+    this.log.verbose('WxxdOrder', 'deliverySend(%s, %s, %s)', orderId, deliveryId, waybillId)
     return this.wechaty.puppet.wxxdOrderDeliverySend({ orderId, deliveryId, waybillId })
   }
 
@@ -76,7 +75,7 @@ class WxxdOrderMixin extends MixinBase {
    * Generate after sale order
    */
   static async genAfterSaleOrder (orderId: string, reason: string) {
-    log.verbose('WxxdOrder', 'genAfterSaleOrder(%s, %s)', orderId, reason)
+    this.log.verbose('WxxdOrder', 'genAfterSaleOrder(%s, %s)', orderId, reason)
     return this.wechaty.puppet.wxxdOrderGenAfterSaleOrder({ orderId, reason })
   }
 
@@ -84,7 +83,7 @@ class WxxdOrderMixin extends MixinBase {
    * Update order merchant notes
    */
   static async updateWxxdMerchantnotes (orderId: string, merchantNotes: string) {
-    log.verbose('WxxdOrder', 'updateWxxdMerchantnotes(%s, %s)', orderId, merchantNotes)
+    this.log.verbose('WxxdOrder', 'updateWxxdMerchantnotes(%s, %s)', orderId, merchantNotes)
     return this.wechaty.puppet.updateWxxdMerchantnotes(orderId, merchantNotes)
   }
 
@@ -93,10 +92,10 @@ class WxxdOrderMixin extends MixinBase {
   }
 
   async ready (forceSync = false): Promise<void> {
-    log.silly('WxxdOrder', 'ready() @ %s with id="%s"', this.wechaty.puppet, this.id)
+    this.log.silly('WxxdOrder', 'ready() @ %s with id="%s"', this.wechaty.puppet, this.id)
 
     if (!forceSync && this.isReady()) {
-      log.silly('WxxdOrder', 'ready() isReady() true')
+      this.log.silly('WxxdOrder', 'ready() isReady() true')
       return
     }
 
@@ -104,7 +103,7 @@ class WxxdOrderMixin extends MixinBase {
       this.payload = await this.wechaty.puppet.wxxdOrderPayload(this.id)
     } catch (e) {
       this.wechaty.emitError(e)
-      log.verbose('WxxdOrder', 'ready() this.wechaty.puppet.wxxdOrderPayload(%s) exception: %s',
+      this.log.verbose('WxxdOrder', 'ready() this.wechaty.puppet.wxxdOrderPayload(%s) exception: %s',
         this.id,
         (e as Error).message,
       )

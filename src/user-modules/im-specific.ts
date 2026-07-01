@@ -1,4 +1,3 @@
-import { log } from '@juzi/wechaty-puppet'
 import type { Constructor } from 'clone-class'
 
 import { validationMixin } from '../user-mixins/validation.js'
@@ -36,7 +35,7 @@ class ImSpecificMixin extends wechatifyMixinBase() {
    */
   constructor () {
     super()
-    log.verbose('ImSpecific', 'constructor()')
+    this.log.verbose('ImSpecific', 'constructor()')
   }
 
 }

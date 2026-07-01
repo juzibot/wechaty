@@ -19,7 +19,6 @@
  */
 import { EventEmitter }     from 'events'
 import * as PUPPET          from '@juzi/wechaty-puppet'
-import { log }              from '@juzi/wechaty-puppet'
 import type { Constructor } from 'clone-class'
 
 import {
@@ -98,7 +97,7 @@ class FriendshipMixin extends MixinBase implements Accepter {
     queryFilter : PUPPET.filters.Friendship,
     type?: PUPPET.types.Contact,
   ): Promise<undefined | ContactInterface> {
-    log.verbose('Friendship', 'static search("%s")',
+    this.log.verbose('Friendship', 'static search("%s")',
       JSON.stringify(queryFilter),
     )
     if (typeof (type) === 'undefined') {
@@ -141,13 +140,13 @@ class FriendshipMixin extends MixinBase implements Accepter {
     contact : ContactInterface,
     options  : FriendshipAddOptions,
   ): Promise<void> {
-    log.verbose('Friendship', 'static add(%s, %s)',
+    this.log.verbose('Friendship', 'static add(%s, %s)',
       contact.id,
       typeof options === 'string' ? options : options.hello,
     )
 
     if (typeof options === 'string') {
-      log.warn('Friendship', 'the params hello is deprecated in the next version, please put the attr hello into options object, e.g. { hello: "xxxx" }')
+      this.log.warn('Friendship', 'the params hello is deprecated in the next version, please put the attr hello into options object, e.g. { hello: "xxxx" }')
       await this.wechaty.puppet.friendshipAdd(contact.id, { hello: options })
     } else {
       const friendOption: PUPPET.types.FriendshipAddOptions = {
@@ -162,7 +161,7 @@ class FriendshipMixin extends MixinBase implements Accepter {
   static async del (
     contact: ContactInterface,
   ): Promise<void> {
-    log.verbose('Friendship', 'static del(%s)', contact.id)
+    this.log.verbose('Friendship', 'static del(%s)', contact.id)
     throw new Error('to be implemented')
   }
 
@@ -184,7 +183,7 @@ class FriendshipMixin extends MixinBase implements Accepter {
     public readonly id: string,
   ) {
     super()
-    log.verbose('Friendship', 'constructor(id=%s)', id)
+    this.log.verbose('Friendship', 'constructor(id=%s)', id)
   }
 
   override toString () {
@@ -254,7 +253,7 @@ class FriendshipMixin extends MixinBase implements Accepter {
    * .start()
    */
   async accept (): Promise<void> {
-    log.verbose('Friendship', 'accept()')
+    this.log.verbose('Friendship', 'accept()')
 
     if (!this.payload) {
       throw new Error('no payload')
@@ -264,7 +263,7 @@ class FriendshipMixin extends MixinBase implements Accepter {
       throw new Error('accept() need type to be FriendshipType.Receive, but it got a ' + FriendshipImpl.Type[this.payload.type])
     }
 
-    log.silly('Friendship', 'accept() to %s', this.payload.contactId)
+    this.log.silly('Friendship', 'accept() to %s', this.payload.contactId)
 
     await this.wechaty.puppet.friendshipAccept(this.id)
 
@@ -276,14 +275,14 @@ class FriendshipMixin extends MixinBase implements Accepter {
         if (!contact.isReady()) {
           throw new Error('Friendship.accept() contact.ready() not ready')
         }
-        log.verbose('Friendship', 'accept() with contact %s ready()', contact.name())
+        this.log.verbose('Friendship', 'accept() with contact %s ready()', contact.name())
       }
 
       await retryPolicy.execute(doSync)
 
     } catch (e) {
       this.wechaty.emitError(e)
-      log.warn('Friendship', 'accept() contact %s not ready because of %s', contact, (e && (e as Error).message) || e)
+      this.log.warn('Friendship', 'accept() contact %s not ready because of %s', contact, (e && (e as Error).message) || e)
       // console.error(e)
     }
 
@@ -384,7 +383,7 @@ class FriendshipMixin extends MixinBase implements Accepter {
    * .start()
    */
   toJSON (): string {
-    log.verbose('Friendship', 'toJSON()')
+    this.log.verbose('Friendship', 'toJSON()')
 
     if (!this.isReady()) {
       throw new Error(`Friendship<${this.id}> needs to be ready. Please call ready() before toJSON()`)
@@ -405,7 +404,7 @@ class FriendshipMixin extends MixinBase implements Accepter {
   static async fromJSON (
     payload: string | PUPPET.payloads.Friendship,
   ): Promise<FriendshipInterface> {
-    log.verbose('Friendship', 'static fromJSON(%s)',
+    this.log.verbose('Friendship', 'static fromJSON(%s)',
       typeof payload === 'string'
         ? payload
         : JSON.stringify(payload),

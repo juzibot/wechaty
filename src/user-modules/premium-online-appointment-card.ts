@@ -1,7 +1,6 @@
 import type * as PUPPET from '@juzi/wechaty-puppet'
 
 import type { Constructor } from 'clone-class'
-import { log } from '../config.js'
 
 import { validationMixin } from '../user-mixins/validation.js'
 
@@ -14,7 +13,7 @@ class PremiumOnlineAppointmentCardMixin extends wechatifyMixinBase() {
     public readonly payload: PUPPET.payloads.PremiumOnlineAppointmentCard,
   ) {
     super()
-    log.verbose('PremiumOnlineAppointmentCard', 'constructor()')
+    this.log.verbose('PremiumOnlineAppointmentCard', 'constructor()')
   }
 
   static async findAll (query: {
@@ -22,7 +21,7 @@ class PremiumOnlineAppointmentCardMixin extends wechatifyMixinBase() {
     page?: number,
     pageSize?: number
   }): Promise<PremiumOnlineAppointmentCardInterface[]> {
-    log.verbose('PremiumOnlineAppointmentCard', 'findAll(%s)', JSON.stringify(query))
+    this.log.verbose('PremiumOnlineAppointmentCard', 'findAll(%s)', JSON.stringify(query))
 
     const params = {
       cardType: query.cardType || 'card',

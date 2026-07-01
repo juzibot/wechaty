@@ -1,5 +1,4 @@
 import type { Constructor } from 'clone-class'
-import { log } from '../config.js'
 
 import { validationMixin } from '../user-mixins/validation.js'
 
@@ -15,7 +14,7 @@ class DouyinOneClickPhoneCollectionMixin extends wechatifyMixinBase() {
    *
    */
   static async create (): Promise<DouyinOneClickPhoneCollectionInterface> {
-    log.verbose('DouyinOneClickPhoneCollection', 'create()')
+    this.log.verbose('DouyinOneClickPhoneCollection', 'create()')
 
     return new this({})
   }
@@ -27,7 +26,7 @@ class DouyinOneClickPhoneCollectionMixin extends wechatifyMixinBase() {
     public readonly payload: {},
   ) {
     super()
-    log.verbose('DouyinOneClickPhoneCollection', 'constructor()')
+    this.log.verbose('DouyinOneClickPhoneCollection', 'constructor()')
     // Huan(202110): it is ok to create a raw one without wechaty instance
     // guardWechatifyClass.call(this, DouyinOneClickPhoneCollection)
   }

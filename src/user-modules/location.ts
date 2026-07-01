@@ -19,7 +19,6 @@
  */
 import type * as PUPPET          from '@juzi/wechaty-puppet'
 import type { Constructor } from 'clone-class'
-import { log } from '../config.js'
 
 import { validationMixin }  from '../user-mixins/validation.js'
 import {
@@ -35,7 +34,7 @@ class LocationMixin extends wechatifyMixinBase() {
    *  See: https://en.wikipedia.org/wiki/Point_of_interest
    */
   static async create (poi: string): Promise<LocationInterface> {
-    log.verbose('Location', 'create(%s)', poi)
+    this.log.verbose('Location', 'create(%s)', poi)
 
     const payload: PUPPET.payloads.Location = {
       accuracy  : 15, // in meters
@@ -55,7 +54,7 @@ class LocationMixin extends wechatifyMixinBase() {
     public readonly payload: PUPPET.payloads.Location,
   ) {
     super()
-    log.verbose('Location', 'constructor()')
+    this.log.verbose('Location', 'constructor()')
     // Huan(202110): it is ok to create a raw one without wechaty instance
     // guardWechatifyClass.call(this, Location)
   }
