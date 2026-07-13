@@ -931,3 +931,206 @@ test('dirty(Call) refreshes user-layer payload so getters see new value', async 
   await wechaty.stop()
   sandbox.restore()
 })
+
+// ---------------------------------------------------------------------------
+// 12. end() — universal terminator dispatches by state
+// ---------------------------------------------------------------------------
+
+test('call.end() on outgoing calling invokes puppet.callCancel and ends', async t => {
+  const { puppet, wechaty } = buildWechaty()
+  await startAndLogin(puppet, wechaty)
+
+  puppet.callInvite = sandbox.stub().resolves('call-id-end-cancel')
+  stubCallPayload(puppet, (id: string) => ({
+    id,
+    starter      : 'bot-self',
+    participants : [ 'bot-self', 'peer' ],
+    media        : PUPPET.types.CallMediaType.Audio,
+    startTime    : 1,
+  }))
+  const cancelStub = sandbox.stub().resolves(undefined)
+  const hangupStub = sandbox.stub().resolves(undefined)
+  puppet.callCancel = cancelStub
+  puppet.callHangup = hangupStub
+
+  const contact = (wechaty.Contact as typeof ContactImpl).load('peer')
+  const call    = await contact.call()
+  t.equal(call.status(), 'calling', 'prerequisite: outgoing call starts as calling')
+
+  await call.end('demo')
+  t.same(cancelStub.firstCall.args, [ call.id ], 'callCancel should be invoked with callId')
+  t.equal(hangupStub.callCount, 0, 'callHangup should not be touched')
+  t.equal(call.status(), 'ended', 'status should be ended')
+  t.equal((wechaty as any).__callPool.has(call.id), false, 'pool should be evicted')
+
+  await call.end('again')
+  t.equal(cancelStub.callCount, 1, 'second end() should be a no-op')
+
+  await wechaty.stop()
+  sandbox.restore()
+})
+
+test('call.end() on connected call invokes puppet.callHangup with reason', async t => {
+  const { puppet, wechaty } = buildWechaty()
+  await startAndLogin(puppet, wechaty)
+
+  puppet.callInvite = sandbox.stub().resolves('call-id-end-hangup')
+  stubCallPayload(puppet, (id: string) => ({
+    id,
+    starter      : 'bot-self',
+    participants : [ 'bot-self', 'peer' ],
+    media        : PUPPET.types.CallMediaType.Audio,
+    startTime    : 1,
+  }))
+  const cancelStub = sandbox.stub().resolves(undefined)
+  const hangupStub = sandbox.stub().resolves(undefined)
+  puppet.callCancel = cancelStub
+  puppet.callHangup = hangupStub
+
+  const contact = (wechaty.Contact as typeof ContactImpl).load('peer')
+  const call    = await contact.call()
+
+  ;(puppet as any).emit('call', {
+    callId    : call.id,
+    signal    : PUPPET.types.CallSignal.Accept,
+    contactId : 'peer',
+    timestamp : 2,
+  } as PUPPET.payloads.EventCall)
+  await flush()
+  t.equal(call.status(), 'connected', 'prerequisite: call should be connected')
+
+  await call.end('bye')
+  t.same(hangupStub.firstCall.args, [ call.id, 'bye' ], 'callHangup args should be [callId, reason]')
+  t.equal(cancelStub.callCount, 0, 'callCancel should not be touched')
+  t.equal(call.status(), 'ended', 'status should be ended')
+
+  await wechaty.stop()
+  sandbox.restore()
+})
+
+test('call.end() on incoming ringing invokes puppet.callReject with reason', async t => {
+  const { puppet, wechaty } = buildWechaty()
+  await startAndLogin(puppet, wechaty)
+
+  const CALL_ID = 'call-id-end-reject'
+  stubCallPayload(puppet, (id: string) => ({
+    id,
+    starter      : 'peer',
+    participants : [ 'peer', 'bot-self' ],
+    media        : PUPPET.types.CallMediaType.Audio,
+    startTime    : 1,
+  }))
+  const rejectStub = sandbox.stub().resolves(undefined)
+  puppet.callReject = rejectStub
+
+  let incoming: CallInterface | undefined
+  ;(wechaty as any).on('call', (c: CallInterface) => { incoming = c })
+  ;(puppet as any).emit('call', {
+    callId    : CALL_ID,
+    signal    : PUPPET.types.CallSignal.Invite,
+    contactId : 'peer',
+    timestamp : 1,
+  } as PUPPET.payloads.EventCall)
+  await flush()
+  t.ok(incoming, 'prerequisite: incoming call should surface via bot.on(call)')
+  t.equal(incoming!.status(), 'ringing', 'prerequisite: incoming call should be ringing')
+
+  await incoming!.end('busy')
+  t.same(rejectStub.firstCall.args, [ CALL_ID, 'busy' ], 'callReject args should be [callId, reason]')
+  t.equal(incoming!.status(), 'ended', 'status should be ended')
+
+  await wechaty.stop()
+  sandbox.restore()
+})
+
+test('call.end() falls back to callHangup when callCancel is UNIMPLEMENTED', async t => {
+  const { puppet, wechaty } = buildWechaty()
+  await startAndLogin(puppet, wechaty)
+
+  puppet.callInvite = sandbox.stub().resolves('call-id-end-fallback')
+  stubCallPayload(puppet, (id: string) => ({
+    id,
+    starter      : 'bot-self',
+    participants : [ 'bot-self', 'peer' ],
+    media        : PUPPET.types.CallMediaType.Audio,
+    startTime    : 1,
+  }))
+  const cancelStub = sandbox.stub().rejects(new Error('12 UNIMPLEMENTED: CallCancel is not supported'))
+  const hangupStub = sandbox.stub().resolves(undefined)
+  puppet.callCancel = cancelStub
+  puppet.callHangup = hangupStub
+
+  const contact = (wechaty.Contact as typeof ContactImpl).load('peer')
+  const call    = await contact.call()
+
+  await call.end('timeout')
+  t.equal(cancelStub.callCount, 1, 'callCancel should be attempted first')
+  t.same(hangupStub.firstCall.args, [ call.id, 'timeout' ], 'should retry via callHangup')
+  t.equal(call.status(), 'ended', 'status should be ended')
+
+  await wechaty.stop()
+  sandbox.restore()
+})
+
+test('call.end() retries via callHangup when peer accepts during in-flight cancel', async t => {
+  const { puppet, wechaty } = buildWechaty()
+  await startAndLogin(puppet, wechaty)
+
+  puppet.callInvite = sandbox.stub().resolves('call-id-end-race')
+  stubCallPayload(puppet, (id: string) => ({
+    id,
+    starter      : 'bot-self',
+    participants : [ 'bot-self', 'peer' ],
+    media        : PUPPET.types.CallMediaType.Audio,
+    startTime    : 1,
+  }))
+  const hangupStub = sandbox.stub().resolves(undefined)
+  puppet.callHangup = hangupStub
+  puppet.callCancel = sandbox.stub().callsFake(async (callId: string) => {
+    ;(puppet as any).emit('call', {
+      callId,
+      signal    : PUPPET.types.CallSignal.Accept,
+      contactId : 'peer',
+      timestamp : 2,
+    } as PUPPET.payloads.EventCall)
+    await flush()
+    throw new Error('call already answered')
+  })
+
+  const contact = (wechaty.Contact as typeof ContactImpl).load('peer')
+  const call    = await contact.call()
+
+  await call.end('too late to cancel')
+  t.same(hangupStub.firstCall.args, [ call.id, 'too late to cancel' ], 'should retry via callHangup after accept race')
+  t.equal(call.status(), 'ended', 'status should be ended')
+
+  await wechaty.stop()
+  sandbox.restore()
+})
+
+test('call.end() rethrows non-recoverable pre-connect failures but still finalizes', async t => {
+  const { puppet, wechaty } = buildWechaty()
+  await startAndLogin(puppet, wechaty)
+
+  puppet.callInvite = sandbox.stub().resolves('call-id-end-fatal')
+  stubCallPayload(puppet, (id: string) => ({
+    id,
+    starter      : 'bot-self',
+    participants : [ 'bot-self', 'peer' ],
+    media        : PUPPET.types.CallMediaType.Audio,
+    startTime    : 1,
+  }))
+  const hangupStub = sandbox.stub().resolves(undefined)
+  puppet.callCancel = sandbox.stub().rejects(new Error('network error'))
+  puppet.callHangup = hangupStub
+
+  const contact = (wechaty.Contact as typeof ContactImpl).load('peer')
+  const call    = await contact.call()
+
+  await t.rejects(call.end(), /network error/, 'end() should re-throw transport failures')
+  t.equal(hangupStub.callCount, 0, 'no hangup retry for transport failures')
+  t.equal(call.status(), 'ended', 'status should still finalize')
+
+  await wechaty.stop()
+  sandbox.restore()
+})

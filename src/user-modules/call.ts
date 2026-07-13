@@ -30,6 +30,18 @@ interface CallConstructorOptions {
 const CallMixinBase = wechatifyMixin(CallEventEmitter)
 
 /**
+ * Whether a puppet rejection means "this verb is not supported by the
+ * implementation" (gRPC UNIMPLEMENTED, or an explicit not-supported error),
+ * as opposed to a transport/business failure. Message-based on purpose:
+ * puppet errors cross the service boundary as GError and no structured
+ * status code survives the trip.
+ */
+function isVerbUnsupportedError (e: unknown): boolean {
+  const message = e instanceof Error ? e.message : String(e)
+  return /UNIMPLEMENTED|not\s+(?:supported|implemented)|unsupported/i.test(message)
+}
+
+/**
  * Call – a live, stateful call-control session abstraction.
  *
  * A Call is a first-class citizen alongside Message and Contact.
@@ -219,6 +231,65 @@ class CallMixin extends CallMixinBase {
     }
     try {
       await this.wechaty.puppet.callHangup(this.id, reason)
+    } finally {
+      this.__finalize()
+    }
+  }
+
+  /**
+   * Universal terminator (the "red button"): end the call from whatever
+   * state it is in, dispatching to the state-appropriate verb —
+   *
+   *   connected                     → puppet.callHangup(reason)
+   *   incoming + ringing            → puppet.callReject(reason)
+   *   outgoing + calling / ringing  → puppet.callCancel()
+   *   ended                         → no-op (idempotent)
+   *
+   * Unlike the precise verbs (cancel/reject/hangup), which throw on any state
+   * mismatch, end() absorbs the two failure modes inherent to check-then-act
+   * termination, retrying ONCE via callHangup when:
+   *
+   *   - the peer accepts while our pre-connect verb is in flight (the verb
+   *     comes back rejected but the session is now connected, so hangup is
+   *     the correct verb by the time we retry), or
+   *   - the puppet does not implement the chosen verb (protocols whose
+   *     transport folds cancel/reject into a single hangup action).
+   *
+   * Local state always finalizes, matching cancel/reject/hangup semantics:
+   * whichever side actually terminated the session, the protocol-side record
+   * is the arbiter and its verdict arrives via the terminal signal path.
+   */
+  async end (reason?: string): Promise<void> {
+    if (this.__status === 'ended') {
+      this.log.verbose('Call', 'end() no-op: already ended, callId=%s', this.id)
+      return
+    }
+
+    try {
+      if (this.__status === 'connected') {
+        await this.wechaty.puppet.callHangup(this.id, reason)
+        return
+      }
+
+      try {
+        if (this.__direction === 'incoming') {
+          await this.wechaty.puppet.callReject(this.id, reason)
+        } else {
+          await this.wechaty.puppet.callCancel(this.id)
+        }
+      } catch (e) {
+        const acceptedMeanwhile = this.status() === 'connected'
+        if (!acceptedMeanwhile && !isVerbUnsupportedError(e)) {
+          throw e
+        }
+        this.log.verbose(
+          'Call',
+          'end() pre-connect verb failed (%s), retrying via callHangup, callId=%s',
+          acceptedMeanwhile ? 'accepted meanwhile' : 'verb unsupported',
+          this.id,
+        )
+        await this.wechaty.puppet.callHangup(this.id, reason)
+      }
     } finally {
       this.__finalize()
     }
