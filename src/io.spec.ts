@@ -26,7 +26,7 @@ import { Io }       from './io.js'
 // Requires the upstream Wechaty.io cloud endpoint (api.chatie.io), which the
 // juzibot fork does not use and which has been returning 503 — skip so an
 // external outage cannot block CI.
-test('Io restart without problem', { skip: 'api.chatie.io (legacy upstream cloud) unreachable; not used by juzibot fork' }, async t => {
+test.skip('Io restart without problem (api.chatie.io legacy upstream cloud unreachable; not used by juzibot fork)', async t => {
   const io = new Io({
     // token must not contain any white spaces
     servicePort : 8788,
