@@ -6,6 +6,7 @@ import {
   MessageImpl,
   DelayImpl,
   UrlLinkImpl,
+  EmailImpl,
   MiniProgramImpl,
   PostImpl,
   LocationImpl,
@@ -74,6 +75,14 @@ const deliverSayableConversationPuppet = (puppet: PUPPET.impls.PuppetInterface) 
      * 4. Link Message
      */
     msgId = await puppet.messageSendUrl(
+      conversationId,
+      sayable.payload,
+    )
+  } else if (EmailImpl.validInstance(sayable)) {
+    /**
+     * 4.1. Email Message
+     */
+    msgId = await puppet.messageSendEmail(
       conversationId,
       sayable.payload,
     )

@@ -103,6 +103,11 @@ import {
   UrlLinkConstructor,
 }                           from './url-link.js'
 import {
+  EmailImpl,
+  EmailInterface,
+  EmailConstructor,
+}                           from './email.js'
+import {
   DelayImpl,
   DelayInterface,
   DelayConstructor,
@@ -193,6 +198,7 @@ export type {
   TagGroupInterface,
   DelayInterface,
   UrlLinkInterface,
+  EmailInterface,
   ChannelInterface,
   ChannelCardInterface,
   ConsultCardInterface,
@@ -226,6 +232,7 @@ export type {
   TagConstructor,
   TagGroupConstructor,
   UrlLinkConstructor,
+  EmailConstructor,
   ChannelConstructor,
   ChannelCardConstructor,
   ConsultCardConstructor,
@@ -261,6 +268,7 @@ export {
   TagImpl,
   TagGroupImpl,
   UrlLinkImpl,
+  EmailImpl,
   ChannelImpl,
   ChannelCardImpl,
   ConsultCardImpl,

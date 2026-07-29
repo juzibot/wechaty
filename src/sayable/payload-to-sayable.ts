@@ -38,6 +38,9 @@ const payloadToSayableWechaty: (w: WechatyInterface) => (p: PUPPET.payloads.Saya
     case PUPPET.types.Sayable.Url:
       return new wechaty.UrlLink(sayable.payload)
 
+    case PUPPET.types.Sayable.Email:
+      return new wechaty.Email(sayable.payload)
+
     case PUPPET.types.Sayable.Post:
       return new wechaty.Post(sayable.payload)
 

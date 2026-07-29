@@ -29,6 +29,7 @@ import {
   MiniProgramInterface,
   PostInterface,
   UrlLinkInterface,
+  EmailInterface,
   ChannelInterface,
   ContactImpl,
   MessageImpl,
@@ -55,6 +56,7 @@ type Sayable =
   | PostInterface
   | string
   | UrlLinkInterface
+  | EmailInterface
   | ChannelInterface
   | ChannelCardInterface
   | ConsultCardInterface

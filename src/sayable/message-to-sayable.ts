@@ -31,6 +31,9 @@ async function messageToSayable (
     case PUPPET.types.Message.Url:
       return message.toUrlLink()
 
+    case PUPPET.types.Message.Email:
+      return message.toEmail()
+
     case PUPPET.types.Message.MiniProgram:
       return message.toMiniProgram()
 

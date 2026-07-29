@@ -20,6 +20,7 @@ import type {
   TagConstructor,
   TagGroupConstructor,
   UrlLinkConstructor,
+  EmailConstructor,
   MessageInterface,
   ChannelConstructor,
   ChannelCardConstructor,
@@ -62,6 +63,7 @@ test('Wechaty interface', async t => {
     Tag                           : TagConstructor
     TagGroup                      : TagGroupConstructor
     UrlLink                       : UrlLinkConstructor
+    Email                         : EmailConstructor
     Channel                       : ChannelConstructor
     ChannelCard                   : ChannelCardConstructor
     ConsultCard                   : ConsultCardConstructor
@@ -94,6 +96,7 @@ test('Wechaty interface', async t => {
         = this.Tag
         = this.TagGroup
         = this.UrlLink
+        = this.Email
         = this.Channel
         = this.ChannelCard
         = this.ConsultCard

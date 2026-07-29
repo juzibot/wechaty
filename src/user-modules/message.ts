@@ -56,6 +56,9 @@ import type {
   UrlLinkInterface,
 }                       from './url-link.js'
 import type {
+  EmailInterface,
+}                       from './email.js'
+import type {
   MiniProgramInterface,
 }                       from './mini-program.js'
 import type {
@@ -1384,6 +1387,7 @@ class MessageMixin extends MixinBase implements SayableSayer {
    * > Tips:
    * This function is depending on the Puppet Implementation, see [puppet-compatible-table](https://github.com/wechaty/wechaty/wiki/Puppet#3-puppet-compatible-table)
    *
+   * @param {number} [index] For an Email message, pick the N-th attachment (0-based). Ignored by other message types.
    * @returns {Promise<FileBoxInterface>}
    *
    * @example <caption>Save media file from a message</caption>
@@ -1391,12 +1395,12 @@ class MessageMixin extends MixinBase implements SayableSayer {
    * const fileName = fileBox.name
    * fileBox.toFile(fileName)
    */
-  async toFileBox (): Promise<FileBoxInterface> {
-    this.log.verbose('Message', 'toFileBox()')
+  async toFileBox (index?: number): Promise<FileBoxInterface> {
+    this.log.verbose('Message', 'toFileBox(%s)', index ?? '')
     if (this.type() === PUPPET.types.Message.Text) {
       throw new Error('text message no file')
     }
-    const fileBox = await this.wechaty.puppet.messageFile(this.id)
+    const fileBox = await this.wechaty.puppet.messageFile(this.id, index)
     return fileBox
   }
 
@@ -1493,6 +1497,22 @@ class MessageMixin extends MixinBase implements SayableSayer {
     const urlPayload = await this.wechaty.puppet.messageUrl(this.id)
 
     return new this.wechaty.UrlLink(urlPayload)
+  }
+
+  async toEmail (): Promise<EmailInterface> {
+    this.log.verbose('Message', 'toEmail()')
+
+    if (!this.payload) {
+      throw new Error('no payload')
+    }
+
+    if (this.type() !== PUPPET.types.Message.Email) {
+      throw new Error('message not an Email')
+    }
+
+    const emailPayload = await this.wechaty.puppet.messageEmail(this.id)
+
+    return new this.wechaty.Email(emailPayload)
   }
 
   async toMiniProgram (): Promise<MiniProgramInterface> {
