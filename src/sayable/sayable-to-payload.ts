@@ -8,6 +8,7 @@ import {
   MessageImpl,
   MiniProgramImpl,
   UrlLinkImpl,
+  EmailImpl,
   ContactImpl,
   PostImpl,
   ChannelImpl,
@@ -47,6 +48,8 @@ async function sayableToPayload (sayable: Sayable): Promise<undefined | PUPPET.p
     return PUPPET.payloads.sayable.post(sayable.payload)
   } else if (UrlLinkImpl.validInstance(sayable)) {
     return PUPPET.payloads.sayable.url(sayable.payload)
+  } else if (EmailImpl.validInstance(sayable)) {
+    return PUPPET.payloads.sayable.email(sayable.payload)
   } else if (ChannelImpl.validInstance(sayable)) {
     return PUPPET.payloads.sayable.channel(sayable.payload)
   } else if (ChannelCardImpl.validInstance(sayable)) {

@@ -44,6 +44,7 @@ export type {
   TagInterface                           as Tag,
   TagGroupInterface                      as TagGroup,
   UrlLinkInterface                       as UrlLink,
+  EmailInterface                         as Email,
   ChannelInterface                       as Channel,
   CallRecordInterface                    as CallRecord,
   WecomInterface                         as Wecom,

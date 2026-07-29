@@ -17,6 +17,7 @@ import {
   TagImpl,
   TagGroupImpl,
   UrlLinkImpl,
+  EmailImpl,
   ChannelImpl,
   ChannelCardImpl,
   ConsultCardImpl,
@@ -46,6 +47,7 @@ import {
   TagConstructor,
   TagGroupConstructor,
   UrlLinkConstructor,
+  EmailConstructor,
   ChannelConstructor,
   ChannelCardConstructor,
   ConsultCardConstructor,
@@ -91,6 +93,7 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
     __wechatifiedTag?                           : TagConstructor
     __wechatifiedTagGroup?                      : TagGroupConstructor
     __wechatifiedUrlLink?                       : UrlLinkConstructor
+    __wechatifiedEmail?                         : EmailConstructor
     __wechatifiedChannel?                       : ChannelConstructor
     __wechatifiedChannelCard?                   : ChannelCardConstructor
     __wechatifiedConsultCard?                   : ConsultCardConstructor
@@ -120,6 +123,7 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
     get Tag ()                          : TagConstructor                            { return guardWechatify(this.__wechatifiedTag)            }
     get TagGroup ()                     : TagGroupConstructor                       { return guardWechatify(this.__wechatifiedTagGroup)       }
     get UrlLink ()                      : UrlLinkConstructor                        { return guardWechatify(this.__wechatifiedUrlLink)        }
+    get Email ()                        : EmailConstructor                          { return guardWechatify(this.__wechatifiedEmail)          }
     get Channel ()                      : ChannelConstructor                        { return guardWechatify(this.__wechatifiedChannel)        }
     get ChannelCard ()                  : ChannelCardConstructor                    { return guardWechatify(this.__wechatifiedChannelCard)    }
     get ConsultCard ()                  : ConsultCardConstructor                    { return guardWechatify(this.__wechatifiedConsultCard)    }
@@ -169,6 +173,7 @@ const wechatifyUserModuleMixin = <MixinBase extends typeof WechatySkeleton> (mix
       this.__wechatifiedTag                          = wechatifyUserModule(TagImpl)(this as any)
       this.__wechatifiedTagGroup                     = wechatifyUserModule(TagGroupImpl)(this as any)
       this.__wechatifiedUrlLink                      = wechatifyUserModule(UrlLinkImpl)(this as any)
+      this.__wechatifiedEmail                        = wechatifyUserModule(EmailImpl)(this as any)
       this.__wechatifiedChannel                      = wechatifyUserModule(ChannelImpl)(this as any)
       this.__wechatifiedChannelCard                  = wechatifyUserModule(ChannelCardImpl)(this as any)
       this.__wechatifiedConsultCard                  = wechatifyUserModule(ConsultCardImpl)(this as any)
@@ -218,6 +223,7 @@ type ProtectedPropertyWechatifyUserModuleMixin =
   | '__wechatifiedTag'
   | '__wechatifiedTagGroup'
   | '__wechatifiedUrlLink'
+  | '__wechatifiedEmail'
   | '__wechatifiedChannel'
   | '__wechatifiedChannelCard'
   | '__wechatifiedConsultCard'
