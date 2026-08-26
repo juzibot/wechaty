@@ -22,6 +22,7 @@ import {
 }                       from 'state-switch'
 import { function as FP } from 'fp-ts'
 import * as PUPPET from '@juzi/wechaty-puppet'
+import type { FileBoxInterface } from 'file-box'
 
 import {
   config,
@@ -284,25 +285,102 @@ class WechatyBase extends mixinBase implements SayableSayer {
    * payload, and registers the Call in the in-process pool. Returns immediately
    * (status: 'calling'); listen to call events for lifecycle updates.
    *
+   * Pass `options.playMedia` to place an unattended call instead: the protocol
+   * side plays the given file as soon as the callee picks up, and — when
+   * `hangupOnFinish` is set — hangs up on its own once the playback finished.
+   * Such a call is audio by definition, so `options.media` must be Audio or be
+   * omitted. Leaving `playMedia.file` empty makes "connected" the playback
+   * finished moment, which only makes sense together with `hangupOnFinish`.
+   *
    * @example
    * import * as PUPPET from '@juzi/wechaty-puppet'
    * const call = await bot.call([contactA, contactB], { media: PUPPET.types.CallMediaType.Video })
    * call.on('accept', actor => console.log('accepted by', actor.name()))
    * call.on('ended',  () => console.log('call session ended'))
+   *
+   * @example
+   * // Call and play a voice notice, then hang up 2s after the playback finished
+   * import { FileBox } from 'file-box'
+   * const call = await bot.call([contactA], {
+   *   playMedia: {
+   *     file           : FileBox.fromFile('./notice.silk'),
+   *     hangupOnFinish : true,
+   *     hangupDelayMs  : 2000,
+   *   },
+   * })
+   *
+   * @example
+   * // Ring only: no file to play, so hang up 5s after the callee picked up
+   * const call = await bot.call([contactA], {
+   *   playMedia: {
+   *     hangupOnFinish : true,
+   *     hangupDelayMs  : 5000,
+   *   },
+   * })
    */
   async call (
     contacts: ContactInterface[],
-    options?: { media?: PUPPET.types.CallMediaType },
+    options?: {
+      media?: PUPPET.types.CallMediaType
+      playMedia?: {
+        /** Empty means ring only: the call connects and then hangs up as configured, with nothing played. */
+        file?: FileBoxInterface
+        /** Hang up automatically once the playback finished; MUST be true when `file` is empty. */
+        hangupOnFinish?: boolean
+        /** Milliseconds between the playback finished and the automatic hangup; only honored together with `hangupOnFinish`. */
+        hangupDelayMs?: number
+      }
+    },
   ): Promise<CallInterface> {
-    this.log.verbose('Wechaty', 'call(%d contacts, %s)', contacts.length, JSON.stringify(options ?? {}))
+    /**
+     * Never JSON.stringify() the raw options here:
+     *  a stream-backed FileBox throws on toJSON()
+     */
+    this.log.verbose('Wechaty', 'call(%d contacts, %s)', contacts.length, JSON.stringify({
+      media     : options?.media,
+      playMedia : options?.playMedia && {
+        file           : Boolean(options.playMedia.file),
+        hangupDelayMs  : options.playMedia.hangupDelayMs,
+        hangupOnFinish : options.playMedia.hangupOnFinish,
+      },
+    }))
 
     if (contacts.length === 0) {
       throw new Error('Wechaty.call() requires at least one contact')
     }
 
-    const media  = options?.media ?? PUPPET.types.CallMediaType.Audio
-    const callId = await this.puppet.callInvite(contacts.map(c => c.id), media)
+    const contactIdList = contacts.map(c => c.id)
+    const playMedia     = options?.playMedia
 
+    if (!playMedia) {
+      const media  = options?.media ?? PUPPET.types.CallMediaType.Audio
+      const callId = await this.puppet.callInvite(contactIdList, media)
+
+      return this.__incubateOutgoingCall(callId)
+    }
+
+    if (options.media === PUPPET.types.CallMediaType.Video) {
+      throw new Error('Wechaty.call() can not play media over a video call: options.playMedia implies an audio call, so options.media must be Audio or be omitted')
+    }
+    if (!playMedia.file && playMedia.hangupOnFinish !== true) {
+      throw new Error('Wechaty.call() requires options.playMedia.hangupOnFinish to be true when options.playMedia.file is empty: with nothing to play and no automatic hangup this is equivalent to a plain call(), use call() without playMedia instead')
+    }
+
+    const callId = await this.puppet.callInviteWithMedia(contactIdList, playMedia.file, {
+      hangupDelayMs  : playMedia.hangupDelayMs,
+      hangupOnFinish : playMedia.hangupOnFinish,
+    })
+
+    return this.__incubateOutgoingCall(callId)
+  }
+
+  /**
+   * Shared tail of every outgoing call path: hydrate the Call payload behind
+   * the minted callId and register it in the in-process pool.
+   */
+  async __incubateOutgoingCall (
+    callId: string,
+  ): Promise<CallInterface> {
     const call = new (this.Call as any)({
       id        : callId,
       direction : 'outgoing' as const,
@@ -376,6 +454,7 @@ type WechatyBaseProtectedProperty =
   // | '_serviceCtlFsmInterpreter'  // from ServiceCtlFsm
   | '__serviceCtlLogger'             // from ServiceCtl(&Fsm)
   | '__serviceCtlResettingIndicator' // from ServiceCtl
+  | '__incubateOutgoingCall'         // internal tail of Wechaty#call()
   | 'wechaty'
   | 'onStart'
   | 'onStop'

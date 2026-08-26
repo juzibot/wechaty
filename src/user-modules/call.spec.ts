@@ -11,6 +11,7 @@ import {
 
 import * as PUPPET    from '@juzi/wechaty-puppet'
 import { PuppetMock } from '@juzi/wechaty-puppet-mock'
+import { FileBox }    from 'file-box'
 import { WechatyBuilder } from '../wechaty-builder.js'
 import type { CallInterface } from './call.js'
 import type { ContactImpl, ContactInterface } from './contact.js'
@@ -121,6 +122,145 @@ test('bot.call() rejects when contacts list is empty', async t => {
     /at least one contact/,
     'empty contacts should reject',
   )
+
+  await wechaty.stop()
+  sandbox.restore()
+})
+
+// ---------------------------------------------------------------------------
+// 1b. bot.call({ playMedia }) — unattended call, dispatched to
+//     puppet.callInviteWithMedia instead of puppet.callInvite
+// ---------------------------------------------------------------------------
+
+test('bot.call() with playMedia dispatches to puppet.callInviteWithMedia', async t => {
+  const { puppet, wechaty } = buildWechaty()
+  await startAndLogin(puppet, wechaty)
+
+  const CALL_ID = 'call-id-with-media'
+  const PEER_ID = 'peer-with-media'
+  const FILE    = FileBox.fromBuffer(Buffer.from('fake-silk'), 'notice.silk')
+
+  const callInviteStub          = sandbox.stub().resolves('should-not-be-used')
+  const callInviteWithMediaStub = sandbox.stub().resolves(CALL_ID)
+  puppet.callInvite          = callInviteStub
+  puppet.callInviteWithMedia = callInviteWithMediaStub
+
+  stubCallPayload(puppet, (id: string) => ({
+    id,
+    starter      : 'bot-self',
+    participants : [ PEER_ID ],
+    media        : PUPPET.types.CallMediaType.Audio,
+    startTime    : 1,
+  }))
+
+  const contact = (wechaty.Contact as typeof ContactImpl).load(PEER_ID)
+  const call: CallInterface = await (wechaty as any).call([ contact ], {
+    playMedia: {
+      file           : FILE,
+      hangupDelayMs  : 2000,
+      hangupOnFinish : true,
+    },
+  })
+
+  t.equal(call.id, CALL_ID, 'call.id should match callInviteWithMedia return')
+  t.equal(call.direction(), 'outgoing', 'direction should be outgoing')
+  t.equal(call.status(), 'calling', 'status should be calling')
+
+  t.notOk(callInviteStub.called, 'puppet.callInvite should not be called')
+  t.ok(callInviteWithMediaStub.calledOnce, 'puppet.callInviteWithMedia should be called once')
+  t.same(
+    callInviteWithMediaStub.firstCall.args,
+    [
+      [ PEER_ID ],
+      FILE,
+      { hangupDelayMs: 2000, hangupOnFinish: true },
+    ],
+    'callInviteWithMedia args should be (contactIds, file, { hangupDelayMs, hangupOnFinish })',
+  )
+
+  await wechaty.stop()
+  sandbox.restore()
+})
+
+test('bot.call() with playMedia but no file rings only, forwarding an undefined file', async t => {
+  const { puppet, wechaty } = buildWechaty()
+  await startAndLogin(puppet, wechaty)
+
+  const CALL_ID = 'call-id-ring-only'
+  const PEER_ID = 'peer-ring-only'
+
+  const callInviteWithMediaStub = sandbox.stub().resolves(CALL_ID)
+  puppet.callInviteWithMedia = callInviteWithMediaStub
+
+  stubCallPayload(puppet, (id: string) => ({
+    id,
+    starter      : 'bot-self',
+    participants : [ PEER_ID ],
+    media        : PUPPET.types.CallMediaType.Audio,
+    startTime    : 1,
+  }))
+
+  const contact = (wechaty.Contact as typeof ContactImpl).load(PEER_ID)
+  const call: CallInterface = await (wechaty as any).call([ contact ], {
+    playMedia: {
+      hangupDelayMs  : 5000,
+      hangupOnFinish : true,
+    },
+  })
+
+  t.equal(call.id, CALL_ID, 'call.id should match callInviteWithMedia return')
+  t.same(
+    callInviteWithMediaStub.firstCall.args,
+    [
+      [ PEER_ID ],
+      undefined,
+      { hangupDelayMs: 5000, hangupOnFinish: true },
+    ],
+    'callInviteWithMedia args should carry an undefined file',
+  )
+
+  await wechaty.stop()
+  sandbox.restore()
+})
+
+test('bot.call() rejects playMedia over an explicit video call', async t => {
+  const { puppet, wechaty } = buildWechaty()
+  await startAndLogin(puppet, wechaty)
+
+  const callInviteWithMediaStub = sandbox.stub().resolves('should-not-be-used')
+  puppet.callInviteWithMedia = callInviteWithMediaStub
+
+  const contact = (wechaty.Contact as typeof ContactImpl).load('peer-video-with-media')
+
+  await t.rejects(
+    (wechaty as any).call([ contact ], {
+      media     : PUPPET.types.CallMediaType.Video,
+      playMedia : { file: FileBox.fromBuffer(Buffer.from('fake-silk'), 'notice.silk') },
+    }),
+    /can not play media over a video call/,
+    'video + playMedia should reject',
+  )
+  t.notOk(callInviteWithMediaStub.called, 'puppet.callInviteWithMedia should not be reached')
+
+  await wechaty.stop()
+  sandbox.restore()
+})
+
+test('bot.call() rejects an empty playMedia file without hangupOnFinish', async t => {
+  const { puppet, wechaty } = buildWechaty()
+  await startAndLogin(puppet, wechaty)
+
+  const callInviteWithMediaStub = sandbox.stub().resolves('should-not-be-used')
+  puppet.callInviteWithMedia = callInviteWithMediaStub
+
+  const contact = (wechaty.Contact as typeof ContactImpl).load('peer-no-file-no-hangup')
+
+  await t.rejects(
+    (wechaty as any).call([ contact ], { playMedia: { hangupDelayMs: 5000 } }),
+    /hangupOnFinish to be true when options\.playMedia\.file is empty/,
+    'empty file without hangupOnFinish should reject',
+  )
+  t.notOk(callInviteWithMediaStub.called, 'puppet.callInviteWithMedia should not be reached')
 
   await wechaty.stop()
   sandbox.restore()
