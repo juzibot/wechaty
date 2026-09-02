@@ -688,6 +688,12 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
             })
             break
 
+          case 'same-net-verify':
+            puppet.on('same-net-verify', (payload) => {
+              this.emit('same-net-verify', payload.id || '', payload.scene || PUPPET.types.SameNetVerifyScene.UNKNOWN, payload.status || PUPPET.types.SameNetVerifyStatus.UNKNOWN, payload.apkQrcodeUrl || '', payload.apkUrl || '', payload.verifyQrcodeUrl || '', payload.expireTimestamp || 0)
+            })
+            break
+
           case 'contact-enter-conversation':
             puppet.on('contact-enter-conversation', async (payload) => {
               const contact = await this.Contact.find({ id: payload.contactId })
