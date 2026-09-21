@@ -518,3 +518,44 @@ test('ReadyMeetsLogout', async t => {
 
   await wechaty.stop()
 })
+
+test('logout event emitted even when contact self resolution crosses login-state cleanup', async t => {
+  const puppet  = new PuppetMock() as any
+  const wechaty = WechatyBuilder.build({ puppet })
+
+  const mockContact = puppet.mocker.createContact({ name: 'logout-bot' })
+
+  await wechaty.start()
+  await puppet.mocker.login(mockContact)
+
+  /**
+   * `LoginMixin.logout()` emits the puppet 'logout' event and then clears
+   * `__currentUserId` on the next event-loop tick (setImmediate). When the
+   * contact payload lookup needs real async I/O — e.g. wechaty-puppet-service
+   * reading FlashStore or calling gRPC — the bridge's `ContactSelf.find()`
+   * resumes after the login state is gone and returns undefined, which used
+   * to swallow the wechaty 'logout' event entirely.
+   *
+   * Force `contactPayload` across a macrotask boundary to reproduce that
+   * interleaving deterministically.
+   */
+  const originContactPayload = puppet.contactPayload.bind(puppet)
+  puppet.contactPayload = async (id: string) => {
+    await new Promise<void>(resolve => setTimeout(resolve, 10))
+    return originContactPayload(id)
+  }
+
+  let loggedOutUserId: undefined | string
+  wechaty.on('logout', user => {
+    loggedOutUserId = user.id
+  })
+
+  await puppet.logout('test: session expired')
+
+  await new Promise(resolve => setTimeout(resolve, 500))
+
+  t.ok(loggedOutUserId, 'wechaty logout event should be emitted')
+  t.equal(loggedOutUserId, mockContact.id, 'logout user id should be the logged-out account')
+
+  await wechaty.stop()
+})

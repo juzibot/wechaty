@@ -18,6 +18,7 @@ import type {
   CallImpl,
   ContactImpl,
   ContactInterface,
+  ContactSelfImpl,
   MessageImpl,
   RoomImpl,
   TagGroupInterface,
@@ -317,15 +318,18 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
             puppet.on('logout', async payload => {
               try {
                 this.__readyState.inactive(true)
+                /**
+                 * `ContactSelf.find()` may return undefined here: the puppet
+                 * clears `__currentUserId` right after emitting 'logout'
+                 * (see PuppetLoginMixin `logout()`), so the login-state
+                 * checks inside `find()` fail whenever contact resolution
+                 * crosses an event-loop boundary. The 'logout' event must be
+                 * emitted regardless — fall back to a lightweight instance
+                 * built from the payload's contactId.
+                 */
                 const contact = await this.ContactSelf.find({ id: payload.contactId })
-                if (contact) {
-                  this.emit('logout', contact, payload.data)
-                } else {
-                  this.log.verbose('PuppetMixin',
-                    '__setupPuppetEvents() logout event contact self not found for id: %s',
-                    payload.contactId,
-                  )
-                }
+                  ?? (this.ContactSelf as typeof ContactSelfImpl).load(payload.contactId)
+                this.emit('logout', contact, payload.data)
               } catch (e) {
                 this.emit('error', GError.from(e))
               }
