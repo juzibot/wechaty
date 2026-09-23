@@ -698,6 +698,18 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
             })
             break
 
+          case 'org-broadcast-created':
+            puppet.on('org-broadcast-created', (payload) => {
+              this.emit('org-broadcast-created', payload.orgBroadcastId || '', payload.messageId || '')
+            })
+            break
+
+          case 'org-broadcast-sent':
+            puppet.on('org-broadcast-sent', (payload) => {
+              this.emit('org-broadcast-sent', payload.orgBroadcastId || '')
+            })
+            break
+
           case 'contact-enter-conversation':
             puppet.on('contact-enter-conversation', async (payload) => {
               const contact = await this.Contact.find({ id: payload.contactId })

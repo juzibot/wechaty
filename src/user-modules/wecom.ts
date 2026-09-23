@@ -1,4 +1,4 @@
-import type { types } from '@juzi/wechaty-puppet'
+import type { payloads, types } from '@juzi/wechaty-puppet'
 import type { Constructor } from 'clone-class'
 
 import { validationMixin } from '../user-mixins/validation.js'
@@ -51,6 +51,27 @@ class WecomMixin extends wechatifyMixinBase() {
 
   static async getCorpMessageInterceptionStrategies (): Promise<types.CorpMessageInterceptionStrategy[]> {
     return this.wechaty.puppet.getCorpMessageInterceptionStrategies()
+  }
+
+  static async orgBroadcastPayload (
+    orgBroadcastId: string,
+  ): Promise<payloads.OrgBroadcast> {
+    return this.wechaty.puppet.orgBroadcastPayload(orgBroadcastId)
+  }
+
+  /**
+   * Execute (confirm sending) an org broadcast plan.
+   * targetIds: omitted means all targets of the plan; otherwise a subset of the plan targets.
+   * An empty array is rejected, since puppets read an empty selection as all targets.
+   */
+  static async orgBroadcastExecute (
+    orgBroadcastId: string,
+    targetIds?: string[],
+  ): Promise<void> {
+    if (targetIds && targetIds.length === 0) {
+      throw new Error('targetIds is empty, omit it to send to all targets of the org broadcast')
+    }
+    return this.wechaty.puppet.orgBroadcastExecute(orgBroadcastId, targetIds)
   }
 
   /*
