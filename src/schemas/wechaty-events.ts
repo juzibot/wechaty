@@ -63,6 +63,8 @@ type WechatyEventListenerPostTap            = (post: PostInterface, contact: Con
 type WechatyEventListenerVerifyCode         = (id: string, message: string, scene: PUPPET.types.VerifyCodeScene, status: PUPPET.types.VerifyCodeStatus) => void | Promise<void>
 type WechatyEventListenerVerifySlide        = (scene: PUPPET.types.VerifySlideScene, status: PUPPET.types.VerifySlideStatus, sliderExeUrl: string, sliderVerifyEncrypt: string) => void | Promise<void>
 type WechatyEventListenerSameNetVerify      = (id: string, scene: PUPPET.types.SameNetVerifyScene, status: PUPPET.types.SameNetVerifyStatus, apkQrcodeUrl: string, apkUrl: string, verifyQrcodeUrl: string, expireTimestamp: number) => void | Promise<void>
+type WechatyEventListenerOrgBroadcastCreated = (orgBroadcastId: string, messageId: string) => void | Promise<void>
+type WechatyEventListenerOrgBroadcastSent   = (orgBroadcastId: string) => void | Promise<void>
 type WechatyEventListenerDirty              = (id: string, type: PUPPET.types.Dirty) => void | Promise<void>
 type WechatyEventListenerLoginUrl           = (url: string) => void | Promise<void>
 type WechatyEventListenerIntentComment      = (payload: PUPPET.payloads.IntentComment) => void | Promise<void>
@@ -262,6 +264,8 @@ interface WechatyEventListeners {
   'intent-comment'     : WechatyEventListenerIntentComment
   'verify-slide'       : WechatyEventListenerVerifySlide
   'same-net-verify'    : WechatyEventListenerSameNetVerify
+  'org-broadcast-created' : WechatyEventListenerOrgBroadcastCreated
+  'org-broadcast-sent'    : WechatyEventListenerOrgBroadcastSent
   'contact-enter-conversation' : WechatyEventListenerContactEnterConversation
   'contact-lead-filled' : WechatyEventListenerContactLeadFilled
   'wxxd-shop'           : WechatyEventListenerWxxdShop
@@ -308,6 +312,8 @@ export type {
   WechatyEventListenerVerifyCode,
   WechatyEventListenerVerifySlide,
   WechatyEventListenerSameNetVerify,
+  WechatyEventListenerOrgBroadcastCreated,
+  WechatyEventListenerOrgBroadcastSent,
   WechatyEventListenerDirty,
   WechatyEventListenerLoginUrl,
   WechatyEventListenerIntentComment,
