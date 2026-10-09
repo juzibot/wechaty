@@ -420,6 +420,12 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
             })
             break
 
+          case 'room-member-load':
+            puppet.on('room-member-load', payload => {
+              this.emit('room-member-load', payload)
+            })
+            break
+
           case 'ready':
             puppet.on('ready', async () => {
               this.log.silly('WechatyPuppetMixin', '__setupPuppetEvents() puppet.on(ready)')

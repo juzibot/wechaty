@@ -32,6 +32,7 @@ const WECHATY_EVENT_DICT = {
   'call-cancel'        : 'Emit when the caller cancels an outgoing call before it connects.',
   'call-hangup'        : 'Emit when a participant hangs up a connected call.',
   'call-ended'         : 'Emit when the call session is determined to be ended.',
+  'room-member-load'   : 'Emit the raw room member loading state independently of room joins.',
 } as const
 
 type WechatyEventName  = keyof typeof WECHATY_EVENT_DICT
@@ -52,6 +53,7 @@ type WechatyEventListenerReady              = () => void | Promise<void>
 type WechatyEventListenerRoomInvite         = (roomInvitation: RoomInvitationInterface) => void | Promise<void>
 type WechatyEventListenerRoomJoin           = (room: RoomInterface, inviteeList: ContactInterface[], inviter: ContactInterface, date?: Date) => void | Promise<void>
 type WechatyEventListenerRoomLeave          = (room: RoomInterface, leaverList: ContactInterface[], remover?: ContactInterface, date?: Date) => void | Promise<void>
+type WechatyEventListenerRoomMemberLoad     = (payload: PUPPET.payloads.EventRoomMemberLoad) => void | Promise<void>
 type WechatyEventListenerRoomTopic          = (room: RoomInterface, newTopic: string, oldTopic: string, changer: ContactInterface, date?: Date) => void | Promise<void>
 type WechatyEventListenerRoomAnnounce       = (room: RoomInterface, newAnnounce: string, changer?: ContactInterface, oldAnnounce?: string, date?: Date) => void | Promise<void>
 type WechatyEventListenerScan               = (qrcode: string, status: PUPPET.types.ScanStatus, data: string, type: PUPPET.types.ScanType, createDate: Date, expireDate?: Date) => void | Promise<void>
@@ -239,6 +241,7 @@ interface WechatyEventListeners {
   'room-invite'        : WechatyEventListenerRoomInvite
   'room-join'          : WechatyEventListenerRoomJoin
   'room-leave'         : WechatyEventListenerRoomLeave
+  'room-member-load'   : WechatyEventListenerRoomMemberLoad
   'room-topic'         : WechatyEventListenerRoomTopic
   'room-announce'      : WechatyEventListenerRoomAnnounce
   dong                 : WechatyEventListenerDong
@@ -301,6 +304,7 @@ export type {
   WechatyEventListenerRoomInvite,
   WechatyEventListenerRoomJoin,
   WechatyEventListenerRoomLeave,
+  WechatyEventListenerRoomMemberLoad,
   WechatyEventListenerRoomTopic,
   WechatyEventListenerRoomAnnounce,
   WechatyEventListenerScan,

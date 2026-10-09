@@ -17,7 +17,7 @@ declare module 'json-rpc-peer' {
 
   export * from 'json-rpc-protocol'
 
-  export class Peer extends EventEmitter implements Writable {
+  export class Peer extends EventEmitter {
 
     constructor(onmessage?: (message: JsonRpcPayload, data: any) => Promise<any>)
 
@@ -29,7 +29,7 @@ declare module 'json-rpc-peer' {
     /**
      * Fails all pending requests.
      */
-    public failPendingRequests(reason?: string)
+    public failPendingRequests(reason?: string): void
 
     /**
      * This function should be called to send a request to the other end.
@@ -39,9 +39,9 @@ declare module 'json-rpc-peer' {
     /**
      * This function should be called to send a notification to the other end.
      */
-    public notify(method: string, params?: JsonRpcParamsSchema)
+    public notify(method: string, params?: JsonRpcParamsSchema): Promise<void>
 
-    public push(chunk: any, encoding?: string)
+    public push(chunk: any, encoding?: string): boolean
 
     public pipe<T extends Writable>(writable: T): T
 
