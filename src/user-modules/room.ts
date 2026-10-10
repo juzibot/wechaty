@@ -431,6 +431,21 @@ class RoomMixin extends MixinBase implements SayableSayer {
     await this.ready(true)
   }
 
+  async syncMembers (options?: PUPPET.types.RoomMemberSyncOptions): Promise<PUPPET.payloads.RoomMemberLoadState> {
+    return this.wechaty.puppet.roomMemberSync(this.id, options)
+  }
+
+  async memberLoadState (): Promise<PUPPET.payloads.RoomMemberLoadState> {
+    return this.wechaty.puppet.roomMemberLoadState(this.id)
+  }
+
+  async memberSnapshot (
+    revision: string,
+    options?: PUPPET.types.RoomMemberSnapshotOptions,
+  ): Promise<PUPPET.payloads.RoomMemberSnapshot> {
+    return this.wechaty.puppet.roomMemberSnapshot(this.id, revision, options)
+  }
+
   /**
    * Warning: `ready()` is for the framework internally use ONLY!
    *
@@ -449,6 +464,10 @@ class RoomMixin extends MixinBase implements SayableSayer {
     }
 
     this.payload = await this.wechaty.puppet.roomPayload(this.id)
+
+    if (this.payload.memberLoadMode === PUPPET.types.RoomMemberLoadMode.Lazy) {
+      return
+    }
 
     /**
      * Sync all room member contacts

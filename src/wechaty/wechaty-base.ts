@@ -57,7 +57,27 @@ import type { PostInterface }            from '../user-modules/post.js'
 import type { CallImpl, CallInterface }  from '../user-modules/call.js'
 import type { ContactInterface }         from '../user-modules/contact.js'
 
-const mixinBase = FP.pipe(
+type WechatyGErrorBase = ReturnType<typeof gErrorMixin<typeof WechatySkeleton>>
+type WechatyUserModuleBase = ReturnType<typeof wechatifyUserModuleMixin<WechatyGErrorBase>>
+type WechatyIoBase = ReturnType<typeof ioMixin<WechatyUserModuleBase>>
+type WechatyPuppetBase = ReturnType<typeof puppetMixin<WechatyIoBase>>
+type WechatyLoginBase = ReturnType<typeof loginMixin<WechatyPuppetBase>>
+type WechatyMiscBase = ReturnType<typeof miscMixin<WechatyLoginBase>>
+type WechatyPluginBase = ReturnType<typeof pluginMixin<WechatyMiscBase>>
+
+const withServiceCtl: ReturnType<typeof serviceCtlMixin> = serviceCtlMixin('Wechaty', { log })
+
+type WechatyComposedMixinBase = ReturnType<typeof withServiceCtl<WechatyPluginBase>>
+
+interface WechatyMixinInstance extends InstanceType<WechatyComposedMixinBase> {
+  start (): Promise<void>
+}
+
+type WechatyMixinBase =
+  & Pick<WechatyComposedMixinBase, keyof WechatyComposedMixinBase>
+  & (abstract new (...args: ConstructorParameters<WechatyComposedMixinBase>) => WechatyMixinInstance)
+
+const mixinBase: WechatyMixinBase = FP.pipe(
   WechatySkeleton,
   gErrorMixin,
   wechatifyUserModuleMixin,
@@ -73,7 +93,7 @@ const mixinBase = FP.pipe(
    *  because the `wechaty.start/stop()` should first entry `serviceCtlMixin.start/stop()`
    *  which can be managed correctly by the `serviceCtlMixin`
    */
-  serviceCtlMixin('Wechaty', { log }),
+  withServiceCtl,
 )
 
 /**
