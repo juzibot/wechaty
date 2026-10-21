@@ -426,9 +426,16 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
             })
             break
 
+          case 'room-member-lazy-load-finished':
+            puppet.on('room-member-lazy-load-finished', () => {
+              this.emit('room-member-lazy-load-finished')
+            })
+            break
+
           case 'ready':
-            puppet.on('ready', async () => {
+            puppet.on('ready', async (payload?: PUPPET.payloads.EventReady) => {
               this.log.silly('WechatyPuppetMixin', '__setupPuppetEvents() puppet.on(ready)')
+              const data = payload?.data
 
               // ready event should be emitted 15s after login
               let onceLogout: () => void
@@ -453,13 +460,13 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
                   setTimeout(resolve, 15 * 1000)
                 })
                 if (this.__loginIndicator.value()) {
-                  this.emit('ready')
+                  this.emit('ready', data)
                   this.__readyState.active(true)
                 }
               } catch (e) {
                 this.log.error(`ready error: ${(e as Error).message}, will emit event anyway if it's logged in now`)
                 if (this.puppet.isLoggedIn) {
-                  this.emit('ready')
+                  this.emit('ready', data)
                   this.__loginIndicator.value(true)
                   this.__readyState.active(true)
                 }
