@@ -204,7 +204,9 @@ test('findAllIter() invokes batchContactPayload ceil(N/batch) times, not N times
 
   await wechaty.start()
   const bot = puppet.mocker.createContact({ name: 'bot' })
+  const loggedIn = new Promise<void>(resolve => wechaty.once('login', () => resolve()))
   await puppet.mocker.login(bot)
+  await loggedIn
 
   const rawCountBefore = rawSpy.callCount
 
