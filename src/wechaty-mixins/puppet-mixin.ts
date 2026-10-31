@@ -73,15 +73,17 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
     __authGeneration = new AbortController()
     __authTail: Promise<void> = Promise.resolve()
     __authStopped = false
+    __authSequence = 0
+    __projectedAuthSequence = 0
     __readyRevision = 0
     __readyCleanup?: (error?: Error) => void
-    __readyPending = new Set<(error?: Error) => void>()
+    __readyPending = new Map<(error?: Error) => void, number>()
 
-    __clearReady (error?: Error): void {
-      this.__readyRevision++
-      for (const finish of this.__readyPending) finish(error)
-      this.__readyPending.clear()
-      this.__readyCleanup = undefined
+    __clearReady (error?: Error, throughSequence = Infinity): void {
+      if (throughSequence === Infinity) this.__readyRevision++
+      for (const [ finish, sequence ] of this.__readyPending) {
+        if (sequence <= throughSequence) finish(error)
+      }
     }
 
     __resetAuth (stopped: boolean): void {
@@ -101,9 +103,10 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
     __enqueueAuth (event: 'login' | 'logout', contactId: string, data?: string): Promise<void> {
       const signal = this.__authGeneration.signal
       const stopped = this.__authStopped
+      const sequence = ++this.__authSequence
       if (stopped && event === 'logout') {
         const delivery = new Promise<void>(resolve => {
-          this.__projectLogout(contactId, data)
+          this.__projectLogout(contactId, sequence, data)
           resolve()
         })
         this.__observeProjection(delivery, signal)
@@ -111,8 +114,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
       }
       // Logout withdraws readiness for this authentication cycle; lifecycle
       // cancellation instead rejects every outstanding READY receipt.
-      if (event === 'logout') this.__clearReady()
-      const revision = this.__readyRevision
+      if (event === 'logout') this.__clearReady(undefined, sequence)
       const previous = this.__authTail
       const delivery = (async (): Promise<void> => {
         let cancel: () => void = () => {}
@@ -125,7 +127,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
           await Promise.race([ previous, cancelled ])
           this.__assertAuthCurrent(signal, stopped)
           if (event === 'logout') {
-            this.__projectLogout(contactId, data)
+            this.__projectLogout(contactId, sequence, data)
             return
           }
           // ready() writes into the shared ContactSelf pool after its await.
@@ -134,9 +136,10 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
           this.__assertAuthCurrent(signal, stopped)
           const contact = (this.ContactSelf as typeof ContactSelfImpl).load(contactId)
           contact.payload = payload
+          this.__projectedAuthSequence = sequence
           this.__loginIndicator.value(true)
           this.emit('login', contact)
-          if (!signal.aborted && revision === this.__readyRevision && this.__readyPending.size === 0) {
+          if (!signal.aborted && sequence === this.__authSequence && this.__readyPending.size === 0) {
             void this.__scheduleReady(undefined, true)
           }
         } finally {
@@ -150,10 +153,11 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
       return delivery
     }
 
-    __projectLogout (contactId: string, data?: string): void {
+    __projectLogout (contactId: string, sequence: number, data?: string): void {
       const contact = (this.ContactSelf as typeof ContactSelfImpl).load(contactId)
-      // Also withdraw READY accepted while this logout waited in the queue.
-      this.__clearReady()
+      // Withdraw intervening READY, but not one owned by a later admitted login.
+      this.__clearReady(undefined, sequence)
+      this.__projectedAuthSequence = sequence
       this.__readyState.inactive(true)
       this.__loginIndicator.value(false)
       this.emit('logout', contact, data)
@@ -181,6 +185,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
       if (!fallback) this.__readyCleanup?.()
       const signal = this.__authGeneration.signal
       const revision = this.__readyRevision
+      const sequence = this.__authSequence
       const delivery = new Promise<void>((resolve, reject) => {
         let timeout: ReturnType<typeof setTimeout>
         const cleanup = (): void => {
@@ -195,6 +200,7 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
           else resolve()
         }
         const onLogin = (): void => {
+          if (this.__projectedAuthSequence < sequence) return
           cleanup()
           if (signal.aborted || revision !== this.__readyRevision) {
             finish(new Error('Ready projection cancelled'))
@@ -216,14 +222,14 @@ const puppetMixin = <MixinBase extends WechatifyUserModuleMixin & GErrorMixin & 
             }
           }, 15 * 1000)
         }
-        this.__readyPending.add(finish)
+        this.__readyPending.set(finish, sequence)
         if (fallback) this.__readyCleanup = finish
         if (this.__authStopped) {
           finish(new Error('Ready projection cancelled'))
-        } else if (this.__loginIndicator.value()) {
+        } else if (this.__loginIndicator.value() && this.__projectedAuthSequence >= sequence) {
           onLogin()
         } else {
-          this.once('login', onLogin)
+          this.on('login', onLogin)
           timeout = setTimeout(() => finish(new Error('waiting for login timeout')), 60 * 1000)
         }
       })
@@ -1151,6 +1157,8 @@ type ProtectedPropertyPuppetMixin =
   | '__authGeneration'
   | '__authTail'
   | '__authStopped'
+  | '__authSequence'
+  | '__projectedAuthSequence'
   | '__readyRevision'
   | '__readyCleanup'
   | '__readyPending'

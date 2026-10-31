@@ -246,6 +246,8 @@ test('late logout projection cannot withdraw ready admitted for a subsequent log
   const { puppet, wechaty, contactId, login, logout, readyListener } = await fixture()
   const gate = deferred()
   const entered = deferred()
+  const secondGate = deferred()
+  const secondEntered = deferred()
   const sandbox = sinon.createSandbox()
   const original = puppet.contactPayload.bind(puppet)
   const payload = sandbox.stub(puppet, 'contactPayload')
@@ -255,6 +257,11 @@ test('late logout projection cannot withdraw ready admitted for a subsequent log
     return original(id)
   })
   payload.callsFake(original)
+  payload.onSecondCall().callsFake(async (id: string) => {
+    secondEntered.resolve()
+    await secondGate.promise
+    return original(id)
+  })
   const emitted = sinon.spy()
   wechaty.on('ready', emitted)
   const clock = sinon.useFakeTimers({ toFake: [ 'setTimeout', 'clearTimeout' ] })
@@ -264,8 +271,16 @@ test('late logout projection cannot withdraw ready admitted for a subsequent log
     const loggingOut = logout({ contactId })
     const secondLogin = login({ contactId })
     let settled = false
-    const secondReady = readyListener({ data: 'second-cycle' }).then(() => { settled = true })
+    const secondReady = readyListener({ data: 'second-cycle' }).then(() => {
+      settled = true
+      return undefined
+    })
     gate.resolve()
+    await secondEntered.promise
+    await clock.tickAsync(15000)
+    t.notOk(settled, 'earlier login cannot start the later READY delivery timer')
+    t.equal(emitted.callCount, 0, 'READY waits for its own login payload projection')
+    secondGate.resolve()
     await Promise.all([ firstLogin, loggingOut, secondLogin ])
     t.ok(wechaty.__loginIndicator.value(), 'second login is the final projection')
     await clock.tickAsync(14999)
@@ -277,6 +292,45 @@ test('late logout projection cannot withdraw ready admitted for a subsequent log
   } finally {
     clock.restore()
     gate.resolve()
+    secondGate.resolve()
+    secondEntered.resolve()
+    sandbox.restore()
+    await wechaty.stop()
+  }
+})
+
+test('later login retains fallback READY after an earlier queued logout', async t => {
+  const { puppet, wechaty, contactId, login, logout } = await fixture()
+  const gate = deferred()
+  const entered = deferred()
+  const sandbox = sinon.createSandbox()
+  const original = puppet.contactPayload.bind(puppet)
+  const payload = sandbox.stub(puppet, 'contactPayload').callsFake(original)
+  payload.onFirstCall().callsFake(async (id: string) => {
+    entered.resolve()
+    await gate.promise
+    return original(id)
+  })
+  sandbox.stub(puppet.readyIndicator, 'value').returns(true)
+  const emitted = sinon.spy()
+  wechaty.on('ready', emitted)
+  const clock = sinon.useFakeTimers({ toFake: [ 'setTimeout', 'clearTimeout' ] })
+  try {
+    const firstLogin = login({ contactId })
+    await entered.promise
+    const loggingOut = logout({ contactId })
+    const secondLogin = login({ contactId })
+    gate.resolve()
+    await Promise.all([ firstLogin, loggingOut, secondLogin ])
+    await clock.tickAsync(14999)
+    t.equal(emitted.callCount, 0)
+    await clock.tickAsync(1)
+    t.same(emitted.args, [ [ undefined ] ], 'only the last admitted login schedules fallback')
+    t.ok(wechaty.__readyState.active())
+  } finally {
+    clock.restore()
+    gate.resolve()
+    entered.resolve()
     sandbox.restore()
     await wechaty.stop()
   }
