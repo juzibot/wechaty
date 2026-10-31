@@ -242,6 +242,46 @@ test('logout withdraws intervening ready and repeated ready delivers every paylo
   }
 })
 
+test('late logout projection cannot withdraw ready admitted for a subsequent login', async t => {
+  const { puppet, wechaty, contactId, login, logout, readyListener } = await fixture()
+  const gate = deferred()
+  const entered = deferred()
+  const sandbox = sinon.createSandbox()
+  const original = puppet.contactPayload.bind(puppet)
+  const payload = sandbox.stub(puppet, 'contactPayload')
+  payload.onFirstCall().callsFake(async (id: string) => {
+    entered.resolve()
+    await gate.promise
+    return original(id)
+  })
+  payload.callsFake(original)
+  const emitted = sinon.spy()
+  wechaty.on('ready', emitted)
+  const clock = sinon.useFakeTimers({ toFake: [ 'setTimeout', 'clearTimeout' ] })
+  try {
+    const firstLogin = login({ contactId })
+    await entered.promise
+    const loggingOut = logout({ contactId })
+    const secondLogin = login({ contactId })
+    let settled = false
+    const secondReady = readyListener({ data: 'second-cycle' }).then(() => { settled = true })
+    gate.resolve()
+    await Promise.all([ firstLogin, loggingOut, secondLogin ])
+    t.ok(wechaty.__loginIndicator.value(), 'second login is the final projection')
+    await clock.tickAsync(14999)
+    t.notOk(settled, 'receipt stays pending until the second-cycle READY is emitted')
+    await clock.tickAsync(1)
+    await secondReady
+    t.same(emitted.args, [ [ 'second-cycle' ] ], 'READY bound to the later login is emitted')
+    t.ok(wechaty.__readyState.active(), 'wechaty.ready() can resolve')
+  } finally {
+    clock.restore()
+    gate.resolve()
+    sandbox.restore()
+    await wechaty.stop()
+  }
+})
+
 test('authentication state and ready survive application removeAllListeners', async t => {
   const { wechaty, contactId, login, logout, readyListener } = await fixture()
   wechaty.removeAllListeners()
